@@ -1,0 +1,7 @@
+# Os contextos de build são backend/ e frontend/; este arquivo cobre um build feito da raiz.
+_sample-data/
+**/_sample-data/
+.env
+.git
+**/node_modules
+**/storage

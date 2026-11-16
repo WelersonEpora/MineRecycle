@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # Postgres só para os testes de integração (importação, link do comprador, visibilidade de anexos).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: minerecycle
+          POSTGRES_PASSWORD: minerecycle
+          POSTGRES_DB: minerecycle_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U minerecycle -d minerecycle_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: minerecycle_test
+      POSTGRES_DATABASE_TEST: minerecycle_test
+      POSTGRES_USER: minerecycle
+      POSTGRES_PASSWORD: minerecycle
+      JWT_SECRET: ci-test-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:integration
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build

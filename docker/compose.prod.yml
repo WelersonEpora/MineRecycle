@@ -1,0 +1,39 @@
+# Produção (servidor02). Rodado por scripts/deploy.sh, da raiz do repositório na VM (/opt/apps/minerecycle/app),
+# com o .env de lá. O banco é o Postgres compartilhado da VM (servidor02-infra), pela rede externa "db".
+services:
+  backend:
+    image: ghcr.io/${GHCR_OWNER:-welersonepora}/minerecycle-backend:${BACKEND_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    expose:
+      - "3000"
+    volumes:
+      - file_storage:/app/storage
+    networks:
+      - default
+      - db
+
+  frontend:
+    image: ghcr.io/${GHCR_OWNER:-welersonepora}/minerecycle-frontend:${FRONTEND_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      # Senha da fase de prévia (Basic Auth). Vazio = site aberto.
+      SITE_USER: ${SITE_USER:-preview}
+      SITE_PASSWORD: ${SITE_PASSWORD:-}
+    # Só 127.0.0.1: o acesso externo é pelo Nginx Proxy Manager (HTTPS). FinMind usa 8083.
+    ports:
+      - "${FRONTEND_PORT:-127.0.0.1:8085}:80"
+    depends_on:
+      - backend
+
+volumes:
+  # Nome fixo: é o que scripts/backup-files.sh copia.
+  file_storage:
+    name: minerecycle_file_storage
+
+networks:
+  db:
+    external: true

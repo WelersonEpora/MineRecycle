@@ -1,0 +1,10 @@
+# Dados reais do cliente: confidenciais, nunca versionar (ver README, "Dados de amostra")
+_sample-data/
+
+.env
+node_modules/
+dist/
+coverage/
+*.log
+backend/storage/
+.claude/settings.local.json

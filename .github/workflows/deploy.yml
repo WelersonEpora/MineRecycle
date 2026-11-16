@@ -1,0 +1,97 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: minerecycle-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Runner ARM nativo (gratuito em repositório público): a servidor02 é Ampere A1 (arm64). Mesmo padrão do FinMind.
+    runs-on: ubuntu-24.04-arm
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get commit metadata
+        id: commit_meta
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata (backend)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/minerecycle-backend
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push (backend)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          build-args: |
+            GIT_COMMIT=${{ steps.commit_meta.outputs.sha_short }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Extract Docker metadata (frontend)
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/minerecycle-frontend
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push (frontend)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+      # Mesmos secrets do FinMind (cadastrados neste repositório): entra como ubuntu e roda o deploy como deploy.
+      # Só roda com a variável de repositório DEPLOY_ENABLED=true (Settings > Variables), ligada depois que a VM estiver
+      # preparada; antes disso, o workflow só publica as imagens.
+      - name: Deploy on Oracle VM
+        if: vars.DEPLOY_ENABLED == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script_stop: false
+          command_timeout: 30m
+          script: |
+            echo "${{ secrets.GHCR_PAT }}" | sudo -iu deploy bash -lc 'cd /opt/apps/minerecycle/app && git checkout -- scripts/ && git pull --ff-only && chmod +x scripts/*.sh && bash scripts/github-deploy.sh "${{ secrets.GHCR_USERNAME }}"'

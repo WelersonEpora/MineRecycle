@@ -1,0 +1,212 @@
+:root {
+  --mr-ink: #1f2a33;
+  --mr-ink-soft: #3b4a56;
+  --mr-accent: #d9952b;
+  --mr-accent-dark: #b57718;
+  --mr-bg: #f4f2ee;
+  --mr-card: #ffffff;
+  --mr-border: #e2ddd4;
+  --mr-muted: #6b7680;
+  --bs-body-bg: var(--mr-bg);
+  --bs-body-color: var(--mr-ink);
+  --bs-link-color: #1d5f8a;
+  --bs-link-color-rgb: 29, 95, 138;
+  --bs-border-color: var(--mr-border);
+}
+
+body {
+  background: var(--mr-bg);
+  color: var(--mr-ink);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mr-topbar {
+  background: var(--mr-ink);
+  color: #fff;
+}
+.mr-topbar a,
+.mr-topbar .btn-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+.mr-topbar a:hover,
+.mr-topbar a.router-link-active {
+  color: #fff;
+}
+.mr-brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff !important;
+}
+.mr-brand .mr-brand-mark {
+  color: var(--mr-accent);
+}
+
+.btn-accent {
+  --bs-btn-bg: var(--mr-accent);
+  --bs-btn-border-color: var(--mr-accent);
+  --bs-btn-color: #1b1406;
+  --bs-btn-hover-bg: var(--mr-accent-dark);
+  --bs-btn-hover-border-color: var(--mr-accent-dark);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--mr-accent-dark);
+  --bs-btn-disabled-bg: var(--mr-accent);
+  --bs-btn-disabled-border-color: var(--mr-accent);
+}
+
+.mr-hero {
+  background: linear-gradient(120deg, #26343f 0%, #33454f 60%, #4b3b26 100%);
+  color: #fff;
+  border-radius: 0.75rem;
+}
+.mr-hero p {
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 52rem;
+}
+
+.mr-card {
+  background: var(--mr-card);
+  border: 1px solid var(--mr-border);
+  border-radius: 0.6rem;
+}
+.mr-package-card {
+  transition: box-shadow 0.15s, transform 0.15s;
+  overflow: hidden;
+}
+.mr-package-card:hover {
+  box-shadow: 0 6px 18px rgba(31, 42, 51, 0.12);
+  transform: translateY(-2px);
+}
+.mr-cover {
+  aspect-ratio: 4 / 3;
+  background: #d8d3c9;
+  object-fit: cover;
+  width: 100%;
+  display: block;
+}
+.mr-cover-empty {
+  aspect-ratio: 4 / 3;
+  background: repeating-linear-gradient(45deg, #ddd8ce, #ddd8ce 10px, #e6e1d8 10px, #e6e1d8 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mr-muted);
+  font-size: 2rem;
+}
+.mr-number {
+  font-variant-numeric: tabular-nums;
+  color: var(--mr-muted);
+  font-weight: 600;
+}
+
+.mr-gallery-main {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  background: #1c2329;
+  border-radius: 0.5rem;
+  cursor: zoom-in;
+}
+.mr-thumb {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.mr-thumb.active {
+  border-color: var(--mr-accent);
+}
+
+.mr-lines td,
+.mr-lines th {
+  font-size: 0.9rem;
+  vertical-align: top;
+}
+.mr-lines .mr-child td:nth-child(2) {
+  padding-left: 1.6rem;
+}
+.mr-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mr-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 20, 25, 0.55);
+  z-index: 1050;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3vh 1rem;
+  overflow-y: auto;
+}
+.mr-modal {
+  background: #fff;
+  border-radius: 0.6rem;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.mr-modal.mr-modal-lg {
+  max-width: 980px;
+}
+.mr-modal.mr-modal-xl {
+  max-width: 1200px;
+}
+.mr-lightbox img {
+  max-width: 100%;
+  max-height: 86vh;
+  display: block;
+  margin: 0 auto;
+}
+
+.mr-flag {
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  display: block;
+}
+.mr-lang-btn {
+  border: 0;
+  background: transparent;
+  padding: 3px;
+  border-radius: 4px;
+  opacity: 0.55;
+}
+.mr-lang-btn.active,
+.mr-lang-btn:hover {
+  opacity: 1;
+}
+.mr-lang-btn.active {
+  outline: 2px solid var(--mr-accent);
+}
+
+.mr-subnav .nav-link {
+  color: var(--mr-ink-soft);
+}
+.mr-subnav .nav-link.router-link-active {
+  color: var(--mr-ink);
+  font-weight: 600;
+  border-bottom: 3px solid var(--mr-accent);
+}
+
+.mr-preview-table td {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.8rem;
+}
+.mr-preview-table tr.mr-header-row td {
+  background: #fff3d6;
+  font-weight: 600;
+}
+.mr-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
