@@ -46,7 +46,7 @@ sem necessidade concreta.
 | Repositório | Público no GitHub (mantém gratuito o runner ARM do build, como no FinMind). Por isso, nada confidencial no código. |
 | Domínio | `minerecycle.weslab.com.br`, pelo Nginx Proxy Manager da `servidor02`, frontend em `127.0.0.1:8085` (8084 é a porta do ambiente local). |
 | Prévia | Basic Auth no nginx do frontend, por `SITE_PASSWORD` (vazio = aberto). Usada só no início; desligada em 2026-11-16 a pedido do usuário. |
-| Vitrine | O admin escolhe na tela Settings quais situações aparecem (padrão: só `active`). |
+| Vitrine | Qualquer vendedor logado escolhe na tela Settings quais situações aparecem (padrão: só `active`). Antes só o admin; liberado em 2026-11-17. |
 | Reimportação | Substitui todos os itens do pacote; anexos ligados a itens são religados pelo nº do item. |
 | Vendedores | Uma equipe só: todos editam todos os pacotes, cada um com login próprio. Papéis `seller` e `admin`. |
 | Idioma | Inglês padrão, português opcional, bandeirinha na barra superior; a escolha fica no navegador. O conteúdo cadastrado (nomes, descrições, itens) não é traduzido. |

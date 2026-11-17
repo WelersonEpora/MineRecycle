@@ -88,7 +88,8 @@ router.put("/me/password", async (req, res) => {
 
 // ---------- Administração ----------
 router.get("/settings", async (_req, res) => res.json(await settingsService.getAll()));
-router.put("/settings", requireAdmin, async (req, res) => res.json(await settingsService.update(req.body || {}, userId(req))));
+// Situações exibidas na vitrine: qualquer vendedor logado pode mudar (decisão de 2026-11-17).
+router.put("/settings", async (req, res) => res.json(await settingsService.update(req.body || {}, userId(req))));
 router.get("/users", requireAdmin, async (_req, res) => res.json(await userService.list()));
 router.post("/users", requireAdmin, async (req, res) => res.status(201).json(await userService.create(req.body || {})));
 router.patch("/users/:userId", requireAdmin, async (req, res) =>

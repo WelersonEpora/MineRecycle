@@ -297,8 +297,7 @@ export default {
   },
   settings: {
     showcaseTitle: 'Vitrine pública',
-    showcaseHelp: 'Quais situações de pacote aparecem no catálogo público. Rascunhos e inativos nunca aparecem. Compradores com link de acesso sempre veem os pacotes compartilhados com eles.',
-    adminOnly: 'Só administradores podem mudar esta configuração.'
+    showcaseHelp: 'Quais situações de pacote aparecem no catálogo público. Rascunhos e inativos nunca aparecem. Compradores com link de acesso sempre veem os pacotes compartilhados com eles.'
   },
   users: {
     name: 'Nome',
@@ -486,8 +485,8 @@ export default {
             term: 'Comprador com link',
             text: 'Os pacotes do link, menos rascunho e inativo, com os arquivos públicos e restritos. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
           },
-          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos.' },
-          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários e a configuração da vitrine.' }
+          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos. Também escolhe, em Configuração, o que a vitrine mostra.' },
+          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários.' }
         }
       },
       rules: {

@@ -196,12 +196,11 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.ok((await AccessLog.count()) > 0);
   });
 
-  await t.test("showcase statuses come from settings (admin only)", async () => {
-    assert.equal((await seller.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["active", "under_negotiation"] } })).status, 403);
-    const admin = await h.loggedInSeller(server.base, { email: "admin@example.test", role: "admin" });
-    const bad = await admin.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["draft"] } });
+  await t.test("showcase statuses come from settings (any logged-in seller)", async () => {
+    assert.equal((await anon.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["active", "under_negotiation"] } })).status, 401);
+    const bad = await seller.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["draft"] } });
     assert.equal(bad.status, 400);
-    const ok = await admin.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["active", "under_negotiation"] } });
+    const ok = await seller.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["active", "under_negotiation"] } });
     assert.equal(ok.status, 200);
     const list = (await anon.get("/api/v1/catalog/packages")).data.items.map((p) => p.number);
     assert.deepEqual(list, [10, 11, 12]);
@@ -209,8 +208,7 @@ test("access links and attachment visibility", { skip }, async (t) => {
   });
 
   await t.test("deactivated seller loses access at once", async () => {
-    const admin = h.client(server.base);
-    await admin.post("/api/v1/auth/login", { json: { email: "admin@example.test", password: "correct-horse-battery" } });
+    const admin = await h.loggedInSeller(server.base, { email: "admin@example.test", role: "admin" });
     const users = (await admin.get("/api/v1/seller/users")).data;
     const s = users.find((u) => u.email === "seller@example.test");
     await admin.patch(`/api/v1/seller/users/${s.id}`, { json: { active: false } });

@@ -297,8 +297,7 @@ export default {
   },
   settings: {
     showcaseTitle: 'Public showcase',
-    showcaseHelp: 'Which package statuses appear in the public catalog. Draft and inactive packages never appear. Buyers with an access link always see the packages shared with them.',
-    adminOnly: 'Only administrators can change these settings.'
+    showcaseHelp: 'Which package statuses appear in the public catalog. Draft and inactive packages never appear. Buyers with an access link always see the packages shared with them.'
   },
   users: {
     name: 'Name',
@@ -486,8 +485,8 @@ export default {
             term: 'Buyer with a link',
             text: 'The packages on the link, except draft and inactive, with public and restricted files. The link is valid until the set date (one year at most) and can be revoked at any time.'
           },
-          seller: { term: 'Seller', text: 'Everything: all packages and statuses, the STOR identification and internal files.' },
-          admin: { term: 'Administrator', text: 'Same as a seller, plus user management and catalog settings.' }
+          seller: { term: 'Seller', text: 'Everything: all packages and statuses, the STOR identification and internal files. Also chooses, in Settings, what the catalog shows.' },
+          admin: { term: 'Administrator', text: 'Same as a seller, plus user management.' }
         }
       },
       rules: {

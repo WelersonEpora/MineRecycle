@@ -520,16 +520,15 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
 publicado sem confirmação do usuário.**
 
-Último commit publicado: `9c63857` (2026-11-16): migration 6
-(`20261116220000-data-steel-structure-document`, liga 1809537 ao Steel Structure como pendente) e "22 pacotes" no
-Guia. Antes: `b8cd8f6` (seção "Por que não são 60 mil itens"), `033a74f` (Ajuda com Guia e Carga de planilhas) e
-`14847c9` (migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
+Último commit publicado: `042f84e` (2026-11-17): migration 7
+(`20261117090000-user-deleted-at`, exclusão lógica de usuário) e senha a partir de 9 caracteres. Antes: `9c63857`
+(migration 6, 1809537 no Steel Structure), `b8cd8f6` (seção "Por que não são 60 mil itens"), `033a74f` (Ajuda com
+Guia e Carga de planilhas) e `14847c9` (migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou
+mudança nova.
 
-**Pendente agora:**
+**Pendente agora** (sem migration; nada muda no banco):
 
-- Senha com pelo menos 9 caracteres (antes 10). Senhas já cadastradas continuam valendo.
-- Exclusão de usuário (lógica), na tela Usuários. Migration 7 `20261117090000-user-deleted-at`: acrescenta a coluna
-  `app_user.deleted_at` (vazia para todos) e a regra "excluído é inativo". Nenhum usuário existente muda.
+- Configuração da vitrine (quais situações aparecem) liberada para qualquer vendedor logado, não só admin.
 
 ### Histórico: publicação de 2026-11-16 (`14847c9`)
 
