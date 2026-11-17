@@ -67,7 +67,7 @@
               <td><StatusBadge :status="s.status" /></td>
               <td v-for="col in ['catalog', 'link', 'requests']" :key="col">
                 <span v-if="s[col] === true" class="text-success fw-semibold"><i class="bi bi-check-lg"></i> {{ t('common.yes') }}</span>
-                <span v-else-if="s[col] === false" class="text-secondary">{{ t('common.no') }}</span>
+                <span v-else-if="s[col] === false" class="text-secondary"><i class="bi bi-x-lg mr-no-icon"></i> {{ t('common.no') }}</span>
                 <span v-else>{{ t(`how.states.${s[col]}`) }}</span>
               </td>
             </tr>
@@ -203,21 +203,25 @@ function toggleAll() {
 .mr-step-body ul {
   padding-left: 1.1rem;
 }
+/* O x do bootstrap-icons ocupa mais a caixa que o visto; menor, os dois ficam do mesmo tamanho. */
+.mr-no-icon {
+  font-size: 0.8em;
+}
 .mr-who {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.7rem;
+  gap: 0.25rem;
+  font-size: 0.62rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 0.1rem 0.5rem;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.4rem;
   border-radius: 999px;
 }
 .mr-who::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: currentColor;
 }
