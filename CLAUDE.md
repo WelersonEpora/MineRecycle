@@ -6,7 +6,7 @@ rodar; este arquivo resume as regras e convenções a seguir antes de mexer no c
 ## Propósito
 
 MineRecycle: plataforma **temporária** (cerca de 6 meses a partir de 2026-11) que conecta vendedores e compradores dos
-ativos de um projeto de mineração paralisado. São ~25 pacotes de venda, ~10 vendedores, site em inglês (português
+ativos de um projeto de mineração paralisado. São 22 pacotes de venda, ~10 vendedores, site em inglês (português
 como opção) e **sem preço público**. Dois tipos de pacote: a granel (`bulk`, vendido em bloco) e equipamento
 (`equipment`, por equipamento ou conjunto). Locais principais: Conceição do Araguaia, Uberaba e Niquelândia; um pacote
 pode ter vários locais (ver decisão de 2026-11-16).
@@ -57,6 +57,8 @@ sem necessidade concreta.
 
 | Pacotes e locais (2026-11-16) | Nome do pacote (`name`) = **nome público** em inglês. A pasta do STOR fica em `stor_folder`, grafia original, só para vendedores; é a chave estável dos scripts de dados. Números do pacote (`stor_numbers`) = IDs da planilha de estratégia de vendas, não do nome da pasta (o hífen é "e": "1-6" = [1, 6]); não são chave. Vitrine, lista do vendedor e link do comprador ordenam pelo menor número e depois pelo nome; o comprador não vê número nenhum (o nº do catálogo só fica na URL). Um pacote tem uma lista de locais (`locations`), só com fonte em documento; "a confirmar" pode ficar junto de outros. Uma planilha por pacote. Superbid, 32-Project e 32-BULK Sale não viram pacote. Detalhes em `docs/carga-de-dados.md`. |
 | Documentos STOR (2026-11-16) | O pacote guarda os códigos (7 dígitos) das suas planilhas no STOR (`stor_documents`), visíveis só para vendedores. A importação lê o código no nome do arquivo e confirma, avisa (outro pacote, exige confirmação) ou oferece ligar o código ao pacote. Códigos em `stor_documents_pending` estão pendentes de validação: a importação deles exige confirmação. |
+
+| Escopo e Steel Structure (2026-11-16) | São 22 pacotes (não "cerca de 25"). O Guia explica por que o site mostra pacotes, e não os ~60 mil itens do projeto (seção "Por que não são 60 mil itens", pública por decisão do usuário). A planilha 1809537 existe, mas é uma **proposta** (preço e valor): fica ligada ao Steel Structure como pendente, nunca é importada; os itens desse pacote entram à mão. |
 
 Decisão nova do usuário: registre aqui, com a data.
 

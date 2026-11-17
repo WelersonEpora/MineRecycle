@@ -82,7 +82,7 @@ rascunho, menos Pick-Ups (vendido). Na ordem da lista:
 | 9-10-12 | 9-10-12 Dryer | Rotary Dryer | equipamento | Uberaba, A confirmar | 1808811: 4 itens "Dryer" em "9 EADI UBERABA" | — |
 | 10-12-13 | 10-12-13 Kiln | Rotary Kiln | equipamento | Uberaba, No fornecedor, A confirmar | Uberaba: 1808811 (4 itens "Kiln", 8 do precipitador, 1 do transporte pneumático) e 1809514 (9 remessas do precipitador). Fornecedor: 1809514 (2 remessas "0 FORNECEDOR") | — |
 | 17 | 17-Laboratory | Laboratory Equipment | equipamento | Uberaba | 1808811, linhas "Laboratory" | — |
-| 19 | 19-30-Steel Structure | Steel Structure | a granel | A confirmar | antes "Conceição do Araguaia", por inferência; retirado | — |
+| 19 | 19-30-Steel Structure | Steel Structure | a granel | A confirmar | antes "Conceição do Araguaia", por inferência; retirado | **1809537** |
 | 20 | 20 Construction Materials_Rebar | Construction Materials – Rebar | a granel | A confirmar | — | 1809548 |
 | 20 | 20 Construction Materials_tools and misc | Construction Materials – Tools and Miscellaneous | a granel | A confirmar | — | **1809564** |
 | 22 | 32-ETE ETA | Water and Effluent Treatment Plants | equipamento | A confirmar | — | — |
@@ -111,6 +111,7 @@ Ligadas ao pacote, mas a importação pede confirmação (erro `IMPORT_DOCUMENT_
 | 1809564 | Construction Materials – Tools and Miscellaneous | Valores, abas ocultas e linhas filtradas; o cliente vai definir o que está à venda |
 | 1809565 | 230 kV Transmission Line | Quantidades de engenharia: confirmar se é o disponível ou o projetado |
 | 1809007 | Niquelândia Refinery Equipment | Mais de mil linhas, com miudezas e colunas de valor. Os equipamentos principais entram à mão; não importar a planilha inteira |
+| 1809537 | Steel Structure | É uma **proposta** (proponente, data, preço por tonelada e valor; uma coluna estava oculta), não lista de itens. Nunca importar. Serve só de referência para cadastrar à mão as linhas do pacote, por exemplo "já desmontada" e "a desmontar", em toneladas, depois de o cliente confirmar as quantidades |
 
 #### Números a confirmar
 
@@ -244,7 +245,7 @@ A 1809606 é `.xlsm` e o importador só aceita `.xlsx` e `.xls`: salve uma cópi
 
 ### Pacotes sem planilha no STOR (cadastrar manualmente)
 
-Laboratory, Superbid, Steel Structure (vendido por tonelada), Electrical Substation, Crushers, Dryer, Compressed Air,
+Laboratory, Superbid, Steel Structure (vendido por tonelada; a 1809537 é proposta, não lista), Electrical Substation, Crushers, Dryer, Compressed Air,
 ETE/ETA, Project, Other Equip, Pick-Ups.
 
 Na área do vendedor: criar o pacote e incluir as linhas uma a uma pelo botão de nova linha
@@ -519,16 +520,17 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
 publicado sem confirmação do usuário.**
 
-Último commit publicado: `033a74f` (2026-11-16): Ajuda com duas páginas, Guia do
-MineRecycle e Carga de planilhas (só tela, sem migration). Antes dele, `14847c9`, com as migrations 1 a 5 abaixo.
-Daqui para frente, acrescente aqui cada migration ou mudança nova.
+Último commit publicado: `b8cd8f6` (2026-11-16): seção "Por que não são 60 mil
+itens" no Guia do MineRecycle (só tela, sem migration). Antes: `033a74f` (Ajuda com Guia e Carga de planilhas) e
+`14847c9` (migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
 
-**Pendente agora** (só texto de tela; nenhuma migration, nada muda no banco):
+**Pendente agora** (nesta ordem no deploy):
 
-- Guia do MineRecycle: seção nova "Por que não são 60 mil itens" (escopo dos dados, evidências da exploração do STOR
-  de 16/11/2026, fato e inferência, consequências no sistema e pergunta ao cliente), logo depois de "O que é o
-  MineRecycle", com referências cruzadas em Pacotes e Itens. Fica visível no repositório público e no JavaScript do
-  site (decisão do usuário em 2026-11-16).
+| # | Migration | O que altera no servidor |
+|---|---|---|
+| 6 | `20261116220000-data-steel-structure-document` | Acrescenta o código 1809537 ao pacote da pasta "19-30-Steel Structure", marcado como pendente. Só se o código ainda não estiver lá; não remove nada; não mexe em itens, nome, locais nem situação. Sem volta automática. |
+
+Também vai junto (só tela): no Guia, "22 pacotes" no lugar de "cerca de 25".
 
 ### Histórico: publicação de 2026-11-16 (`14847c9`)
 

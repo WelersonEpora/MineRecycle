@@ -337,7 +337,7 @@ export default {
       scope: {
         title: 'Por que não são 60 mil itens',
         conclusion:
-          'O site mostra os pacotes de venda (cerca de 25 previstos; 22 cadastrados hoje), cada um com a sua própria lista de itens. Ele não mostra os cerca de 60 mil itens do projeto.',
+          'O site mostra os 22 pacotes de venda, cada um com a sua própria lista de itens. Ele não mostra os cerca de 60 mil itens do projeto.',
         status: 'É uma conclusão sustentada por evidências, ainda não confirmada pelo cliente.',
         startTitle: 'Ponto de partida',
         start:

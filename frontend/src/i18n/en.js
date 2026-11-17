@@ -337,7 +337,7 @@ export default {
       scope: {
         title: 'Why it is not 60 thousand items',
         conclusion:
-          'The site shows the sales packages (about 25 planned; 22 registered today), each with its own item list. It does not show the roughly 60 thousand items of the project.',
+          'The site shows the 22 sales packages, each with its own item list. It does not show the roughly 60 thousand items of the project.',
         status: 'This conclusion is backed by evidence but not yet confirmed by the client.',
         startTitle: 'Starting point',
         start:

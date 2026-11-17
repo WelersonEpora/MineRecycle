@@ -13,7 +13,7 @@ test("package catalog data migration", { skip }, async (t) => {
   const run = () => migration.up(sequelize.getQueryInterface());
   const all = async () => (await sequelize.query(`SELECT * FROM package ORDER BY number`, { type: sequelize.QueryTypes.SELECT }));
   const byFolder = async (folder) => (await all()).find((p) => p.stor_folder === folder);
-  t.after(() => h.cleanup());
+  // A conexão fecha no último teste do arquivo.
 
   await t.test("empty database: creates every package once, even when run twice", async () => {
     await h.resetDatabase();
@@ -76,4 +76,31 @@ test("package catalog data migration", { skip }, async (t) => {
     await run();
     assert.equal((await all()).length, migration.PACKAGES.length);
   });
+});
+
+test("steel structure document migration: links 1809537 as pending, once", { skip }, async (t) => {
+  const { sequelize } = require("../../src/models");
+  const catalog = require("../../database/migrations/20261116210100-data-package-catalog");
+  const migration = require("../../database/migrations/20261116220000-data-steel-structure-document");
+  const qi = sequelize.getQueryInterface();
+  const steel = async () =>
+    (await sequelize.query(`SELECT * FROM package WHERE stor_folder = '19-30-Steel Structure'`, { type: sequelize.QueryTypes.SELECT }))[0];
+  t.after(() => h.cleanup());
+
+  await h.resetDatabase();
+  await migration.up(qi); // sem o pacote: não faz nada nem falha
+  await catalog.up(qi);
+  await migration.up(qi);
+  const first = await steel();
+  assert.deepEqual(first.stor_documents, ["1809537"]);
+  assert.deepEqual(first.stor_documents_pending, ["1809537"]);
+
+  await migration.up(qi);
+  const second = await steel();
+  assert.equal(second.updated_at.getTime(), first.updated_at.getTime());
+
+  // Vendedor liberou o código (tirou de pendente): rodar de novo não volta a marcar.
+  await sequelize.query(`UPDATE package SET stor_documents_pending = '{}' WHERE id = $1`, { bind: [first.id] });
+  await migration.up(qi);
+  assert.deepEqual((await steel()).stor_documents_pending, []);
 });
