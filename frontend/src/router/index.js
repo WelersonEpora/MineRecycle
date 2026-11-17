@@ -15,6 +15,7 @@ const routes = [
     children: [
       { path: '', name: 'seller-packages', component: () => import('../views/seller/SellerPackagesView.vue') },
       { path: 'packages/:id', name: 'seller-package', component: () => import('../views/seller/PackageEditView.vue') },
+      { path: 'inquiries', name: 'seller-inquiries', component: () => import('../views/seller/InquiriesView.vue') },
       { path: 'links', name: 'seller-links', component: () => import('../views/seller/AccessLinksView.vue') },
       { path: 'settings', name: 'seller-settings', component: () => import('../views/seller/SettingsView.vue') },
       { path: 'users', name: 'seller-users', component: () => import('../views/seller/UsersView.vue'), meta: { admin: true } },

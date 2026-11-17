@@ -10,6 +10,8 @@ const attachmentService = require("../services/attachment.service");
 const importService = require("../services/import.service");
 const accessLinkService = require("../services/access-link.service");
 const originService = require("../services/origin.service");
+const inquiryService = require("../services/inquiry.service");
+const contactService = require("../services/contact.service");
 const userService = require("../services/user.service");
 const authService = require("../services/auth.service");
 
@@ -80,6 +82,17 @@ router.patch("/access-links/:linkId", async (req, res) => res.json(await accessL
 router.post("/access-links/:linkId/revoke", async (req, res) => res.json(await accessLinkService.revoke(req.params.linkId)));
 router.get("/access-links/:linkId/logs", async (req, res) => res.json(await accessLinkService.logs(req.params.linkId)));
 
+// ---------- Pedidos de informação (toda a equipe atende) ----------
+router.get("/inquiries", async (req, res) => res.json(await inquiryService.list(req.query, userId(req))));
+router.get("/inquiries/counts", async (_req, res) => res.json(await inquiryService.counts()));
+router.patch("/inquiries/:inquiryId", async (req, res) =>
+  res.json(await inquiryService.update(req.params.inquiryId, req.body || {}, userId(req)))
+);
+router.delete("/inquiries/:inquiryId", async (req, res) => {
+  await inquiryService.remove(req.params.inquiryId);
+  res.status(204).end();
+});
+
 // ---------- Conta ----------
 router.put("/me/password", async (req, res) => {
   await authService.changeOwnPassword(userId(req), req.body?.currentPassword, req.body?.newPassword);
@@ -87,6 +100,8 @@ router.put("/me/password", async (req, res) => {
 });
 
 // ---------- Administração ----------
+// Contato comercial: todos leem (rota pública); só admin altera.
+router.put("/contact", requireAdmin, async (req, res) => res.json(await contactService.set(req.body || {}, userId(req))));
 // Origens: todos os vendedores leem (cadastro de pacote); só admin inclui e edita.
 router.get("/origins", async (_req, res) => res.json(await originService.list()));
 router.post("/origins", requireAdmin, async (req, res) => res.status(201).json(await originService.create(req.body || {})));

@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { linkState, packageAccess, canReadAttachment, attachmentVisibleTo, effectiveVisibility } = require("./access-policy");
+const { linkState, canSendInquiry, packageAccess, canReadAttachment, attachmentVisibleTo, effectiveVisibility } = require("./access-policy");
 
 const NOW = new Date("2026-11-16T12:00:00Z");
 const FUTURE = new Date("2026-12-16T12:00:00Z");
@@ -107,4 +107,14 @@ test("attachment must belong to the package", () => {
     canReadAttachment({ attachment: att({ packageId: "p9" }), pkg: pkg("active"), viewer: seller, now: NOW }),
     false
   );
+});
+
+test("inquiry: visitors and buyers ask, sellers do not, and never about a sold package", () => {
+  assert.equal(canSendInquiry(pkg("active"), "public"), true);
+  assert.equal(canSendInquiry(pkg("under_negotiation"), "public"), true);
+  assert.equal(canSendInquiry(pkg("under_negotiation"), "buyer"), true);
+  assert.equal(canSendInquiry(pkg("sold"), "buyer"), false);
+  assert.equal(canSendInquiry(pkg("active"), "seller"), false);
+  assert.equal(canSendInquiry(pkg("active"), null), false);
+  assert.equal(canSendInquiry(null, "public"), false);
 });

@@ -318,6 +318,59 @@ export default {
     what: 'O quê',
     from: 'IP / navegador'
   },
+  inquiry: {
+    title: 'Interessado neste pacote?',
+    intro: 'Peça mais informações à nossa equipe comercial. Respondemos por e-mail ou telefone.',
+    sellerHint: 'O comprador vê aqui o formulário de pedido e o contato da equipe. Os pedidos chegam em Pedidos.',
+    open: 'Pedir informações',
+    email: 'Enviar e-mail',
+    whatsapp: 'WhatsApp',
+    formTitle: 'Pedir informações · {name}',
+    fields: { name: 'Nome', company: 'Empresa', email: 'E-mail', phone: 'Telefone / WhatsApp', country: 'País', message: 'Mais informações' },
+    contactHint: 'Nenhum campo é obrigatório, mas deixe um e-mail ou um telefone para podermos responder.',
+    messagePlaceholder: 'O que você gostaria de saber? Ex.: quantidades, estado, documentos, visita, logística.',
+    privacy: 'Usamos estes dados só para responder a este pedido.',
+    send: 'Enviar pedido',
+    sending: 'Enviando…',
+    sent: 'Obrigado. Seu pedido foi enviado e nossa equipe vai entrar em contato em breve.',
+    subject: 'Pedido de informações: {name}',
+    prefilled: 'Olá, gostaria de mais informações sobre o pacote "{name}".\n{url}'
+  },
+  inquiries: {
+    menu: 'Pedidos',
+    title: 'Pedidos de informação',
+    help: 'Pedidos enviados pelos compradores na página do pacote. Assuma um pedido para a equipe saber que você está cuidando dele e atualize a situação conforme avança.',
+    newBadge: '{n} pedido novo | {n} pedidos novos',
+    status: 'Situação',
+    open: 'Em aberto',
+    statuses: { new: 'Novo', in_progress: 'Em atendimento', done: 'Concluído', discarded: 'Descartado' },
+    assignee: 'Responsável',
+    mine: 'Meus',
+    unassigned: 'Ninguém',
+    take: 'Assumir',
+    search: 'Nome, empresa, e-mail, mensagem…',
+    empty: 'Nenhum pedido aqui.',
+    viaLink: 'pelo link “{label}”',
+    language: 'site em {lang}',
+    packageDeleted: 'pacote excluído',
+    noMessage: 'Sem mensagem.',
+    note: 'Nota interna',
+    noteHint: 'Só a equipe vê (ex.: "liguei na segunda, vou mandar fotos").',
+    lastChange: 'Última alteração: {name}, {date}',
+    replySubject: 'Re: pedido de informações – {name}',
+    deleteTitle: 'Excluir pedido',
+    deleteConfirm: 'Excluir o pedido de “{name}”? Use para spam ou dado que não deve ficar guardado.',
+    deleted: 'Pedido excluído.'
+  },
+  contact: {
+    title: 'Contato comercial',
+    help: 'Aparece na página de cada pacote, ao lado do formulário de pedido, com o nome do pacote já preenchido.',
+    email: 'E-mail da equipe',
+    whatsapp: 'WhatsApp da equipe',
+    whatsappHint: 'Número completo, com o código do país.',
+    adminOnly: 'Só administradores alteram o contato.',
+    saved: 'Contato salvo.'
+  },
   origins: {
     title: 'Origens',
     help: 'De onde vieram os ativos do pacote (diferente de Local, que é onde estão hoje). Cada pacote tem uma origem.',
@@ -543,7 +596,39 @@ export default {
             text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos e os mesmos filtros da vitrine. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
           },
           seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos.' },
-          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários e o cadastro de origens (Configuração).' }
+          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários, o cadastro de origens e o contato comercial (Configuração).' }
+        }
+      },
+      inquiries: {
+        title: 'Pedidos dos compradores',
+        intro:
+          'O comprador pede informações na página do pacote: pelo formulário de pedido, por e-mail ou por WhatsApp. O e-mail e o WhatsApp são os da equipe, definidos em Configuração.',
+        rows: {
+          form: {
+            term: 'Formulário de pedido',
+            text: 'Nome, empresa, e-mail, telefone, país e "Mais informações". Nenhum campo é obrigatório sozinho, mas o comprador deixa um e-mail ou um telefone. Um pacote por pedido. Não há campo de preço nem de oferta.'
+          },
+          where: {
+            term: 'Quem pode pedir',
+            text: 'Visitantes (vitrine) e compradores com link. Pacote vendido não recebe pedido. Pedido enviado por um link mostra o nome do link.'
+          },
+          panel: {
+            term: 'Aba Pedidos',
+            text: 'Todo pedido cai lá, com um contador de novos na aba. Ainda não há aviso por e-mail: confira a aba todo dia.'
+          },
+          take: {
+            term: 'Assumir',
+            text: 'Torna você o responsável e passa o pedido novo para Em atendimento. O responsável pode ser trocado para qualquer pessoa da equipe.'
+          },
+          status: {
+            term: 'Situação',
+            text: 'Novo (ninguém assumiu), Em atendimento, Concluído (respondido) ou Descartado (spam ou sem sentido). A nota interna registra o que foi feito; a última alteração mostra quem e quando.'
+          }
+        },
+        items: {
+          a: 'Responda no idioma em que o comprador usava o site (aparece no pedido).',
+          b: 'Pedidos têm dados pessoais: use só para responder e exclua o spam.',
+          c: 'E-mails e mensagens de WhatsApp enviados direto não aparecem na aba Pedidos.'
         }
       },
       rules: {
@@ -643,6 +728,10 @@ export default {
     }
   },
   errors: {
+    INQUIRY_CONTACT_REQUIRED: 'Informe um e-mail ou um telefone para podermos responder.',
+    INQUIRY_NOT_ALLOWED: 'Este pacote não recebe mais pedidos.',
+    EMAIL_INVALID: 'Confira o endereço de e-mail.',
+    WHATSAPP_INVALID: 'Informe o número completo do WhatsApp, com o código do país.',
     generic: 'Algo deu errado. Tente de novo.',
     network: 'Não foi possível falar com o servidor.',
     INVALID_CREDENTIALS: 'E-mail ou senha inválidos.',

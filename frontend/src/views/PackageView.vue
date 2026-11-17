@@ -43,6 +43,7 @@
         <PhotoGallery :photos="packagePhotos" />
       </div>
       <div class="col-lg-5">
+        <InquiryPanel :pkg="pkg" :access="detail.access" :can-inquire="Boolean(detail.canInquire)" />
         <section v-if="pkg.description" class="mb-4">
           <h2 class="h6 text-uppercase text-secondary">{{ t('package.description') }}</h2>
           <p style="white-space: pre-line">{{ pkg.description }}</p>
@@ -79,6 +80,7 @@ import PhotoGallery from '../components/PhotoGallery.vue'
 import DocumentList from '../components/DocumentList.vue'
 import LinesTable from '../components/LinesTable.vue'
 import ModalDialog from '../components/ModalDialog.vue'
+import InquiryPanel from '../components/InquiryPanel.vue'
 
 const f = useFormat()
 const t = f.t

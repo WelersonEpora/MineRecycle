@@ -16,6 +16,7 @@ O site é em inglês (com português como opção, pela bandeirinha na barra sup
 | Área do vendedor (login) | Criar e editar pacotes, mudar a situação (ativo, em negociação, vendido, inativo, rascunho), itens manuais, fotos e anexos. |
 | Importação de planilha | `.xlsx`/`.xls` por pacote: o vendedor confere o cabeçalho, mapeia as colunas e vê o relatório antes de gravar. Unidades normalizadas (UN, pç, PEÇ → PC; MT, m → M…). A reimportação **substitui** os itens do pacote. |
 | Link do comprador | O vendedor gera um link com validade e escopo de pacotes. Por ele o comprador vê os anexos restritos e a proposta. Cada acesso fica registrado. O link pode ser editado ou revogado na hora. |
+| Pedidos de informação | Na página do pacote, o comprador envia um pedido (formulário) ou chama a equipe por e-mail ou WhatsApp. Os pedidos chegam na aba Pedidos da área do vendedor, com responsável, situação e nota interna. |
 | Configuração (admin) | Quais situações aparecem na vitrine pública (padrão: só ativos). |
 | Usuários (admin) | Vendedores com login próprio. Todos editam todos os pacotes (uma equipe só). |
 

@@ -21,6 +21,10 @@ const USER_ROLES = ["seller", "admin"];
 
 const ACCESS_ACTIONS = ["open", "view_package", "download"];
 
+// Pedido de informação do comprador (decisão de 2026-11-17): novo → em atendimento → concluído; descartado = spam ou
+// pedido sem sentido.
+const INQUIRY_STATUSES = ["new", "in_progress", "done", "discarded"];
+
 module.exports = {
   PACKAGE_TYPES,
   PACKAGE_CATEGORIES,
@@ -32,5 +36,6 @@ module.exports = {
   VISIBILITIES,
   ALWAYS_RESTRICTED_KINDS,
   USER_ROLES,
-  ACCESS_ACTIONS
+  ACCESS_ACTIONS,
+  INQUIRY_STATUSES
 };

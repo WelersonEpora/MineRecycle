@@ -6,6 +6,8 @@ const authService = require("../services/auth.service");
 const packageService = require("../services/package.service");
 const accessLinkService = require("../services/access-link.service");
 const fileService = require("../services/file.service");
+const inquiryService = require("../services/inquiry.service");
+const contactService = require("../services/contact.service");
 const { SELLER_COOKIE, BUYER_COOKIE, cookieOptions, clearOptions } = require("../shared/cookies");
 const { rateLimit, requireBuyer } = require("../shared/middlewares");
 const env = require("../config/env");
@@ -46,6 +48,20 @@ router.get("/catalog/packages/:number", async (req, res) => {
 
 router.get("/catalog/packages/:number/lines", async (req, res) => {
   res.json(await packageService.listLinesForViewer(req.params.number, req.viewer, req.query));
+});
+
+// ---------- Contato e pedido de informação ----------
+router.get("/contact", async (_req, res) => {
+  res.json(await contactService.get());
+});
+
+// Formulário público: limite por IP e campo isca ("website", escondido na tela). Robô que preenche a isca recebe a
+// mesma resposta de sucesso, sem gravar nada.
+const inquiryLimit = rateLimit({ windowMs: 60 * 60 * 1000, max: 10 });
+
+router.post("/catalog/packages/:number/inquiries", inquiryLimit, async (req, res) => {
+  if (!req.body?.website) await inquiryService.create(req.params.number, req.body, req.viewer);
+  res.status(201).json({ ok: true });
 });
 
 // ---------- Link do comprador ----------

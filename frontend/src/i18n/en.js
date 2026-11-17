@@ -318,6 +318,59 @@ export default {
     what: 'What',
     from: 'IP / browser'
   },
+  inquiry: {
+    title: 'Interested in this package?',
+    intro: 'Ask our sales team for more information. We answer by email or phone.',
+    sellerHint: 'Buyers see the request form and the team contact here. Requests arrive under Requests.',
+    open: 'Request information',
+    email: 'Email us',
+    whatsapp: 'WhatsApp',
+    formTitle: 'Request information · {name}',
+    fields: { name: 'Name', company: 'Company', email: 'Email', phone: 'Phone / WhatsApp', country: 'Country', message: 'More information' },
+    contactHint: 'All fields are optional, but leave an email or a phone so we can answer you.',
+    messagePlaceholder: 'What would you like to know? E.g. quantities, condition, documents, visit, logistics.',
+    privacy: 'We use these details only to answer this request.',
+    send: 'Send request',
+    sending: 'Sending…',
+    sent: 'Thank you. Your request was sent and our team will contact you soon.',
+    subject: 'Information request: {name}',
+    prefilled: 'Hello, I would like more information about the package "{name}".\n{url}'
+  },
+  inquiries: {
+    menu: 'Requests',
+    title: 'Information requests',
+    help: 'Requests sent by buyers from a package page. Take one to show the team you are handling it, and update its status as you go.',
+    newBadge: '{n} new request | {n} new requests',
+    status: 'Status',
+    open: 'Open',
+    statuses: { new: 'New', in_progress: 'In progress', done: 'Done', discarded: 'Discarded' },
+    assignee: 'Assigned to',
+    mine: 'Mine',
+    unassigned: 'Nobody',
+    take: 'Take it',
+    search: 'Name, company, email, message…',
+    empty: 'No requests here.',
+    viaLink: 'via link “{label}”',
+    language: 'site in {lang}',
+    packageDeleted: 'package deleted',
+    noMessage: 'No message.',
+    note: 'Internal note',
+    noteHint: 'Seen only by the team (e.g. "called on Monday, sending photos").',
+    lastChange: 'Last change: {name}, {date}',
+    replySubject: 'Re: information request – {name}',
+    deleteTitle: 'Delete request',
+    deleteConfirm: 'Delete the request from “{name}”? Use it for spam or data that should not be kept.',
+    deleted: 'Request deleted.'
+  },
+  contact: {
+    title: 'Sales contact',
+    help: 'Shown on every package page, next to the request form, with the package name already filled in.',
+    email: 'Team email',
+    whatsapp: 'Team WhatsApp',
+    whatsappHint: 'Full number with country code.',
+    adminOnly: 'Only administrators change the contact.',
+    saved: 'Contact saved.'
+  },
   origins: {
     title: 'Origins',
     help: 'Where the package assets came from (unlike Location, which is where they are now). Each package has one origin.',
@@ -543,7 +596,39 @@ export default {
             text: 'The packages on the link, except draft and inactive (sold ones show: they may be theirs), with public and restricted files and the same filters as the catalog. The link is valid until the set date (one year at most) and can be revoked at any time.'
           },
           seller: { term: 'Seller', text: 'Everything: all packages and statuses, the STOR identification and internal files.' },
-          admin: { term: 'Administrator', text: 'Same as a seller, plus user management and the origin list (Settings).' }
+          admin: { term: 'Administrator', text: 'Same as a seller, plus user management, the origin list and the sales contact (Settings).' }
+        }
+      },
+      inquiries: {
+        title: 'Buyer requests',
+        intro:
+          'The buyer asks for information from the package page: by the request form, by email or by WhatsApp. The email and WhatsApp are the team ones, set under Settings.',
+        rows: {
+          form: {
+            term: 'Request form',
+            text: 'Name, company, email, phone, country and "More information". No field is required on its own, but the buyer leaves an email or a phone. One package per request. There is no price or offer field.'
+          },
+          where: {
+            term: 'Who can ask',
+            text: 'Visitors (catalog) and buyers with a link. Sold packages do not take requests. A request sent through a link shows the link name.'
+          },
+          panel: {
+            term: 'Requests tab',
+            text: 'Every request lands there, with a counter of new ones on the tab. There is no email notice yet: check the tab every day.'
+          },
+          take: {
+            term: 'Take it',
+            text: 'Makes you responsible and moves a new request to In progress. The responsible person can be changed to anyone on the team.'
+          },
+          status: {
+            term: 'Status',
+            text: 'New (nobody took it), In progress, Done (answered) or Discarded (spam or nonsense). The internal note records what was done; the last change shows who and when.'
+          }
+        },
+        items: {
+          a: 'Answer in the language the buyer used on the site (shown on the request).',
+          b: 'Requests hold personal data: use them only to answer, and delete spam.',
+          c: 'Emails and WhatsApp messages sent directly do not appear in the Requests tab.'
         }
       },
       rules: {
@@ -643,6 +728,10 @@ export default {
     }
   },
   errors: {
+    INQUIRY_CONTACT_REQUIRED: 'Enter an email or a phone number so we can answer you.',
+    INQUIRY_NOT_ALLOWED: 'This package no longer takes requests.',
+    EMAIL_INVALID: 'Check the email address.',
+    WHATSAPP_INVALID: 'Enter the full WhatsApp number with country code.',
     generic: 'Something went wrong. Please try again.',
     network: 'Could not reach the server.',
     INVALID_CREDENTIALS: 'Invalid email or password.',

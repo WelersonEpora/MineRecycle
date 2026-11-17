@@ -74,8 +74,16 @@ function effectiveVisibility(kind, requested) {
   return requested;
 }
 
+// Pedido de informação: só visitante ou comprador com link (o vendedor atende, não pede) e nunca sobre pacote vendido.
+// Em negociação aceita: o comprador pode querer ficar na fila.
+function canSendInquiry(pkg, access) {
+  if (!pkg || pkg.status === "sold") return false;
+  return access === "public" || access === "buyer";
+}
+
 module.exports = {
   linkState,
+  canSendInquiry,
   isListedPublicly,
   packageAccess,
   canReadAttachment,

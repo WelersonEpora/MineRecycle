@@ -26,7 +26,7 @@ async function startServer() {
 async function resetDatabase() {
   const { sequelize } = require("../../src/models");
   await sequelize.query(
-    "TRUNCATE access_log, access_link_package, access_link, attachment, package_line, package, origin, setting, app_user RESTART IDENTITY CASCADE"
+    "TRUNCATE inquiry, access_log, access_link_package, access_link, attachment, package_line, package, origin, setting, app_user RESTART IDENTITY CASCADE"
   );
   // Origens iniciais, como a migration de dados 20261117110100 cria.
   await sequelize.query(

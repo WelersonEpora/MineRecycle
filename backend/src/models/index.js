@@ -145,6 +145,29 @@ const Setting = sequelize.define(
   { tableName: "setting", createdAt: false }
 );
 
+// Pedido de informação do comprador sobre um pacote (decisão de 2026-11-17). Ver inquiry.service.js.
+const Inquiry = sequelize.define(
+  "Inquiry",
+  {
+    id,
+    packageId: { type: DataTypes.UUID },
+    packageName: { type: DataTypes.STRING(200), allowNull: false },
+    accessLinkId: { type: DataTypes.UUID },
+    name: { type: DataTypes.STRING(120) },
+    company: { type: DataTypes.STRING(160) },
+    email: { type: DataTypes.STRING(255) },
+    phone: { type: DataTypes.STRING(40) },
+    country: { type: DataTypes.STRING(80) },
+    message: { type: DataTypes.TEXT },
+    language: { type: DataTypes.STRING(5), allowNull: false, defaultValue: "en" },
+    status: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "new" },
+    assignedTo: { type: DataTypes.UUID },
+    note: { type: DataTypes.TEXT },
+    updatedBy: { type: DataTypes.UUID }
+  },
+  { tableName: "inquiry" }
+);
+
 Package.belongsTo(Origin, { foreignKey: "originId", as: "origin" });
 Origin.hasMany(Package, { foreignKey: "originId", as: "packages" });
 Package.hasMany(PackageLine, { foreignKey: "packageId", as: "lines" });
@@ -157,5 +180,9 @@ AccessLink.belongsToMany(Package, { through: AccessLinkPackage, foreignKey: "acc
 Package.belongsToMany(AccessLink, { through: AccessLinkPackage, foreignKey: "packageId", otherKey: "accessLinkId", as: "accessLinks" });
 AccessLog.belongsTo(AccessLink, { foreignKey: "accessLinkId", as: "link" });
 AccessLink.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
+Inquiry.belongsTo(Package, { foreignKey: "packageId", as: "package" });
+Inquiry.belongsTo(AccessLink, { foreignKey: "accessLinkId", as: "link" });
+Inquiry.belongsTo(User, { foreignKey: "assignedTo", as: "assignee" });
+Inquiry.belongsTo(User, { foreignKey: "updatedBy", as: "updater" });
 
-module.exports = { sequelize, User, Origin, Package, PackageLine, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting };
+module.exports = { sequelize, User, Origin, Package, PackageLine, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting, Inquiry };

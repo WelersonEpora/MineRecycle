@@ -7,7 +7,7 @@ const { requiredString, optionalString, oneOf, positiveInt, uuid, isUuid } = req
 const { PACKAGE_TYPES, PACKAGE_CATEGORIES, LOCATIONS, PACKAGE_STATUSES, PUBLIC_STATUSES } = require("../domain/constants");
 const { parseCatalogQuery, filterCatalog } = require("../domain/catalog-filter");
 const { isStorDocumentCode } = require("../import/stor-code");
-const { packageAccess, isEffectivelyRestricted, attachmentVisibleTo } = require("../domain/access-policy");
+const { packageAccess, isEffectivelyRestricted, attachmentVisibleTo, canSendInquiry } = require("../domain/access-policy");
 const { storage, keys } = require("../storage");
 const originService = require("./origin.service");
 const lineService = require("./line.service");
@@ -127,6 +127,8 @@ async function getForViewer(number, viewer, req) {
     attachments: visible.map((a) => attachmentDto(a, { full })),
     // O público sabe que existem documentos restritos (sem ver quais), para pedir acesso.
     restrictedCount: full ? undefined : restrictedCount,
+    // Mostra o formulário de pedido de informação (visitante e comprador; nunca pacote vendido).
+    canInquire: canSendInquiry(pkg, access),
     buyerLink: access === "buyer" ? { label: viewer.link.label, expiresAt: viewer.link.expiresAt } : undefined
   };
 }
