@@ -1,13 +1,6 @@
 <template>
   <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
     <div>
-      <label class="form-label small mb-1">{{ t('catalog.status') }}</label>
-      <select v-model="filters.status" class="form-select form-select-sm">
-        <option value="">{{ t('common.all') }}</option>
-        <option v-for="s in STATUSES" :key="s" :value="s">{{ f.statusLabel(s) }}</option>
-      </select>
-    </div>
-    <div>
       <label class="form-label small mb-1">{{ t('catalog.type') }}</label>
       <select v-model="filters.type" class="form-select form-select-sm">
         <option value="">{{ t('common.all') }}</option>
@@ -32,7 +25,19 @@
       <label class="form-label small mb-1">{{ t('common.search') }}</label>
       <input v-model="filters.q" type="search" class="form-control form-control-sm" />
     </div>
+    <button v-if="activeCount" type="button" class="btn btn-link btn-sm mr-filter-reset ms-0 mb-1" @click="reset">{{ t('filters.clear') }}</button>
     <button class="btn btn-accent btn-sm ms-auto" @click="openCreate"><i class="bi bi-plus-lg"></i> {{ t('seller.newPackage') }}</button>
+  </div>
+  <div class="mb-3">
+    <ChipGroup
+      id="seller-status"
+      :label="t('catalog.status')"
+      :model-value="filters.status"
+      :all-label="t('common.all')"
+      :all-count="statusView.facet.all"
+      :options="statusOptions"
+      @update:model-value="filters.status = $event"
+    />
   </div>
 
   <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -53,10 +58,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-if="!loading && !items.length">
+        <tr v-if="!loading && !shown.length">
           <td colspan="10" class="text-secondary">{{ t('seller.noPackages') }}</td>
         </tr>
-        <tr v-for="p in items" :key="p.id" role="button" @click="open(p)">
+        <tr v-for="p in shown" :key="p.id" role="button" @click="open(p)">
           <td style="width: 64px">
             <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
           </td>
@@ -94,18 +99,22 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, reactive, ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useFormat, TYPES, LOCATIONS, STATUSES } from '../../composables/useFormat.js'
+import { EMPTY_SELLER_FILTERS, sellerFiltersFromQuery, sellerFiltersToQuery, applyStatus } from '../../composables/sellerPackageFilters.js'
 import { api } from '../../services/api.js'
 import StatusBadge from '../../components/StatusBadge.vue'
+import ChipGroup from '../../components/ChipGroup.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
 
 const f = useFormat()
 const t = f.t
+const route = useRoute()
 const router = useRouter()
-const filters = reactive({ status: '', type: '', originId: '', location: '', q: '' })
+const listRoute = route.name
+const filters = reactive(sellerFiltersFromQuery(route.query))
 const origins = ref([])
 api
   .origins()
@@ -119,16 +128,30 @@ const createError = ref('')
 const busy = ref(false)
 const draft = ref({})
 let timer = null
+let seq = 0
+
+// A situação é filtrada na tela (ver applyStatus); os outros filtros vão para a API.
+const statusView = computed(() => applyStatus(items.value, filters.status, STATUSES))
+const shown = computed(() => statusView.value.items)
+const statusOptions = computed(() => statusView.value.facet.options.map((o) => ({ ...o, label: f.statusLabel(o.value) })))
+const activeCount = computed(() => Object.keys(sellerFiltersToQuery(filters)).length)
 
 async function load() {
+  const mine = ++seq
   loading.value = true
+  error.value = ''
   try {
-    items.value = await api.sellerPackages(Object.fromEntries(Object.entries(filters).filter(([, v]) => v)))
+    const list = await api.sellerPackages(serverKey())
+    if (mine === seq) items.value = list
   } catch (err) {
-    error.value = f.errorMessage(err)
+    if (mine === seq) error.value = f.errorMessage(err)
   } finally {
-    loading.value = false
+    if (mine === seq) loading.value = false
   }
+}
+
+function reset() {
+  Object.assign(filters, EMPTY_SELLER_FILTERS)
 }
 
 function openCreate() {
@@ -156,9 +179,32 @@ function open(p) {
   router.push({ name: 'seller-package', params: { id: p.id } })
 }
 
+// A URL acompanha os filtros (replace, para o "voltar" sair da lista e não desfazer filtro por filtro). Só a busca
+// por texto espera o usuário parar de digitar; a situação não chama a API.
+let lastServer = JSON.stringify(serverKey())
+function serverKey() {
+  const rest = sellerFiltersToQuery(filters)
+  delete rest.status
+  return rest
+}
+// Link de menu para a própria lista (sem filtros na URL) limpa os filtros na tela também.
+watch(
+  () => route.query,
+  (query) => {
+    if (route.name !== listRoute) return
+    const next = sellerFiltersFromQuery(query)
+    if (JSON.stringify(sellerFiltersToQuery(next)) !== JSON.stringify(sellerFiltersToQuery(filters))) Object.assign(filters, next)
+  }
+)
 watch(filters, () => {
+  if (route.name !== listRoute) return
+  router.replace({ query: sellerFiltersToQuery(filters) })
+  const key = JSON.stringify(serverKey())
+  if (key === lastServer) return
+  const typing = JSON.parse(key).q !== JSON.parse(lastServer).q
+  lastServer = key
   clearTimeout(timer)
-  timer = setTimeout(load, 250)
+  timer = setTimeout(load, typing ? 300 : 0)
 }, { deep: true })
 onMounted(load)
 </script>

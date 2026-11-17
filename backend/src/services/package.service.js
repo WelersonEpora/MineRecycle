@@ -37,11 +37,20 @@ function filters(query) {
   if (LOCATIONS.includes(query.location)) where.locations = { [Op.contains]: [query.location] };
   const q = typeof query.q === "string" ? query.q.trim().slice(0, 100) : "";
   if (q) {
-    const like = { [Op.iLike]: `%${escapeLike(q)}%` };
-    where[Op.or] = [{ name: like }, { description: like }];
+    where[Op.or] = textConditions(q);
     if (/^\d+$/.test(q)) where[Op.or].push({ number: Number(q) });
   }
   return where;
+}
+
+// Texto buscado no nome, na descrição e na descrição dos itens (vitrine, link do comprador e lista do vendedor).
+function textConditions(q) {
+  const like = `%${escapeLike(q)}%`;
+  return [
+    { name: { [Op.iLike]: like } },
+    { description: { [Op.iLike]: like } },
+    sequelize.literal(`EXISTS (SELECT 1 FROM package_line l WHERE l.package_id = "Package"."id" AND l.description ILIKE ${sequelize.escape(like)})`)
+  ];
 }
 
 // Primeira foto pública de cada pacote, para a miniatura do cartão.
@@ -61,15 +70,7 @@ async function coverThumbs(packageIds) {
 
 // Busca da vitrine e do link do comprador: nome, descrição e descrição dos itens.
 function textSearch(q) {
-  if (!q) return null;
-  const like = `%${escapeLike(q)}%`;
-  return {
-    [Op.or]: [
-      { name: { [Op.iLike]: like } },
-      { description: { [Op.iLike]: like } },
-      sequelize.literal(`EXISTS (SELECT 1 FROM package_line l WHERE l.package_id = "Package"."id" AND l.description ILIKE ${sequelize.escape(like)})`)
-    ]
-  };
+  return q ? { [Op.or]: textConditions(q) } : null;
 }
 
 // Lista com filtros e contagens (vitrine e link do comprador). `where` limita ao que o visitante pode ver.
