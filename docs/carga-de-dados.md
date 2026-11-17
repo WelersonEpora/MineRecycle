@@ -561,34 +561,14 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
 publicado sem confirmação do usuário.**
 
-Último commit publicado: `2d840bd` (2026-11-17): configuração da vitrine
-liberada para qualquer vendedor logado (só código, sem migration). Antes: `042f84e` (migration 7, exclusão lógica de
-usuário, e senha a partir de 9 caracteres), `9c63857` (migration 6, 1809537 no Steel Structure), `b8cd8f6` (seção
-"Por que não são 60 mil itens"), `033a74f` (Ajuda com Guia e Carga de planilhas) e `14847c9` (migrations 1 a 5
-abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
-
-**Pendente agora** (nesta ordem no deploy):
-
-| # | Migration | O que altera no servidor |
-|---|---|---|
-| 8 | `20261117100000-package-category` | Coluna `package.category` (padrão `other`) com CHECK das 6 categorias. Nenhum outro dado muda. |
-| 9 | `20261117100100-data-package-category` | Grava a categoria de 17 pacotes pela pasta no STOR (refratários 2, elétrica 4, tubulação 1, equipamentos de processo 8, escritório 2); os outros 5 ficam em "outros". Só troca se a categoria ainda for a padrão. Sem volta automática. |
-
-Também vai junto: cartão da vitrine sem foto no formato "etiqueta de inventário" (cor e ícone da categoria, número em
-destaque), campo Categoria no cabeçalho do pacote, fonte Barlow Condensed hospedada no site e o registro das linhas
-ocultas da 1809438 em Pendências.
-
-| # | Migration | O que altera no servidor |
-|---|---|---|
-| 10 | `20261117110000-origin` | Tabela `origin` (nome, sigla única, ativa) e coluna `package.origin_id`, ainda opcional. |
-| 11 | `20261117110100-data-origins` | Cria ANM e VTM pela sigla, se não existirem. Preenche a origem só dos pacotes sem origem: VTM para "30-Niquelândia", ANM para os demais. Sem volta automática. |
-| 12 | `20261117110200-package-origin-required` | Torna a origem obrigatória no pacote. |
-
-Também vai junto, com as migrations 10 a 12: filtros novos na vitrine e no link do comprador (busca nos itens, chips
-de Tipo, Origem e Local com contagens, caixa de negociação, filtros na URL, painel no celular), regra fixa da vitrine
-(sai a configuração "Vitrine pública"), cadastro de origens em Configuração (admin), campo, coluna e filtro Origem na
-área do vendedor e o cartão sem "nenhum item" quando o pacote não tem itens. A configuração gravada antes
-(`setting.showcase_statuses`) fica no banco, sem uso.
+**Situação atual: nada pendente.** Último commit publicado: `9553b81` (2026-11-17): ajuda "?" por campo na
+importação e envio de arquivos por arrastar e colar (só frontend, sem migration). Antes: `40c1d21` (2026-11-17): migrations 8 a 12 (categoria
+e origem do pacote, com os dados), cartão "etiqueta de inventário", filtros novos da vitrine e do link do comprador,
+regra fixa da vitrine e cadastro de origens. A configuração antiga da vitrine (`setting.showcase_statuses`) ficou no
+banco, sem uso. Antes: `2d840bd` (configuração da vitrine para vendedores, já substituída), `042f84e` (migration 7,
+exclusão lógica de usuário, e senha a partir de 9 caracteres), `9c63857` (migration 6, 1809537 no Steel Structure),
+`b8cd8f6` (seção "Por que não são 60 mil itens"), `033a74f` (Ajuda com Guia e Carga de planilhas) e `14847c9`
+(migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
 
 ### Histórico: publicação de 2026-11-16 (`14847c9`)
 
