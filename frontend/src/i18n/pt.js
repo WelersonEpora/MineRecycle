@@ -206,6 +206,14 @@ export default {
     packageLevel: 'Pacote inteiro',
     title: 'Título',
     titleSingleOnly: 'Título (só para um arquivo)',
+    chooseFiles: 'Escolher arquivos',
+    dropOrPaste: 'ou arraste para cá, ou cole uma imagem com Ctrl+V',
+    maxFiles: 'Até {n} arquivos por envio.',
+    readyCount: '{n} arquivo pronto para enviar | {n} arquivos prontos para enviar',
+    clearFiles: 'Limpar',
+    removeFile: 'Tirar {name} da lista',
+    duplicatesSkipped: 'Um arquivo repetido foi ignorado. | {n} arquivos repetidos foram ignorados.',
+    overflowSkipped: 'Limite de {max} arquivos por envio: {n} ficaram de fora.',
     proposalRestricted: 'Propostas nunca são públicas.',
     internalNote: 'Interno: só vendedores logados veem, nunca o comprador com link.',
     publicPhotoNote: 'O público vê só as fotos redimensionadas, sem os metadados da câmera.',
@@ -231,6 +239,7 @@ export default {
     headerRowHint: 'Linha da planilha com os títulos das colunas (as linhas acima dela são ignoradas).',
     previewTitle: 'Primeiras linhas da aba',
     mapping: 'Qual coluna tem cada campo?',
+    fieldHelp: 'O que vai no campo {field}',
     required: 'obrigatório',
     notMapped: '— não usar —',
     inferHierarchy: 'Detectar kits pela numeração (1.1 e 1.2 pertencem a 1)',
@@ -517,8 +526,9 @@ export default {
         items: {
           a: 'Fotos ganham uma versão para a web e uma miniatura, sem metadados. O público nunca recebe o arquivo original de uma foto, que pode ter localização GPS.',
           b: 'Proposta nunca é pública: fica restrita ou interna.',
-          c: 'Um arquivo pode ser do pacote ou de um item. Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
-          d: 'Antes de enviar um PDF, confira se ele tem preço, valor ou nome de comprador. Se tiver, use Interno.'
+          c: 'Um arquivo pode ser do pacote inteiro (galeria e capa da vitrine) ou de um item (aparece só na linha do item). Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
+          d: 'Antes de enviar um PDF, confira se ele tem preço, valor ou nome de comprador. Se tiver, use Interno.',
+          e: 'Para enviar: clique em Escolher arquivos, arraste os arquivos para a área tracejada ou cole uma imagem com Ctrl+V (um print, por exemplo). Confira a lista e clique em Enviar.'
         }
       },
       access: {
@@ -596,7 +606,7 @@ export default {
         s1: 'Em Pacotes, abra o pacote. Se ele ainda não existir, crie com Novo pacote: o nome público em inglês (o que o comprador vê), a pasta no STOR escrita exatamente igual (ex.: 1-6 Refractories), os números do pacote na planilha de estratégia, o tipo e todos os locais. Deixe-o em rascunho enquanto confere.',
         s2: 'Na aba Itens, clique em Importar planilha, escolha o arquivo e clique em Ler arquivo. O sistema confere o código do STOR no nome do arquivo e avisa se a planilha for de outro pacote.',
         s3: 'Confira a aba e a linha do cabeçalho (a linha com os títulos das colunas). A prévia destaca a linha escolhida; troque o número se estiver errado.',
-        s4: 'Para cada campo, escolha a coluna correspondente. O sistema sugere colunas pelo título: confira. Colunas de preço, valor ou total ficam em "não usar".',
+        s4: 'Para cada campo, escolha a coluna correspondente. O sistema sugere colunas pelo título: confira. O ? ao lado de cada campo explica o que vai nele. Colunas de preço ou valor (inclusive valor total) ficam em "não usar".',
         s5: 'Clique em Conferir. Nada é gravado ainda: veja quantas linhas são válidas, os erros e avisos por linha da planilha e a prévia dos itens.',
         s6: 'Se houver erros, corrija a planilha e envie de novo, ou marque a opção de pular as linhas com erro.',
         s7: 'Clique em Importar. Os itens atuais do pacote são substituídos pelos da planilha.',
@@ -612,15 +622,15 @@ export default {
       yes: 'sim',
       no: 'não',
       notes: {
-        itemNo: 'Texto, como 1, 1.2 ou 10A. Não pode se repetir no pacote. 1.2 vira subitem de 1.',
-        description: 'Até 4.000 caracteres.',
-        quantity: 'Aceita decimal, com vírgula ou ponto (12,5). Célula vazia gera só um aviso.',
-        unit: 'Padronizada: UN, pç e PEÇ viram PC; MT vira M; kg vira KG. Unidade desconhecida é mantida e sinalizada na conferência.',
-        storCode: 'Código do item no STOR.',
-        tag: 'Tag do equipamento.',
-        warehouseLocation: 'Endereço no almoxarifado.'
+        itemNo: 'Número do item na planilha, como 1, 1.2 ou 10A. Não pode se repetir no pacote, e 1.2 vira subitem de 1. Se a planilha não tiver essa coluna, marque a opção de numerar pela ordem das linhas.',
+        description: 'O que é o item, do jeito que o comprador vai ler (ex.: Tijolo refratário 230 x 114 x 64 mm). Até 4.000 caracteres.',
+        quantity: 'Quantidade na unidade escolhida em Unid. Se a unidade for KG ou T, use a coluna do peso total, não a do número de caixas ou paletes. Aceita decimal com vírgula ou ponto (12,5). Célula vazia gera só um aviso.',
+        unit: 'Unidade da quantidade. É padronizada: UN, pç e PEÇ viram PC; MT vira M; kg vira KG. Unidade desconhecida é mantida e sinalizada na conferência.',
+        storCode: 'Código do material no STOR (ex.: 100245). É referência, não chave: pode se repetir em várias linhas. Opcional; entra na busca de itens.',
+        tag: 'Identificação do equipamento no projeto da planta, a mesma das listas de equipamentos e da plaqueta (ex.: MO-101, TR-01). Serve para pacotes de equipamento; material a granel normalmente não tem. Opcional; entra na busca de itens.',
+        warehouseLocation: 'Onde o item está guardado no almoxarifado ou no pátio (ex.: Galpão 2 - Box 3, A3-R2). Opcional.'
       },
-      discarded: 'Colunas não usadas (fornecedor, peso, preço, valor etc.) não são gravadas nos itens.'
+      discarded: 'Colunas não usadas (fornecedor, categoria, preço, valor etc.) não são gravadas nos itens.'
     },
     after: {
       title: '4. Depois da importação',

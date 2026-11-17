@@ -205,7 +205,15 @@ export default {
     line: 'Item',
     packageLevel: 'Whole package',
     title: 'Title',
-    titleSingleOnly: 'Title (single file only)',
+    chooseFiles: 'Choose files',
+    dropOrPaste: 'or drag them here, or paste an image with Ctrl+V',
+    maxFiles: 'Up to {n} files per upload.',
+    readyCount: '{n} file ready to upload | {n} files ready to upload',
+    clearFiles: 'Clear',
+    removeFile: 'Remove {name} from the list',
+    duplicatesSkipped: 'A repeated file was skipped. | {n} repeated files were skipped.',
+    overflowSkipped: 'Limit of {max} files per upload: {n} were left out.',
+    titleSingleOnly:'Title (single file only)',
     proposalRestricted: 'Proposals are never public.',
     internalNote: 'Internal: only logged-in sellers can see it, never buyers with a link.',
     publicPhotoNote: 'Public visitors see resized photos only, without camera metadata.',
@@ -231,6 +239,7 @@ export default {
     headerRowHint: 'Spreadsheet row that holds the column titles (rows above it are ignored).',
     previewTitle: 'First rows of the sheet',
     mapping: 'Which column holds each field?',
+    fieldHelp: 'What goes in the {field} field',
     required: 'required',
     notMapped: '— not used —',
     inferHierarchy: 'Detect kits from item numbering (1.1 and 1.2 belong to 1)',
@@ -517,8 +526,9 @@ export default {
         items: {
           a: 'Photos get a web version and a thumbnail, without metadata. The public never receives the original photo file, which may carry GPS location.',
           b: 'Proposals are never public: they are restricted or internal.',
-          c: 'A file can belong to the package or to an item. A file linked to an item stays on the same item number after a re-import.',
-          d: 'Before uploading a PDF, check whether it has prices, values or buyer names. If it does, use Internal.'
+          c: 'A file can belong to the whole package (gallery and catalog cover) or to an item (shown only on the item row). A file linked to an item stays on the same item number after a re-import.',
+          d: 'Before uploading a PDF, check whether it has prices, values or buyer names. If it does, use Internal.',
+          e: 'To upload: click Choose files, drag the files onto the dashed area or paste an image with Ctrl+V (a screenshot, for example). Check the list and click Upload.'
         }
       },
       access: {
@@ -596,7 +606,7 @@ export default {
         s1: 'In Packages, open the package. If it does not exist yet, create it with New package: the public name in English (what buyers see), the STOR folder written exactly the same (e.g. 1-6 Refractories), the package numbers in the strategy spreadsheet, the type and every location. Keep it as a draft while you check.',
         s2: 'On the Items tab, click Import spreadsheet, choose the file and click Read file. The system checks the STOR code in the file name and warns if the spreadsheet belongs to another package.',
         s3: 'Check the sheet and the header row (the row with the column titles). The preview highlights the chosen row; change the number if it is wrong.',
-        s4: 'For each field, choose the matching column. The system suggests columns by their title: check them. Price, value or total columns stay as "not used".',
+        s4: 'For each field, choose the matching column. The system suggests columns by their title: check them. The ? next to each field explains what goes in it. Price or value columns (including total value) stay as "not used".',
         s5: 'Click Check. Nothing is saved yet: see how many rows are valid, the errors and warnings per spreadsheet row and a preview of the items.',
         s6: 'If there are errors, fix the spreadsheet and upload it again, or tick the option to skip the rows with errors.',
         s7: "Click Import. The package's current items are replaced by the spreadsheet's.",
@@ -612,15 +622,15 @@ export default {
       yes: 'yes',
       no: 'no',
       notes: {
-        itemNo: 'Text, such as 1, 1.2 or 10A. Cannot repeat within the package. 1.2 becomes a sub-item of 1.',
-        description: 'Up to 4,000 characters.',
-        quantity: 'Accepts decimals, with comma or point (12,5 or 12.5). An empty cell only gives a warning.',
-        unit: 'Standardized: UN, pç and PEÇ become PC; MT becomes M; kg becomes KG. Unknown units are kept and flagged during the review.',
-        storCode: 'Item code in STOR.',
-        tag: 'Equipment tag.',
-        warehouseLocation: 'Location in the warehouse.'
+        itemNo: 'Item number in the spreadsheet, such as 1, 1.2 or 10A. Cannot repeat within the package, and 1.2 becomes a sub-item of 1. If the spreadsheet has no such column, tick the option to number by row order.',
+        description: 'What the item is, as the buyer will read it (e.g. Refractory brick 230 x 114 x 64 mm). Up to 4,000 characters.',
+        quantity: 'Quantity in the unit chosen under Unit. If the unit is KG or T, use the total weight column, not the number of boxes or pallets. Accepts decimals with comma or point (12,5 or 12.5). An empty cell only gives a warning.',
+        unit: 'Unit of the quantity. Standardized: UN, pç and PEÇ become PC; MT becomes M; kg becomes KG. Unknown units are kept and flagged during the review.',
+        storCode: 'Material code in STOR (e.g. 100245). A reference, not a key: it may repeat across rows. Optional; included in the item search.',
+        tag: 'Equipment identifier in the plant design, the same as in equipment lists and on the nameplate (e.g. MO-101, TR-01). Meant for equipment packages; bulk material usually has none. Optional; included in the item search.',
+        warehouseLocation: 'Where the item is stored in the warehouse or yard (e.g. Shed 2 - Box 3, A3-R2). Optional.'
       },
-      discarded: 'Columns not used (supplier, weight, price, value etc.) are not saved in the items.'
+      discarded: 'Columns not used (supplier, category, price, value etc.) are not saved in the items.'
     },
     after: {
       title: '4. After the import',

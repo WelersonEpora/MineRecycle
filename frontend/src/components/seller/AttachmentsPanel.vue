@@ -33,14 +33,54 @@
           </button>
         </div>
         <div class="col-12">
-          <input
-            ref="fileInput"
-            type="file"
-            multiple
-            class="form-control form-control-sm"
-            :accept="kind === 'photo' ? 'image/jpeg,image/png,image/webp,image/tiff,image/gif' : undefined"
-            @change="files = [...$event.target.files]"
-          />
+          <!-- Área de envio: clicar, arrastar ou colar (Ctrl+V em qualquer ponto da aba, fora dos campos de texto). -->
+          <div
+            class="mr-dropzone"
+            :class="{ 'is-over': dragDepth > 0 }"
+            @dragenter.prevent="dragDepth++"
+            @dragover.prevent
+            @dragleave="dragDepth = Math.max(0, dragDepth - 1)"
+            @drop.prevent="onDrop"
+          >
+            <input
+              ref="fileInput"
+              type="file"
+              multiple
+              class="visually-hidden"
+              tabindex="-1"
+              :aria-label="t('attachments.chooseFiles')"
+              :accept="kind === 'photo' ? 'image/jpeg,image/png,image/webp,image/tiff,image/gif' : undefined"
+              @change="onPick"
+            />
+            <i class="bi bi-cloud-arrow-up mr-dropzone-icon" aria-hidden="true"></i>
+            <div>
+              <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="busy" @click="fileInput?.click()">
+                {{ t('attachments.chooseFiles') }}
+              </button>
+              <span class="ms-2">{{ t('attachments.dropOrPaste') }}</span>
+            </div>
+            <div class="small text-secondary">{{ t('attachments.maxFiles', { n: MAX_FILES }) }}</div>
+          </div>
+
+          <div v-if="files.length" class="mt-2">
+            <div class="d-flex align-items-center small mb-1">
+              <span class="fw-medium">{{ t('attachments.readyCount', { n: files.length }, files.length) }}</span>
+              <button type="button" class="btn btn-sm btn-link ms-auto py-0" :disabled="busy" @click="clearFiles">{{ t('attachments.clearFiles') }}</button>
+            </div>
+            <ul class="mr-pending list-unstyled mb-0">
+              <li v-for="(p, i) in files" :key="p.key">
+                <img v-if="p.preview" :src="p.preview" alt="" />
+                <span v-else class="mr-pending-icon"><i class="bi bi-file-earmark" aria-hidden="true"></i></span>
+                <span class="mr-pending-name" :title="p.file.name">{{ p.file.name }}</span>
+                <span class="text-secondary">{{ f.bytes(p.file.size) }}</span>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-1" :disabled="busy" :aria-label="t('attachments.removeFile', { name: p.file.name })" @click="removeFile(i)">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div v-if="notice" class="small text-warning-emphasis mt-1">{{ notice }}</div>
+
           <div class="form-text">
             <span v-if="visibility === 'internal'">{{ t('attachments.internalNote') }}</span>
             <span v-else-if="kind === 'proposal'">{{ t('attachments.proposalRestricted') }}</span>
@@ -122,10 +162,11 @@
 </template>
 
 <script setup>
-import { computed, h, onMounted, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useFormat, KINDS } from '../../composables/useFormat.js'
 import { confirmDialog } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
+import { MAX_FILES, isImageFile, isTextField, mergeFiles, pastedFileName } from '../../utils/pending-files.js'
 
 const props = defineProps({ packageId: { type: String, required: true } })
 const emit = defineEmits(['changed'])
@@ -138,11 +179,72 @@ const kind = ref('photo')
 const visibility = ref('public')
 const lineId = ref('')
 const title = ref('')
+// Arquivos escolhidos e ainda não enviados: { key, file, preview } (preview = URL local da miniatura, só imagem).
 const files = ref([])
 const fileInput = ref(null)
 const busy = ref(false)
 const progress = ref(0)
 const error = ref('')
+const notice = ref('')
+const dragDepth = ref(0)
+let keySeq = 0
+
+function addFiles(incoming) {
+  const r = mergeFiles(
+    files.value.map((p) => p.file),
+    incoming
+  )
+  const known = new Set(files.value.map((p) => p.file))
+  const added = r.files.filter((f) => !known.has(f)).map((file) => ({ key: ++keySeq, file, preview: isImageFile(file) ? URL.createObjectURL(file) : null }))
+  files.value = [...files.value, ...added]
+  const parts = []
+  if (r.duplicates) parts.push(t('attachments.duplicatesSkipped', { n: r.duplicates }, r.duplicates))
+  if (r.overflow) parts.push(t('attachments.overflowSkipped', { max: MAX_FILES, n: r.overflow }))
+  notice.value = parts.join(' ')
+}
+
+function removeFile(index) {
+  const [p] = files.value.splice(index, 1)
+  if (p?.preview) URL.revokeObjectURL(p.preview)
+  notice.value = ''
+}
+
+function clearFiles() {
+  for (const p of files.value) if (p.preview) URL.revokeObjectURL(p.preview)
+  files.value = []
+  notice.value = ''
+}
+
+function onPick(e) {
+  addFiles([...e.target.files])
+  // Limpa o input para poder escolher o mesmo arquivo de novo depois de tirá-lo da lista.
+  e.target.value = ''
+}
+
+function onDrop(e) {
+  dragDepth.value = 0
+  if (busy.value) return
+  addFiles([...(e.dataTransfer?.files || [])])
+}
+
+// Ctrl+V com imagem (print, imagem copiada do navegador ou do WhatsApp) em qualquer ponto da aba. Dentro de campo de
+// texto com texto na área de transferência, segue a colagem normal. Com um diálogo aberto, não faz nada.
+function onPaste(e) {
+  const dt = e.clipboardData
+  if (!dt || busy.value || document.querySelector('.mr-modal-backdrop')) return
+  let incoming = [...(dt.files || [])]
+  if (!incoming.length) incoming = [...(dt.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean)
+  if (!incoming.length) return
+  if (isTextField(e.target) && [...(dt.types || [])].includes('text/plain')) return
+  e.preventDefault()
+  const now = new Date()
+  let n = 0
+  const named = incoming.map((f) =>
+    isImageFile(f) && (!f.name || /^image\.\w+$/i.test(f.name)) ? new File([f], pastedFileName(f.type, now, n++), { type: f.type, lastModified: now.getTime() }) : f
+  )
+  if (!files.value.length && named.every(isImageFile)) kind.value = 'photo'
+  addFiles(named)
+}
 
 const photos = computed(() => items.value.filter((a) => a.kind === 'photo'))
 const documents = computed(() => items.value.filter((a) => a.kind !== 'photo'))
@@ -167,13 +269,12 @@ async function upload() {
   try {
     await api.uploadAttachments(
       props.packageId,
-      files.value,
+      files.value.map((p) => p.file),
       { kind: kind.value, visibility: kind.value === 'proposal' && visibility.value === 'public' ? 'restricted' : visibility.value, lineId: lineId.value, title: files.value.length === 1 ? title.value : '' },
       (p) => (progress.value = p)
     )
-    files.value = []
+    clearFiles()
     title.value = ''
-    if (fileInput.value) fileInput.value.value = ''
     await load()
     changed()
   } catch (err) {
@@ -251,5 +352,80 @@ const VisibilityToggle = (p, { emit: e }) => {
 VisibilityToggle.props = ['att']
 VisibilityToggle.emits = ['toggle']
 
-onMounted(load)
+onMounted(() => {
+  document.addEventListener('paste', onPaste)
+  load()
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('paste', onPaste)
+  clearFiles()
+})
 </script>
+
+<style scoped>
+.mr-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.1rem 1rem;
+  border: 2px dashed var(--mr-border);
+  border-radius: 0.6rem;
+  background: var(--mr-bg);
+  text-align: center;
+  font-size: 0.875rem;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+.mr-dropzone.is-over {
+  border-color: var(--mr-accent);
+  background: #fdf5e8;
+}
+.mr-dropzone-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--mr-muted);
+}
+.mr-dropzone.is-over .mr-dropzone-icon {
+  color: var(--mr-accent-dark);
+}
+.mr-pending {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.mr-pending li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  border: 1px solid var(--mr-border);
+  border-radius: 0.45rem;
+  background: var(--mr-card);
+  font-size: 0.8125rem;
+}
+.mr-pending img,
+.mr-pending-icon {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.3rem;
+  object-fit: cover;
+}
+.mr-pending-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mr-bg);
+  color: var(--mr-muted);
+  font-size: 1.1rem;
+}
+.mr-pending-name {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

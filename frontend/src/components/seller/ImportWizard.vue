@@ -86,6 +86,7 @@
           <label class="form-label small mb-1">
             {{ t(`lines.${field.key}`) }}
             <span v-if="field.required && !(field.key === 'itemNo' && numberRows)" class="text-danger">*</span>
+            <HelpTip :text="t(`help.fields.notes.${field.key}`)" :label="t('import.fieldHelp', { field: t(`lines.${field.key}`) })" />
           </label>
           <select v-model="mapping[field.key]" class="form-select form-select-sm" :disabled="field.key === 'itemNo' && numberRows">
             <option :value="null">{{ t('import.notMapped') }}</option>
@@ -182,6 +183,7 @@ import { computed, h, reactive, ref, watch } from 'vue'
 import { useFormat } from '../../composables/useFormat.js'
 import { notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
+import HelpTip from '../HelpTip.vue'
 import ModalDialog from '../ModalDialog.vue'
 
 const props = defineProps({
