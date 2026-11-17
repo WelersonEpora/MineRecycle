@@ -334,6 +334,52 @@ export default {
           c: 'A single sales team: every seller can edit every package, each with their own login.'
         }
       },
+      scope: {
+        title: 'Why it is not 60 thousand items',
+        conclusion:
+          'The site shows the sales packages (about 25 planned; 22 registered today), each with its own item list. It does not show the roughly 60 thousand items of the project.',
+        status: 'This conclusion is backed by evidence but not yet confirmed by the client.',
+        startTitle: 'Starting point',
+        start:
+          'The initial information was that the client had a spreadsheet with about 60 thousand items, forming about a thousand lots, and that the most reliable data would be in STOR.',
+        evidenceTitle: 'Evidence, in the order it came up',
+        evidence: {
+          e1: 'The 60 thousand are the project, not the stock. The number shows up in the item register (61,246) and in the Process Plant tree (61,835 rows). These bases hold about 36 thousand items at the "Initial" stage (specified and never finalized), about 2 thousand services, about 3,600 raw-material rows and catalog items created in 2015, before the project. There is no stock quantity and no location.',
+          e2: 'Far less was received. The "Materials Receiving" branch (item 443815) has about 3,650 items, organized by supplier and contract. The project stopped halfway through construction.',
+          e3: 'The physical inventory confirms the order of magnitude. The "Warehouse Inventory" spreadsheet (document 1810554) has 14,144 counted rows, with a storage address and the "STOR no." key.',
+          e4: 'The sale is organized in packages. Under Document > Suprimentos/Supply > Projeto Araguaia - ANM > Assets Sales > Packages there are 24 package folders. The client responsibility matrix (document 1808732) describes the process as organizing the assets into packages and compiling a materials list per package.',
+          e5: 'Steel structure is sold by weight. The package spreadsheet (1809537) is a single row, in tonnes. Most of the inventory is steel structure, which does not need to be listed piece by piece.',
+          e6: 'The sales lists are independent of STOR. The electrical materials list (1809601) has 561 rows, was written by hand, has no STOR code, and none of its descriptions match the register, the inventory or the ERP.'
+        },
+        factsTitle: 'Fact and inference',
+        colClaim: 'Statement',
+        colBasis: 'Basis',
+        facts: {
+          f1: { claim: 'The 60 thousand include items never bought, services and raw material', basis: 'Seen in the data' },
+          f2: { claim: 'About 14 thousand rows physically exist', basis: 'Client inventory' },
+          f3: { claim: 'The sale is by package', basis: 'Folders and client process document' },
+          f4: {
+            claim: 'Each package has its own list, independent of STOR',
+            basis: 'Tested on one package; for the others, by the spreadsheet format'
+          },
+          f5: { claim: 'The client does not expect to see the 60 thousand on the site', basis: 'Inference, to be confirmed' }
+        },
+        ambiguityTitle: 'Known ambiguity',
+        ambiguity:
+          'Three bases have about 60 thousand rows: the item register, the Process Plant tree and the "Analítico" tab of the "Lista de materiais e Ativos" (1808778), with 61,726 accounting entries. It is not known which one the initial information referred to.',
+        source:
+          'Source of the numbers: STOR exploration on 2026-11-16. The exports behind these numbers are not stored with the project files.',
+        consequencesTitle: 'Consequences in the system',
+        consequences: {
+          c1: 'The catalog unit is the package. Items are package lines, imported from each package spreadsheet, and importing again replaces the list (see Packages and Items).',
+          c2: 'Two package types: bulk and equipment (see Packages, Type field).',
+          c3: 'STOR code, tag and warehouse location are optional reference fields, not keys. An item is identified by the package and the item number (see Items).',
+          c4: 'The package number is not a key: the same number appears in more than one folder. The package is identified by its STOR folder (see Package numbers and list order).'
+        },
+        questionTitle: 'Open question for the client',
+        question:
+          'Should the site show the sales packages with their lists, or is it expected to browse the 60 thousand project items? If the latter, the data has already been exported from STOR and the change is in volume, not in the model.'
+      },
       stor: {
         title: 'How STOR is organized',
         intro:
@@ -368,7 +414,8 @@ export default {
         },
         items: {
           a: 'One spreadsheet per package: importing again replaces all items. When a folder has one spreadsheet per location, it becomes one package per location, like the Conceição do Araguaia and Uberaba refractories.',
-          b: 'The initial package register came from the STOR survey. What is edited here is kept: system updates do not overwrite seller changes.'
+          b: 'The initial package register came from the STOR survey. What is edited here is kept: system updates do not overwrite seller changes.',
+          c: 'Why the catalog is made of packages, not of project items: see Why it is not 60 thousand items.'
         }
       },
       numbers: {
@@ -405,7 +452,8 @@ export default {
           e: 'Units are standardized by a synonym table (pç, Peça and un become PC). Unknown units are kept as written.',
           f: 'Columns with no field in the system, such as supplier, weight, category and values, do not become item data. They stay in the original spreadsheet kept in the package, which only sellers see.',
           g: 'Hidden and filtered rows are imported too. If they should not go in, delete them in a copy before uploading.',
-          h: 'A spreadsheet with a code pending validation is only imported after confirmation.'
+          h: 'A spreadsheet with a code pending validation is only imported after confirmation.',
+          i: 'STOR code, tag and location are references, not keys: see Why it is not 60 thousand items.'
         }
       },
       files: {

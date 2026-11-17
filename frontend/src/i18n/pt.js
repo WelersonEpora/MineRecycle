@@ -334,6 +334,52 @@ export default {
           c: 'Uma equipe só de vendedores: todos podem editar todos os pacotes, cada um com o seu login.'
         }
       },
+      scope: {
+        title: 'Por que não são 60 mil itens',
+        conclusion:
+          'O site mostra os pacotes de venda (cerca de 25 previstos; 22 cadastrados hoje), cada um com a sua própria lista de itens. Ele não mostra os cerca de 60 mil itens do projeto.',
+        status: 'É uma conclusão sustentada por evidências, ainda não confirmada pelo cliente.',
+        startTitle: 'Ponto de partida',
+        start:
+          'A informação inicial era que o cliente tinha uma planilha com cerca de 60 mil itens, formando cerca de mil lotes, e que o dado mais confiável estaria no STOR.',
+        evidenceTitle: 'Evidências, na ordem em que apareceram',
+        evidence: {
+          e1: 'Os 60 mil são o projeto, não o estoque. O número aparece no cadastro de itens (61.246) e na árvore da Planta de Processo (61.835 linhas). Nessas bases há cerca de 36 mil itens na etapa "Inicial" (especificados e nunca finalizados), cerca de 2 mil serviços, cerca de 3.600 linhas de matéria-prima e itens de catálogo criados em 2015, antes do projeto. Não há quantidade em estoque nem localização.',
+          e2: 'O recebido é muito menos. O ramo "Recebimento de Materiais" (item 443815) tem cerca de 3.650 itens, organizados por fornecedor e contrato. O projeto parou no meio da obra.',
+          e3: 'O inventário físico confirma a ordem de grandeza. A planilha "Inventário Almoxarifado" (documento 1810554) tem 14.144 linhas contadas, com endereço de armazenagem e a chave "Nº STOR".',
+          e4: 'A venda é organizada em pacotes. Em Documento > Suprimentos/Supply > Projeto Araguaia - ANM > Assets Sales > Packages há 24 pastas de pacote. A matriz de responsabilidades do cliente (documento 1808732) descreve o processo como organizar os ativos em pacotes e compilar uma lista de materiais por pacote.',
+          e5: 'Estrutura metálica é vendida a peso. A planilha do pacote (1809537) é uma linha, com toneladas. A maior parte do inventário é estrutura metálica, que não precisa aparecer peça a peça.',
+          e6: 'As listas de venda são independentes do STOR. A lista de material elétrico (1809601) tem 561 linhas, foi escrita à mão, não tem código STOR, e nenhuma das descrições bate com o cadastro, o inventário ou o ERP.'
+        },
+        factsTitle: 'Fato e inferência',
+        colClaim: 'Afirmação',
+        colBasis: 'Base',
+        facts: {
+          f1: { claim: 'Os 60 mil incluem itens nunca comprados, serviços e matéria-prima', basis: 'Visto nos dados' },
+          f2: { claim: 'Fisicamente existem cerca de 14 mil linhas', basis: 'Inventário do cliente' },
+          f3: { claim: 'A venda é por pacote', basis: 'Pastas e documento de processo do cliente' },
+          f4: {
+            claim: 'Cada pacote tem lista própria, independente do STOR',
+            basis: 'Testado em um pacote; nos demais, pelo formato das planilhas'
+          },
+          f5: { claim: 'O cliente não espera ver os 60 mil no site', basis: 'Inferência, a confirmar' }
+        },
+        ambiguityTitle: 'Ambiguidade conhecida',
+        ambiguity:
+          'Há três bases com cerca de 60 mil linhas: o cadastro de itens, a árvore da Planta de Processo e a aba "Analítico" da "Lista de materiais e Ativos" (1808778), com 61.726 lançamentos contábeis. Não se sabe a qual delas a informação inicial se referia.',
+        source:
+          'Fonte dos números: exploração do STOR feita em 16/11/2026. As exportações que sustentam esses números não estão guardadas com os arquivos do projeto.',
+        consequencesTitle: 'Consequências no sistema',
+        consequences: {
+          c1: 'A unidade do catálogo é o pacote. Os itens são linhas do pacote, importadas da planilha de cada um, e importar de novo substitui a lista (ver Pacotes e Itens).',
+          c2: 'Dois tipos de pacote: a granel e equipamento (ver Pacotes, campo Tipo).',
+          c3: 'Código STOR, tag e localização no almoxarifado são campos opcionais de referência, não chave. O item é identificado pelo pacote e pelo nº do item (ver Itens).',
+          c4: 'O número do pacote não é chave: o mesmo número aparece em mais de uma pasta. Quem identifica o pacote é a pasta no STOR (ver Números do pacote e ordem da lista).'
+        },
+        questionTitle: 'Pergunta em aberto para o cliente',
+        question:
+          'O site mostra os pacotes de venda com as suas listas, ou é esperado consultar os 60 mil itens do projeto? Se for a segunda opção, os dados já foram exportados do STOR e a mudança é de volume, não de modelo.'
+      },
       stor: {
         title: 'Como o STOR está organizado',
         intro:
@@ -368,7 +414,8 @@ export default {
         },
         items: {
           a: 'Uma planilha por pacote: importar de novo substitui todos os itens. Quando uma pasta tem uma planilha por local, ela vira um pacote por local, como os refratários de Conceição do Araguaia e de Uberaba.',
-          b: 'O cadastro inicial dos pacotes veio do levantamento no STOR. O que for editado aqui é mantido: as atualizações do sistema não sobrescrevem o que o vendedor ajustou.'
+          b: 'O cadastro inicial dos pacotes veio do levantamento no STOR. O que for editado aqui é mantido: as atualizações do sistema não sobrescrevem o que o vendedor ajustou.',
+          c: 'Por que o catálogo é de pacotes, e não dos itens do projeto: ver Por que não são 60 mil itens.'
         }
       },
       numbers: {
@@ -405,7 +452,8 @@ export default {
           e: 'Unidades são padronizadas por uma tabela de sinônimos (pç, Peça e un viram PC). Unidade desconhecida é mantida como foi escrita.',
           f: 'Colunas sem campo no sistema, como fornecedor, peso, categoria e valores, não viram dado do item. Elas continuam na planilha original guardada no pacote, que só vendedores veem.',
           g: 'Linhas ocultas e filtradas da planilha também são importadas. Se não devem entrar, apague-as numa cópia antes de enviar.',
-          h: 'Planilha com código pendente de validação só é importada com confirmação.'
+          h: 'Planilha com código pendente de validação só é importada com confirmação.',
+          i: 'Código STOR, tag e localização são referência, não chave: ver Por que não são 60 mil itens.'
         }
       },
       files: {

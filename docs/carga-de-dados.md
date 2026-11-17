@@ -519,15 +519,16 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
 publicado sem confirmação do usuário.**
 
-Último commit publicado: `14847c9` (2026-11-16), com as migrations 1 a 5 abaixo, aplicadas no servidor pelo deploy
-sem erro. Daqui para frente, acrescente aqui cada migration ou mudança nova.
+Último commit publicado: `033a74f` (2026-11-16): Ajuda com duas páginas, Guia do
+MineRecycle e Carga de planilhas (só tela, sem migration). Antes dele, `14847c9`, com as migrations 1 a 5 abaixo.
+Daqui para frente, acrescente aqui cada migration ou mudança nova.
 
-**Pendente agora** (só código de tela, nenhuma migration; nada muda no banco):
+**Pendente agora** (só texto de tela; nenhuma migration, nada muda no banco):
 
-- Ajuda com duas páginas: **Guia do MineRecycle** (STOR, pacotes, números, locais, itens, arquivos, quem vê o quê e
-  regras) e **Carga de planilhas** (o passo a passo de antes). Endereços `/seller/help/guide` e `/seller/help/import`;
-  `/seller/help` abre o Guia.
-- Esta seção atualizada.
+- Guia do MineRecycle: seção nova "Por que não são 60 mil itens" (escopo dos dados, evidências da exploração do STOR
+  de 16/11/2026, fato e inferência, consequências no sistema e pergunta ao cliente), logo depois de "O que é o
+  MineRecycle", com referências cruzadas em Pacotes e Itens. Fica visível no repositório público e no JavaScript do
+  site (decisão do usuário em 2026-11-16).
 
 ### Histórico: publicação de 2026-11-16 (`14847c9`)
 
