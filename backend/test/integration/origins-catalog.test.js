@@ -1,6 +1,6 @@
 "use strict";
 
-// Origem do pacote e filtros da vitrine (decisão de 2026-11-17). Dados fictícios.
+// Origem do pacote e filtros do catálogo (decisão de 2026-11-17). Dados fictícios.
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const h = require("./helpers");

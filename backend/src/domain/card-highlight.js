@@ -1,6 +1,6 @@
 "use strict";
 
-// Número em destaque no cartão da vitrine para pacote sem foto (decisão de 2026-11-17):
+// Número em destaque no cartão do catálogo para pacote sem foto (decisão de 2026-11-17):
 // - equipamento: unidades (soma das quantidades dos itens principais em PC, SET ou KIT);
 // - a granel: peso total em toneladas, quando todos os itens estão em KG ou T;
 // - senão: número de itens. Pacote sem itens: nada (o cartão mostra só a categoria).

@@ -3,7 +3,7 @@
 const { sequelize } = require("../models");
 const { cardHighlight } = require("../domain/card-highlight");
 
-// Totais dos itens de cada pacote para o cartão da vitrine (subconsultas por pacote; são ~25 pacotes).
+// Totais dos itens de cada pacote para o cartão do catálogo (subconsultas por pacote; são ~25 pacotes).
 const lines = `FROM package_line l WHERE l.package_id = "Package"."id"`;
 const CARD_STATS = [
   [sequelize.literal(`(SELECT count(*) ${lines})::int`), "lineCount"],

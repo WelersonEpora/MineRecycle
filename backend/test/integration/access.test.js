@@ -155,7 +155,7 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.equal((await buyer.get(`/api/v1/files/${proposal.id}/original`)).status, 200);
     assert.equal((await buyer.get(`/api/v1/files/${photo.id}/original`)).status, 200);
 
-    // Pacote em negociação: fora da vitrine, mas no escopo do link.
+    // Pacote em negociação: fora do catálogo, mas no escopo do link.
     assert.equal((await buyer.get("/api/v1/catalog/packages/11")).data.access, "buyer");
     assert.equal((await buyer.get(`/api/v1/files/${negotiatingDoc.id}/original`)).status, 200);
     // Fora do escopo: o 12 está em negociação e é público, então o comprador o vê como visitante.

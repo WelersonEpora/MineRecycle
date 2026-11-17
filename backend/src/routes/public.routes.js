@@ -37,7 +37,7 @@ router.get("/auth/me", (req, res) => {
   });
 });
 
-// ---------- Vitrine ----------
+// ---------- Catálogo ----------
 router.get("/catalog/packages", async (req, res) => {
   res.json(await packageService.listPublic(req.query));
 });

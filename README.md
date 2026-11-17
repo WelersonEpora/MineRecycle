@@ -12,12 +12,12 @@ O site é em inglês (com português como opção, pela bandeirinha na barra sup
 
 | Área | Função |
 |---|---|
-| Vitrine pública | Pacotes da vitrine, filtro por tipo, local e situação. Página do pacote com fotos públicas, documentos públicos e itens paginados com busca. |
+| Catálogo público | Pacotes ativos (em negociação com a caixa marcada), busca e filtros por tipo, origem e local. Página do pacote com fotos públicas, documentos públicos e itens paginados com busca. |
 | Área do vendedor (login) | Criar e editar pacotes, mudar a situação (ativo, em negociação, vendido, inativo, rascunho), itens manuais, fotos e anexos. |
 | Importação de planilha | `.xlsx`/`.xls` por pacote: o vendedor confere o cabeçalho, mapeia as colunas e vê o relatório antes de gravar. Unidades normalizadas (UN, pç, PEÇ → PC; MT, m → M…). A reimportação **substitui** os itens do pacote. |
 | Link do comprador | O vendedor gera um link com validade e escopo de pacotes. Por ele o comprador vê os anexos restritos e a proposta. Cada acesso fica registrado. O link pode ser editado ou revogado na hora. |
 | Pedidos de informação | Na página do pacote, o comprador envia um pedido (formulário) ou chama a equipe por e-mail ou WhatsApp. Os pedidos chegam na aba Pedidos da área do vendedor, com responsável, situação e nota interna. |
-| Configuração (admin) | Quais situações aparecem na vitrine pública (padrão: só ativos). |
+| Configuração (admin) | Origens dos pacotes e contato comercial da equipe (e-mail e WhatsApp). |
 | Usuários (admin) | Vendedores com login próprio. Todos editam todos os pacotes (uma equipe só). |
 
 ### Regras de visibilidade
@@ -49,7 +49,7 @@ backend/
   scripts/           seed-demo (fictício), seed-sample (amostra local), testes de integração
   test/integration/  importação, link do comprador e visibilidade de anexos, contra Postgres real
 frontend/
-  src/views/         vitrine, pacote, acesso do comprador, login, área do vendedor
+  src/views/         catálogo, pacote, acesso do comprador, login, área do vendedor
   src/components/    tabela de itens, galeria, assistente de importação, painéis de anexos e links
   src/i18n/          en.js e pt.js
 docker/compose.dev.yml   ambiente local completo
@@ -125,7 +125,7 @@ POSTGRES_HOST=localhost POSTGRES_PORT=5434 POSTGRES_USER=minerecycle POSTGRES_PA
 Cobrem a importação (cabeçalho detectado, erros por linha do Excel, recusa com erros, substituição dos itens,
 religação dos anexos pelo nº do item, kits), o link do comprador (hash, escopo, expiração, revogação, registro de
 acessos) e a visibilidade dos anexos (público, comprador, vendedor, proposta, original das fotos, configuração da
-vitrine, vendedor desativado). O CI (`.github/workflows/ci.yml`) roda lint, testes unitários, testes de integração e
+catálogo, vendedor desativado). O CI (`.github/workflows/ci.yml`) roda lint, testes unitários, testes de integração e
 build do frontend.
 
 ## Backup

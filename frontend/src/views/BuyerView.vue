@@ -9,7 +9,7 @@
       <button class="btn btn-sm btn-outline-secondary" @click="end">{{ t('access.endSession') }}</button>
     </div>
     <h2 class="h6 text-uppercase text-secondary">{{ t('access.packages') }}</h2>
-    <!-- Mesmos filtros da vitrine, só sobre os pacotes do link; sem a caixa de negociação (o comprador vê tudo do link). -->
+    <!-- Mesmos filtros do catálogo, só sobre os pacotes do link; sem a caixa de negociação (o comprador vê tudo do link). -->
     <CatalogFilters
       id-prefix="mr-buy"
       :filters="filters"

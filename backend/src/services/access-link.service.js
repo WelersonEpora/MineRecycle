@@ -185,7 +185,7 @@ async function redeem(token, req) {
   return { cookie: signSession({ typ: "buyer", sub: link.id }, maxAgeMs / 1000), maxAgeMs };
 }
 
-// Pacotes do link com os filtros da vitrine (busca, tipo, origem, local). O comprador vê tudo o que o link cobre,
+// Pacotes do link com os filtros do catálogo (busca, tipo, origem, local). O comprador vê tudo o que o link cobre,
 // menos rascunho e inativo; vendidos aparecem (podem ser dele). Sem a caixa de negociação.
 async function buyerPackages(viewerLink, query) {
   const packageService = require("./package.service");
@@ -196,7 +196,7 @@ async function buyerSession(viewerLink) {
   const packages = await Package.findAll({
     where: { id: viewerLink.packageIds, status: { [Op.notIn]: BUYER_HIDDEN_STATUSES } },
     attributes: { include: CARD_STATS },
-    // Mesma ordem da vitrine (números do pacote na planilha de estratégia, depois nome).
+    // Mesma ordem do catálogo (números do pacote na planilha de estratégia, depois nome).
     order: [sequelize.literal(`(SELECT min(n) FROM unnest("Package"."stor_numbers") AS n) ASC NULLS LAST`), ["name", "ASC"], ["number", "ASC"]]
   });
   const covers = await Attachment.findAll({

@@ -16,7 +16,7 @@ const { packageDto, attachmentDto } = require("./dto");
 const { CARD_STATS, cardExtra } = require("./package-card-stats");
 
 const LINE_COUNT = [sequelize.literal(`(SELECT count(*) FROM package_line l WHERE l.package_id = "Package"."id")::int`), "lineCount"];
-// Ordem da vitrine e da lista do vendedor: menor número do pacote (planilha de estratégia), depois o nome; sem número
+// Ordem do catálogo e da lista do vendedor: menor número do pacote (planilha de estratégia), depois o nome; sem número
 // vai para o fim. O número de catálogo só desempata.
 const PACKAGE_ORDER = [
   sequelize.literal(`(SELECT min(n) FROM unnest("Package"."stor_numbers") AS n) ASC NULLS LAST`),
@@ -43,7 +43,7 @@ function filters(query) {
   return where;
 }
 
-// Texto buscado no nome, na descrição e na descrição dos itens (vitrine, link do comprador e lista do vendedor).
+// Texto buscado no nome, na descrição e na descrição dos itens (catálogo, link do comprador e lista do vendedor).
 function textConditions(q) {
   const like = `%${escapeLike(q)}%`;
   return [
@@ -66,14 +66,14 @@ async function coverThumbs(packageIds) {
   return map;
 }
 
-// ---------- Vitrine pública ----------
+// ---------- Catálogo público ----------
 
-// Busca da vitrine e do link do comprador: nome, descrição e descrição dos itens.
+// Busca do catálogo e do link do comprador: nome, descrição e descrição dos itens.
 function textSearch(q) {
   return q ? { [Op.or]: textConditions(q) } : null;
 }
 
-// Lista com filtros e contagens (vitrine e link do comprador). `where` limita ao que o visitante pode ver.
+// Lista com filtros e contagens (catálogo e link do comprador). `where` limita ao que o visitante pode ver.
 async function browse(where, query, { negotiationToggle }) {
   const f = parseCatalogQuery(query);
   const search = textSearch(f.q);
@@ -94,7 +94,7 @@ async function browse(where, query, { negotiationToggle }) {
   };
 }
 
-// Vitrine pública: ativos e em negociação (estes só com a caixa marcada); nunca vendido, rascunho ou inativo.
+// Catálogo público: ativos e em negociação (estes só com a caixa marcada); nunca vendido, rascunho ou inativo.
 async function listPublic(query = {}) {
   return browse({ status: PUBLIC_STATUSES }, query, { negotiationToggle: true });
 }
@@ -206,7 +206,7 @@ async function assertStorFolderFree(storFolder, exceptId = null) {
   if (clash) throw new ConflictError("Another package already uses this STOR folder.", { field: "storFolder" }, "STOR_FOLDER_TAKEN");
 }
 
-// Campos que só a área do vendedor recebe (não vão para a vitrine nem para o comprador).
+// Campos que só a área do vendedor recebe (não vão para o catálogo nem para o comprador).
 const sellerExtra = (p) => ({
   storFolder: p.storFolder || null,
   storNumbers: p.storNumbers || [],
@@ -238,7 +238,7 @@ async function assertNumberFree(number, exceptId = null) {
 async function listForSeller(query = {}) {
   const where = filters(query);
   if (PACKAGE_STATUSES.includes(query.status)) where.status = query.status;
-  // Busca por código de documento STOR: só aqui, nunca na vitrine.
+  // Busca por código de documento STOR: só aqui, nunca no catálogo.
   const q = typeof query.q === "string" ? query.q.trim() : "";
   if (q) where[Op.or].push({ storFolder: { [Op.iLike]: `%${escapeLike(q.slice(0, 100))}%` } });
   if (isStorDocumentCode(q)) where[Op.or].push({ storDocuments: { [Op.contains]: [q] } });

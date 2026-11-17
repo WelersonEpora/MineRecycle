@@ -14,7 +14,7 @@ export function useFormat() {
     dateTime: (v) => formatDate(v, intl.value, { withTime: true }),
     bytes: (v) => formatBytes(v, intl.value),
     errorMessage: (err) => apiErrorMessage(err, t, te),
-    // Número com até `max` casas decimais (ex.: peso em toneladas no cartão da vitrine).
+    // Número com até `max` casas decimais (ex.: peso em toneladas no cartão do catálogo).
     num: (v, max = 0) => new Intl.NumberFormat(intl.value, { maximumFractionDigits: max }).format(v),
     typeLabel: (v) => t(`enums.type.${v}`),
     categoryLabel: (v) => t(`enums.category.${v || 'other'}`),

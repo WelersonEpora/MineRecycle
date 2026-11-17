@@ -94,7 +94,7 @@ import { api } from '../../services/api.js'
 import ModalDialog from '../../components/ModalDialog.vue'
 
 // Configuração: contato comercial (e-mail e WhatsApp da equipe) e cadastro de origens dos pacotes (de onde vieram os ativos). Todos veem; só admin inclui e edita.
-// A vitrine não tem mais configuração: regra fixa (ativos; em negociação com a caixa marcada; vendidos nunca).
+// O catálogo não tem mais configuração: regra fixa (ativos; em negociação com a caixa marcada; vendidos nunca).
 const f = useFormat()
 const t = f.t
 const session = useSession()

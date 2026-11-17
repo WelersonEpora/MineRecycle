@@ -2,7 +2,7 @@
 
 const { PACKAGE_TYPES, LOCATIONS } = require("./constants");
 
-// Filtros da vitrine e do link do comprador (decisão de 2026-11-17). Regra pura: recebe os pacotes já limitados pelo
+// Filtros do catálogo e do link do comprador (decisão de 2026-11-17). Regra pura: recebe os pacotes já limitados pelo
 // que o visitante pode ver e pela busca, e aplica Tipo, Origem e Local, com a contagem de cada opção.
 // A contagem de um grupo considera os outros filtros, mas não o próprio grupo. "A confirmar" nunca vira opção de
 // Local (o pacote só "a confirmar" aparece em "Todos").
@@ -27,7 +27,7 @@ const matches = (p, f, skip) =>
   (skip === "origin" || !f.origin || p.originCode === f.origin) &&
   (skip === "location" || !f.location || (p.locations || []).includes(f.location));
 
-// options.negotiationToggle: na vitrine, "em negociação" só entra com a caixa marcada (f.negotiation).
+// options.negotiationToggle: no catálogo, "em negociação" só entra com a caixa marcada (f.negotiation).
 function filterCatalog(packages, f, { negotiationToggle = false } = {}) {
   const base = negotiationToggle && !f.negotiation ? packages.filter((p) => p.status !== "under_negotiation") : packages;
   const count = (skip, key) => {

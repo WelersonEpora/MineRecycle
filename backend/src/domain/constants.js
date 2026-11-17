@@ -1,12 +1,12 @@
 "use strict";
 
 const PACKAGE_TYPES = ["bulk", "equipment"];
-// Categoria do pacote: cor e ícone do cartão da vitrine quando não há foto (decisão de 2026-11-17).
+// Categoria do pacote: cor e ícone do cartão do catálogo quando não há foto (decisão de 2026-11-17).
 const PACKAGE_CATEGORIES = ["refractories", "electrical", "piping", "process_equipment", "office", "other"];
 // Um pacote pode estar em vários locais. "at_supplier": ainda no fornecedor; "to_be_confirmed": local não informado.
 const LOCATIONS = ["conceicao_do_araguaia", "uberaba", "niquelandia", "belo_horizonte", "at_supplier", "to_be_confirmed"];
 const PACKAGE_STATUSES = ["draft", "active", "under_negotiation", "sold", "inactive"];
-// Vitrine pública (regra fixa, decisão de 2026-11-17): ativos e em negociação. A lista só mostra os em negociação
+// Catálogo público (regra fixa, decisão de 2026-11-17): ativos e em negociação. A lista só mostra os em negociação
 // quando o visitante marca a caixa; vendidos, rascunhos e inativos nunca aparecem para o público.
 const PUBLIC_STATUSES = ["active", "under_negotiation"];
 // O comprador vê, pelo link, os pacotes do escopo, menos rascunho e inativo.

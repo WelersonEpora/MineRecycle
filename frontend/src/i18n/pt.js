@@ -157,7 +157,7 @@ export default {
       number: 'Nº do catálogo',
       numberHint: 'Usado no endereço da página pública. Preenchido sozinho; o comprador não o vê.',
       name: 'Nome público (inglês)',
-      nameHint: 'Aparece na vitrine e no link do comprador.',
+      nameHint: 'Aparece no catálogo e no link do comprador.',
       storFolder: 'Pasta no STOR',
       storFolderHint: 'Nome da pasta do pacote no STOR, escrito exatamente igual. Só vendedores veem.',
       storNumbers: 'Números do pacote',
@@ -170,7 +170,7 @@ export default {
       origin: 'Origem',
       originChoose: 'Escolha a origem',
       originHint: 'De onde vieram os ativos. É diferente de Local, que diz onde estão hoje.',
-      categoryHint: 'Define a cor e o ícone do cartão na vitrine quando o pacote não tem foto.',
+      categoryHint: 'Define a cor e o ícone do cartão no catálogo quando o pacote não tem foto.',
       location: 'Locais',
       locationsHint: 'Marque todos os locais onde há itens do pacote. Use "A confirmar" enquanto não souber.',
       storDocuments: 'Documentos STOR',
@@ -424,15 +424,15 @@ export default {
         items: {
           a: 'Fotos, ficha técnica, desenho, lista e proposta, no pacote ou num item.',
           b: 'Cada arquivo tem uma visibilidade: Público (todos), Restrito (comprador com link) ou Interno (só vendedores).',
-          c: 'Proposta nunca é pública. A primeira foto pública vira a capa na vitrine.'
+          c: 'Proposta nunca é pública. A primeira foto pública vira a capa no catálogo.'
         },
         where: 'Pacotes → aba Fotos e arquivos'
       },
       activate: {
         title: 'Publicar: situação Ativo',
         items: {
-          a: 'Ao mudar para Ativo, o pacote entra na vitrine pública: qualquer pessoa vê, sem login.',
-          b: 'A vitrine mostra nome, descrição, itens, fotos e arquivos públicos. Nunca preço.'
+          a: 'Ao mudar para Ativo, o pacote entra no catálogo público: qualquer pessoa vê, sem login.',
+          b: 'O catálogo mostra nome, descrição, itens, fotos e arquivos públicos. Nunca preço.'
         },
         where: 'Pacotes → Mudar situação'
       },
@@ -442,7 +442,7 @@ export default {
           a: 'Busca por nome, descrição ou item; filtra por tipo, origem e local.',
           b: 'Vê que há documentos restritos (sem ver quais) e pode pedir acesso.'
         },
-        where: 'Vitrine (página inicial)'
+        where: 'Catálogo (página inicial)'
       },
       link: {
         title: 'Link do comprador',
@@ -482,7 +482,7 @@ export default {
         title: 'Pacote em negociação',
         items: {
           a: 'Quando a conversa avança, mude a situação do pacote para Em negociação.',
-          b: 'Na vitrine, ele só aparece com a caixa "Mostrar pacotes em negociação". Outros compradores ainda podem pedir informações.'
+          b: 'No catálogo, ele só aparece com a caixa "Mostrar pacotes em negociação". Outros compradores ainda podem pedir informações.'
         },
         where: 'Pacotes → Mudar situação'
       },
@@ -497,8 +497,8 @@ export default {
       package: {
         title: 'Atualizar o pacote',
         items: {
-          a: 'Vendido: sai da vitrine e deixa de receber pedidos. O comprador com link ainda o vê.',
-          b: 'Ativo: a negociação não avançou e o pacote volta à vitrine.',
+          a: 'Vendido: sai do catálogo e deixa de receber pedidos. O comprador com link ainda o vê.',
+          b: 'Ativo: a negociação não avançou e o pacote volta ao catálogo.',
           c: 'Inativo: retirado por outro motivo. Ninguém fora da equipe vê.'
         },
         where: 'Pacotes → Mudar situação'
@@ -514,9 +514,9 @@ export default {
     },
     states: {
       title: 'Situação do pacote: quem vê o quê',
-      intro: 'A situação decide se o pacote aparece na vitrine, para o comprador com link e se recebe pedidos.',
+      intro: 'A situação decide se o pacote aparece no catálogo, para o comprador com link e se recebe pedidos.',
       status: 'Situação',
-      catalog: 'Vitrine',
+      catalog: 'Catálogo',
       link: 'Link do comprador',
       requests: 'Pedidos',
       withToggle: 'Com a caixa marcada',
@@ -584,7 +584,7 @@ export default {
       overview: {
         title: 'O que é o MineRecycle',
         intro:
-          'Plataforma temporária que conecta vendedores e compradores dos ativos de um projeto de mineração paralisado. O comprador conhece os pacotes pela vitrine ou por um link de acesso e negocia direto com a equipe de vendas.',
+          'Plataforma temporária que conecta vendedores e compradores dos ativos de um projeto de mineração paralisado. O comprador conhece os pacotes pelo catálogo ou por um link de acesso e negocia direto com a equipe de vendas.',
         items: {
           a: 'Não há preço na plataforma: nem campo, nem tela, nem arquivo público com valor.',
           b: 'O site é em inglês, com português como opção. Nomes, descrições e itens cadastrados não são traduzidos.',
@@ -655,16 +655,16 @@ export default {
         title: 'Pacotes',
         intro: 'O cabeçalho de cada pacote reúne o que o comprador vê e a identificação no STOR, que só os vendedores veem.',
         rows: {
-          name: { term: 'Nome público', text: 'Nome em inglês mostrado na vitrine e no link do comprador.' },
+          name: { term: 'Nome público', text: 'Nome em inglês mostrado no catálogo e no link do comprador.' },
           folder: { term: 'Pasta no STOR', text: 'Nome da pasta, com a grafia original. Identifica o pacote e não se repete. Só vendedores.' },
           numbers: { term: 'Nº STOR', text: 'IDs do ativo na planilha de estratégia de vendas. Usados para ordenar a lista. Só vendedores.' },
           origin: {
             term: 'Origem',
-            text: 'De onde vieram os ativos (Araguaia Nickel Project, Niquelândia...). É diferente de Locais, que dizem onde estão hoje: os refratários do Porto Seco de Uberaba têm origem Araguaia e local Uberaba. Escolhida numa lista cadastrada em Configuração; aparece como filtro na vitrine quando há pacotes de mais de uma origem.'
+            text: 'De onde vieram os ativos (Araguaia Nickel Project, Niquelândia...). É diferente de Locais, que dizem onde estão hoje: os refratários do Porto Seco de Uberaba têm origem Araguaia e local Uberaba. Escolhida numa lista cadastrada em Configuração; aparece como filtro no catálogo quando há pacotes de mais de uma origem.'
           },
           category: {
             term: 'Categoria',
-            text: 'Refratários, elétrica, tubulação, equipamentos de processo, escritório ou outros. Na vitrine, o pacote sem foto aparece como uma etiqueta na cor e com o ícone da categoria e um número em destaque: unidades (equipamento), peso total (a granel, com itens em kg ou t) ou número de itens.'
+            text: 'Refratários, elétrica, tubulação, equipamentos de processo, escritório ou outros. No catálogo, o pacote sem foto aparece como uma etiqueta na cor e com o ícone da categoria e um número em destaque: unidades (equipamento), peso total (a granel, com itens em kg ou t) ou número de itens.'
           },
           type: {
             term: 'Tipo',
@@ -724,14 +724,14 @@ export default {
       files: {
         title: 'Fotos e arquivos',
         rows: {
-          public: { term: 'Público', text: 'Qualquer visitante vê, quando o pacote está na vitrine.' },
+          public: { term: 'Público', text: 'Qualquer visitante vê, quando o pacote está no catálogo.' },
           restricted: { term: 'Restrito', text: 'Só quem tem link de acesso ao pacote, além dos vendedores.' },
           internal: { term: 'Interno', text: 'Só vendedores logados. É o caso da planilha original da importação, que pode ter valores.' }
         },
         items: {
           a: 'Fotos ganham uma versão para a web e uma miniatura, sem metadados. O público nunca recebe o arquivo original de uma foto, que pode ter localização GPS.',
           b: 'Proposta nunca é pública: fica restrita ou interna.',
-          c: 'Um arquivo pode ser do pacote inteiro (galeria e capa da vitrine) ou de um item (aparece só na linha do item). Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
+          c: 'Um arquivo pode ser do pacote inteiro (galeria e capa do catálogo) ou de um item (aparece só na linha do item). Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
           d: 'Antes de enviar um PDF, confira se ele tem preço, valor ou nome de comprador. Se tiver, use Interno.',
           e: 'Para enviar: clique em Escolher arquivos, arraste os arquivos para a área tracejada ou cole uma imagem com Ctrl+V (um print, por exemplo). Confira a lista e clique em Enviar.'
         }
@@ -741,11 +741,11 @@ export default {
         rows: {
           visitor: {
             term: 'Visitante',
-            text: 'A vitrine: pacotes ativos e, com a caixa "Mostrar pacotes em negociação" marcada, os em negociação, com os arquivos públicos. Vendidos e rascunhos nunca aparecem.'
+            text: 'O catálogo: pacotes ativos e, com a caixa "Mostrar pacotes em negociação" marcada, os em negociação, com os arquivos públicos. Vendidos e rascunhos nunca aparecem.'
           },
           buyer: {
             term: 'Comprador com link',
-            text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos e os mesmos filtros da vitrine. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
+            text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos e os mesmos filtros do catálogo. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
           },
           seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos.' },
           admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários, o cadastro de origens e o contato comercial (Configuração).' }
@@ -762,7 +762,7 @@ export default {
           },
           where: {
             term: 'Quem pode pedir',
-            text: 'Visitantes (vitrine) e compradores com link. Pacote vendido não recebe pedido. Pedido enviado por um link mostra o nome do link.'
+            text: 'Visitantes (catálogo) e compradores com link. Pacote vendido não recebe pedido. Pedido enviado por um link mostra o nome do link.'
           },
           panel: {
             term: 'Aba Pedidos',

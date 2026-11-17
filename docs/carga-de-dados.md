@@ -42,14 +42,14 @@ em `_sample-data`.
 
 | Campo | O que é | Quem vê |
 |---|---|---|
-| Nome público (`name`) | Nome em inglês, editável pelo vendedor | Todos (vitrine, link do comprador) |
+| Nome público (`name`) | Nome em inglês, editável pelo vendedor | Todos (catálogo, link do comprador) |
 | Pasta no STOR (`stor_folder`) | Nome da pasta, grafia original (inclusive "28-Pipping"). **Chave estável** dos scripts de dados; única | Só vendedores |
 | Números do pacote (`stor_numbers`) | IDs dos ativos na planilha de estratégia | Só vendedores (coluna "Nº STOR") |
 | Documentos STOR (`stor_documents`) | Códigos das planilhas do pacote | Só vendedores |
 | Pendentes de validação (`stor_documents_pending`) | Códigos que ainda não devem ser importados | Só vendedores |
 | Nº do catálogo (`number`) | Sequência própria, gerada sozinha; só aparece no endereço da página pública | Ninguém na tela pública |
 | Origem (`origin_id`) | De onde vieram os ativos, escolhida na tabela de origens (nome, sigla, ativa); obrigatória | Todos |
-| Categoria (`category`) | Cor e ícone do cartão da vitrine sem foto | Todos |
+| Categoria (`category`) | Cor e ícone do cartão do catálogo sem foto | Todos |
 
 **Regra dos números.** A fonte é a planilha de estratégia (aba "Cash Flow_Lenders Presentation"), não o nome da pasta.
 O hífen no nome da pasta quer dizer **"e"**: "1-6 Refractories" são os IDs 1 e 6 (os IDs 2 a 5 são o forno elétrico).
@@ -57,7 +57,7 @@ Um número só entra no pacote quando o nome do ativo na planilha corresponde cl
 a lista fica vazia (ver "Números a confirmar"). Os números não são chave: o mesmo ID aparece em mais de um pacote (10
 e 12 em Dryer e Kiln; 20 nos dois de Construction Materials).
 
-**Ordenação** (vitrine, lista do vendedor e link do comprador): menor número do pacote, depois o nome público;
+**Ordenação** (catálogo, lista do vendedor e link do comprador): menor número do pacote, depois o nome público;
 pacotes sem número vão para o fim. O comprador não vê os números.
 
 **Origem ≠ Local** (decisão de 2026-11-17). Origem é de onde vieram os ativos; Local é onde estão hoje. Exemplo:
@@ -66,11 +66,11 @@ ativa) mantida pelo admin em Configuração; não há texto livre. Valores inici
 `20261117110100-data-origins`): **Araguaia Nickel Project (ANM)** para todos os pacotes, menos a pasta
 "30-Niquelândia", que é **Niquelândia (VTM)**. Origem inativa deixa de ser oferecida, mas fica nos pacotes que já a usam.
 
-**Filtros da vitrine e do link do comprador** (decisão de 2026-11-17):
+**Filtros do catálogo e do link do comprador** (decisão de 2026-11-17):
 
-- **Quem aparece.** Vitrine: pacotes ativos; os em negociação só com a caixa "Mostrar pacotes em negociação" marcada
+- **Quem aparece.** Catálogo: pacotes ativos; os em negociação só com a caixa "Mostrar pacotes em negociação" marcada
   (desligada por padrão); vendidos, rascunhos e inativos nunca. Regra fixa no código (`PUBLIC_STATUSES`); a antiga
-  configuração "Vitrine pública" da tela Configuração saiu. Link do comprador: todos os pacotes do link, menos rascunho
+  configuração "Catálogo público" da tela Configuração saiu. Link do comprador: todos os pacotes do link, menos rascunho
   e inativo; vendidos aparecem (podem ser do próprio comprador) e não há caixa de negociação.
 - **Busca:** nome do pacote, descrição e descrição dos itens.
 - **Tipo:** Todos, A granel, Equipamentos.
@@ -388,7 +388,7 @@ Mas o **arquivo inteiro** pode continuar guardado como anexo (pergunta 5), com t
    `canReadAttachment` (`domain/access-policy.js`):
    - **vendedores e admin logados**: veem e baixam;
    - **comprador com link**: não vê na lista e recebe 404 em `GET /api/v1/files/:id/original`;
-   - **público anônimo**: idem, e o anexo não entra na contagem de "documentos restritos" da vitrine.
+   - **público anônimo**: idem, e o anexo não entra na contagem de "documentos restritos" do catálogo.
 
    Na tela de arquivos, o selo de um anexo interno não alterna para público ou restrito (o botão fica desabilitado);
    para mudar, apague e envie de novo. Pela API, um vendedor ainda pode mudar a visibilidade.
@@ -509,7 +509,7 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
      mapeamento, avisar "Esta aba tem N linhas ocultas ou filtradas (linhas X a Y)" com a escolha **importar** ou
      **não importar** (padrão a decidir). A conferência mostra quantas entraram ou ficaram de fora. Com a numeração
      pela ordem das linhas, as ocultas puladas não consomem número. Mudança em importação pede teste de integração.
-   - **Unidades:** as 84 linhas visíveis estão em KG; as 65 ocultas estão em PC, M2 e BD. Por isso o cartão da vitrine
+   - **Unidades:** as 84 linhas visíveis estão em KG; as 65 ocultas estão em PC, M2 e BD. Por isso o cartão do catálogo
      desse pacote mostra "149 itens" e não o peso total (o peso só aparece quando todos os itens estão em kg ou t).
    - **Decisão pendente com o cliente:** na 1809438, as 65 linhas ocultas são para vender ou não? Se não forem, basta
      reimportar sem elas (a reimportação substitui todos os itens do pacote).
@@ -563,9 +563,9 @@ publicado sem confirmação do usuário.**
 
 **Situação atual: nada pendente.** Último commit publicado: `9553b81` (2026-11-17): ajuda "?" por campo na
 importação e envio de arquivos por arrastar e colar (só frontend, sem migration). Antes: `40c1d21` (2026-11-17): migrations 8 a 12 (categoria
-e origem do pacote, com os dados), cartão "etiqueta de inventário", filtros novos da vitrine e do link do comprador,
-regra fixa da vitrine e cadastro de origens. A configuração antiga da vitrine (`setting.showcase_statuses`) ficou no
-banco, sem uso. Antes: `2d840bd` (configuração da vitrine para vendedores, já substituída), `042f84e` (migration 7,
+e origem do pacote, com os dados), cartão "etiqueta de inventário", filtros novos do catálogo e do link do comprador,
+regra fixa do catálogo e cadastro de origens. A configuração antiga do catálogo (`setting.showcase_statuses`) ficou no
+banco, sem uso. Antes: `2d840bd` (configuração do catálogo para vendedores, já substituída), `042f84e` (migration 7,
 exclusão lógica de usuário, e senha a partir de 9 caracteres), `9c63857` (migration 6, 1809537 no Steel Structure),
 `b8cd8f6` (seção "Por que não são 60 mil itens"), `033a74f` (Ajuda com Guia e Carga de planilhas) e `14847c9`
 (migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
@@ -595,13 +595,13 @@ Todas rodam pelo `npm run db:migrate` do `scripts/deploy.sh`, depois do pull das
 
 Testado em banco vazio, rodando duas vezes, no estado do banco local antes desta mudança e com pacote editado pelo
 vendedor (`backend/test/integration/data-package-catalog.test.js`). Consulta ao servidor em 2026-11-16 (só a API
-pública): nenhum pacote ativo na vitrine; rascunhos não são visíveis por ela.
+pública): nenhum pacote ativo no catálogo; rascunhos não são visíveis por ele.
 
 ### Código (vai junto, na mesma publicação)
 
 - Anexo interno: a planilha guardada na importação só é vista por vendedores.
 - Vários locais por pacote; locais novos (Belo Horizonte, No fornecedor, A confirmar).
-- Nome público separado da pasta do STOR; números do pacote; ordenação nova na vitrine, na lista do vendedor e no link
+- Nome público separado da pasta do STOR; números do pacote; ordenação nova no catálogo, na lista do vendedor e no link
   do comprador; o comprador não vê número nenhum.
 - Documentos STOR no pacote; conferência do código do arquivo na importação; documento pendente pede confirmação.
 - Menu Ajuda na área do vendedor.

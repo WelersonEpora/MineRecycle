@@ -130,7 +130,7 @@ test("package number and locations", { skip }, async (t) => {
     // Só PC, SET e KIT contam como unidades (o item em metros fica de fora).
     assert.deepEqual(pubEquip.highlight, { kind: "units", value: 3 });
 
-    // A busca do vendedor também olha a descrição dos itens, como a vitrine.
+    // A busca do vendedor também olha a descrição dos itens, como o catálogo.
     assert.deepEqual((await seller.get("/api/v1/seller/packages?q=drive set")).data.map((p) => p.name), ["Fictitious Kiln"]);
   });
 });

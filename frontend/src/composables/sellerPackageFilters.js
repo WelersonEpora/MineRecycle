@@ -21,7 +21,7 @@ export function sellerFiltersToQuery(f) {
 }
 
 // Situação em chips: a API devolve os pacotes dos outros filtros e a situação é filtrada aqui, para a contagem de
-// cada situação considerar Tipo, Origem, Local e busca, mas não a própria situação (como os chips da vitrine).
+// cada situação considerar Tipo, Origem, Local e busca, mas não a própria situação (como os chips do catálogo).
 export function applyStatus(packages, status, statuses) {
   const counts = new Map(statuses.map((s) => [s, 0]))
   for (const p of packages) counts.set(p.status, (counts.get(p.status) || 0) + 1)

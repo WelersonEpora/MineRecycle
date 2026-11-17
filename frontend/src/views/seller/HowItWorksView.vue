@@ -98,7 +98,7 @@ const LANES = [
 let n = 0
 for (const lane of LANES) for (const step of lane.steps) step.n = ++n
 
-// Vitrine, link do comprador e pedidos para cada situação (PUBLIC_STATUSES, BUYER_HIDDEN_STATUSES e canSendInquiry).
+// Catálogo, link do comprador e pedidos para cada situação (PUBLIC_STATUSES, BUYER_HIDDEN_STATUSES e canSendInquiry).
 const STATES = [
   { status: 'draft', catalog: false, link: false, requests: false },
   { status: 'active', catalog: true, link: true, requests: true },

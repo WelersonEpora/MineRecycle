@@ -1,6 +1,7 @@
 "use strict";
 
-// Configuração padrão da vitrine: só pacotes ativos. O admin muda na tela Settings.
+// Configuração antiga do catálogo (situações visíveis). Sem uso desde 2026-11-17: a regra agora é fixa
+// (PUBLIC_STATUSES em domain/constants.js). O registro continua no banco, sem efeito.
 module.exports = {
   async up(queryInterface) {
     await queryInterface.sequelize.query(

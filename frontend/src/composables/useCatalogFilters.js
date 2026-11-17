@@ -1,7 +1,7 @@
 import { reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-// Estado dos filtros da vitrine e do link do comprador, refletido na URL (?q=&type=&origin=&location=&negotiation=1)
+// Estado dos filtros do catálogo e do link do comprador, refletido na URL (?q=&type=&origin=&location=&negotiation=1)
 // para o link filtrado poder ser compartilhado. `load(params)` busca na API; a busca por texto espera o usuário parar
 // de digitar.
 export const EMPTY_FILTERS = { q: '', type: '', origin: '', location: '', negotiation: false }

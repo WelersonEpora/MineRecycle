@@ -342,7 +342,7 @@ body {
   }
 }
 
-/* Filtros da vitrine e do link do comprador (CatalogFilters.vue, ChipGroup.vue). Mesma largura da grade e mesmo
+/* Filtros do catálogo e do link do comprador (CatalogFilters.vue, ChipGroup.vue). Mesma largura da grade e mesmo
    cartão branco com borda e canto dos cartões de pacote. */
 .mr-filters {
   background: var(--mr-card);

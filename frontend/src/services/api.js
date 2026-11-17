@@ -11,7 +11,7 @@ export const api = {
   login: (email, password) => data(http.post('/auth/login', { email, password })),
   logout: () => http.post('/auth/logout'),
 
-  // Vitrine e comprador
+  // Catálogo e comprador
   catalog: (params) => data(http.get('/catalog/packages', { params })),
   packageDetail: (number) => data(http.get(`/catalog/packages/${number}`)),
   packageLines: (number, params) => data(http.get(`/catalog/packages/${number}/lines`, { params })),

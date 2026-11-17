@@ -11,7 +11,7 @@
 <script setup>
 defineProps({ category: { type: String, default: 'other' } })
 
-// Ícone por categoria do pacote (cartão da vitrine sem foto).
+// Ícone por categoria do pacote (cartão do catálogo sem foto).
 const ICONS = {
   refractories: 'bi-bricks',
   electrical: 'bi-lightning-charge',
