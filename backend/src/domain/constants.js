@@ -24,6 +24,10 @@ const ACCESS_ACTIONS = ["open", "view_package", "download"];
 // Pedido de informação do comprador (decisão de 2026-11-17): novo → em atendimento → concluído; descartado = spam ou
 // pedido sem sentido.
 const INQUIRY_STATUSES = ["new", "in_progress", "done", "discarded"];
+// Por onde o pedido chegou: o formulário do site ou um contato direto que o vendedor registra à mão.
+const INQUIRY_CHANNELS = ["form", "email", "whatsapp", "phone", "other"];
+// Desfecho do pedido concluído. Sem valor nem preço.
+const INQUIRY_OUTCOMES = ["sold", "not_pursued", "no_reply"];
 
 module.exports = {
   PACKAGE_TYPES,
@@ -37,5 +41,7 @@ module.exports = {
   ALWAYS_RESTRICTED_KINDS,
   USER_ROLES,
   ACCESS_ACTIONS,
-  INQUIRY_STATUSES
+  INQUIRY_STATUSES,
+  INQUIRY_CHANNELS,
+  INQUIRY_OUTCOMES
 };

@@ -24,7 +24,8 @@ export const api = {
 
   // Vendedor: pedidos de informação
   inquiries: (params) => data(http.get('/seller/inquiries', { params })),
-  inquiryCounts: () => data(http.get('/seller/inquiries/counts')),
+  createInquiry: (body) => data(http.post('/seller/inquiries', body)),
+  inquiryCounts:() => data(http.get('/seller/inquiries/counts')),
   updateInquiry: (id, body) => data(http.patch(`/seller/inquiries/${id}`, body)),
   deleteInquiry: (id) => http.delete(`/seller/inquiries/${id}`),
   setContact: (body) => data(http.put('/seller/contact', body)),

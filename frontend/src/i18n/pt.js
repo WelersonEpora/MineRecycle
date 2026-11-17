@@ -360,6 +360,20 @@ export default {
     replySubject: 'Re: pedido de informações – {name}',
     deleteTitle: 'Excluir pedido',
     deleteConfirm: 'Excluir o pedido de “{name}”? Use para spam ou dado que não deve ficar guardado.',
+    new: 'Novo pedido',
+    newHelp: 'Registre um contato que chegou por e-mail, WhatsApp ou telefone, para todo pedido ficar no mesmo lugar.',
+    package: 'Pacote',
+    choosePackage: 'Escolha o pacote.',
+    channel: 'Canal',
+    channels: { form: 'Formulário do site', email: 'E-mail', whatsapp: 'WhatsApp', phone: 'Telefone', other: 'Outro' },
+    contactHint: 'Deixe um e-mail ou um telefone para a equipe poder responder.',
+    replyLanguage: 'Idioma da resposta',
+    buyerMessage: 'O que o comprador perguntou',
+    registeredBy: 'registrado por {name}',
+    created: 'Pedido registrado.',
+    outcome: 'Desfecho',
+    noOutcome: '—',
+    outcomes: { sold: 'Vendido para este comprador', not_pursued: 'Não avançou', no_reply: 'Sem resposta do comprador' },
     deleted: 'Pedido excluído.'
   },
   contact: {
@@ -370,6 +384,144 @@ export default {
     whatsappHint: 'Número completo, com o código do país.',
     adminOnly: 'Só administradores alteram o contato.',
     saved: 'Contato salvo.'
+  },
+  how: {
+    tab: 'Como funciona',
+    title: 'Como o MineRecycle funciona',
+    intro: 'Do pacote no STOR até a venda: quem faz cada passo, onde no sistema e o que o comprador vê.',
+    expandAll: 'Abrir todos',
+    collapseAll: 'Fechar todos',
+    where: 'Onde:',
+    who: { outside: 'Fora do sistema', seller: 'Vendedor', buyer: 'Comprador' },
+    lanes: { prepare: 'Preparação', publish: 'Publicação', serve: 'Atendimento', close: 'Desfecho' },
+    steps: {
+      stor: {
+        title: 'Pacote no STOR',
+        items: {
+          a: 'Cada pacote tem uma pasta no STOR, com a planilha de itens e as fotos.',
+          b: 'O código de 7 dígitos no início do nome da planilha identifica o documento.',
+          c: 'Planilhas com preço ou valor ficam só no computador: nunca entram no sistema.'
+        }
+      },
+      register: {
+        title: 'Cadastro do pacote',
+        intro: 'Os 22 pacotes já chegam cadastrados como Rascunho, com nome público, pasta no STOR, números, tipo, categoria, origem, locais e códigos STOR.',
+        items: { a: 'O vendedor confere os dados e escreve a descrição.', b: 'Pacote fora da lista: botão "Novo pacote".' },
+        where: 'Pacotes → aba Detalhes'
+      },
+      import: {
+        title: 'Importar os itens',
+        items: {
+          a: 'Baixe a planilha do STOR e importe no pacote. O sistema lê o código no nome do arquivo e confere se a planilha é deste pacote.',
+          b: 'Confira o cabeçalho, as colunas e o relatório antes de gravar.',
+          c: 'Uma planilha por pacote. Importar de novo substitui os itens.',
+          d: 'Planilha pendente de validação pede confirmação. Pacote sem planilha (Steel Structure): itens à mão.'
+        },
+        where: 'Pacotes → aba Itens → Importar planilha'
+      },
+      files: {
+        title: 'Fotos e arquivos',
+        items: {
+          a: 'Fotos, ficha técnica, desenho, lista e proposta, no pacote ou num item.',
+          b: 'Cada arquivo tem uma visibilidade: Público (todos), Restrito (comprador com link) ou Interno (só vendedores).',
+          c: 'Proposta nunca é pública. A primeira foto pública vira a capa na vitrine.'
+        },
+        where: 'Pacotes → aba Fotos e arquivos'
+      },
+      activate: {
+        title: 'Publicar: situação Ativo',
+        items: {
+          a: 'Ao mudar para Ativo, o pacote entra na vitrine pública: qualquer pessoa vê, sem login.',
+          b: 'A vitrine mostra nome, descrição, itens, fotos e arquivos públicos. Nunca preço.'
+        },
+        where: 'Pacotes → Mudar situação'
+      },
+      browse: {
+        title: 'Visitante encontra o pacote',
+        items: {
+          a: 'Busca por nome, descrição ou item; filtra por tipo, origem e local.',
+          b: 'Vê que há documentos restritos (sem ver quais) e pode pedir acesso.'
+        },
+        where: 'Vitrine (página inicial)'
+      },
+      link: {
+        title: 'Link do comprador',
+        intro: 'Opcional, para comprador qualificado. Pode vir antes ou durante o atendimento.',
+        items: {
+          a: 'Escolha os pacotes e a validade (até um ano). O comprador vê os arquivos restritos e a proposta.',
+          b: 'Cada acesso fica registrado. O link pode ser revogado na hora.'
+        },
+        where: 'Links de acesso'
+      },
+      ask: {
+        title: 'Comprador pede informações',
+        items: {
+          a: 'Formulário na página do pacote: vira um pedido Novo na aba Pedidos.',
+          b: 'E-mail ou WhatsApp da equipe, com o pacote já no texto: a conversa acontece fora do sistema.',
+          c: 'Pacote vendido não recebe pedido.'
+        },
+        where: 'Página do pacote → "Interessado neste pacote?"'
+      },
+      direct: {
+        title: 'Registrar contato direto',
+        items: {
+          a: 'Contato por e-mail, WhatsApp ou telefone: o vendedor registra em "Novo pedido", escolhendo o pacote e o canal.',
+          b: 'Assim todo atendimento fica no mesmo lugar.'
+        },
+        where: 'Pedidos → Novo pedido'
+      },
+      take: {
+        title: 'Assumir o pedido',
+        items: {
+          a: '"Assumir" torna você o responsável e passa o pedido para Em atendimento.',
+          b: 'O responsável é um usuário do sistema e pode ser trocado. A nota interna registra o que foi feito.'
+        },
+        where: 'Pedidos'
+      },
+      negotiate: {
+        title: 'Pacote em negociação',
+        items: {
+          a: 'Quando a conversa avança, mude a situação do pacote para Em negociação.',
+          b: 'Na vitrine, ele só aparece com a caixa "Mostrar pacotes em negociação". Outros compradores ainda podem pedir informações.'
+        },
+        where: 'Pacotes → Mudar situação'
+      },
+      outcome: {
+        title: 'Registrar o desfecho',
+        items: {
+          a: 'Escolha o desfecho: vendido para este comprador, não avançou ou sem resposta. O pedido fica Concluído.',
+          b: 'Sem valor nem preço: só o desfecho e a nota.'
+        },
+        where: 'Pedidos → Desfecho'
+      },
+      package: {
+        title: 'Atualizar o pacote',
+        items: {
+          a: 'Vendido: sai da vitrine e deixa de receber pedidos. O comprador com link ainda o vê.',
+          b: 'Ativo: a negociação não avançou e o pacote volta à vitrine.',
+          c: 'Inativo: retirado por outro motivo. Ninguém fora da equipe vê.'
+        },
+        where: 'Pacotes → Mudar situação'
+      },
+      others: {
+        title: 'Fechar os outros pedidos',
+        items: {
+          a: 'Pacote vendido: responda e conclua os outros pedidos em aberto sobre ele.',
+          b: 'Revogue os links de comprador que não fazem mais sentido.'
+        },
+        where: 'Pedidos (busca pelo pacote) e Links de acesso'
+      }
+    },
+    states: {
+      title: 'Situação do pacote: quem vê o quê',
+      intro: 'A situação decide se o pacote aparece na vitrine, para o comprador com link e se recebe pedidos.',
+      status: 'Situação',
+      catalog: 'Vitrine',
+      link: 'Link do comprador',
+      requests: 'Pedidos',
+      withToggle: 'Com a caixa marcada',
+      path: 'Caminho comum: Rascunho → Ativo → Em negociação → Vendido. Se a negociação não avança, volta para Ativo.'
+    }
   },
   origins: {
     title: 'Origens',
@@ -620,6 +772,14 @@ export default {
             term: 'Assumir',
             text: 'Torna você o responsável e passa o pedido novo para Em atendimento. O responsável pode ser trocado para qualquer pessoa da equipe.'
           },
+          direct: {
+            term: 'Contato direto',
+            text: 'Pedido que chegou por e-mail, WhatsApp ou telefone é registrado à mão em "Novo pedido", com o canal. Ele começa Em atendimento, com você como responsável.'
+          },
+          outcome: {
+            term: 'Desfecho',
+            text: 'Com o pedido Concluído, escolha o desfecho: vendido para este comprador, não avançou ou sem resposta. Escolher o desfecho conclui o pedido. Sem valor nem preço.'
+          },
           status: {
             term: 'Situação',
             text: 'Novo (ninguém assumiu), Em atendimento, Concluído (respondido) ou Descartado (spam ou sem sentido). A nota interna registra o que foi feito; a última alteração mostra quem e quando.'
@@ -628,7 +788,7 @@ export default {
         items: {
           a: 'Responda no idioma em que o comprador usava o site (aparece no pedido).',
           b: 'Pedidos têm dados pessoais: use só para responder e exclua o spam.',
-          c: 'E-mails e mensagens de WhatsApp enviados direto não aparecem na aba Pedidos.'
+          c: 'E-mails e mensagens de WhatsApp enviados direto só aparecem na aba Pedidos depois que alguém os registra em Novo pedido.'
         }
       },
       rules: {

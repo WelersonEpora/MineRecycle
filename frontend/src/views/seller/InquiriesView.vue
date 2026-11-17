@@ -5,6 +5,7 @@
       <h1 class="h5 mb-1">{{ t('inquiries.title') }}</h1>
       <p class="small text-secondary mb-0">{{ t('inquiries.help') }}</p>
     </div>
+    <button class="btn btn-accent btn-sm" @click="openNew"><i class="bi bi-plus-lg"></i> {{ t('inquiries.new') }}</button>
   </div>
 
   <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
@@ -37,9 +38,14 @@
             {{ f.dateTime(i.createdAt) }}
             <span v-if="i.link"> · <i class="bi bi-key"></i> {{ t('inquiries.viaLink', { label: i.link.label }) }}</span>
             <span> · {{ t('inquiries.language', { lang: i.language.toUpperCase() }) }}</span>
+            <span v-if="i.createdBy"> · {{ t('inquiries.registeredBy', { name: i.createdBy.name }) }}</span>
           </div>
         </div>
+        <span class="badge rounded-pill text-bg-light border" :title="t('inquiries.channel')">
+          <i class="bi" :class="CHANNEL_ICONS[i.channel]"></i> {{ t(`inquiries.channels.${i.channel}`) }}
+        </span>
         <span class="badge rounded-pill" :class="statusClass(i.status)">{{ t(`inquiries.statuses.${i.status}`) }}</span>
+        <span v-if="i.outcome" class="badge rounded-pill text-bg-dark">{{ t(`inquiries.outcomes.${i.outcome}`) }}</span>
       </div>
 
       <div class="row g-3">
@@ -83,6 +89,13 @@
         <select :id="`mr-inq-s-${i.id}`" class="form-select form-select-sm" style="width: auto" :value="i.status" :disabled="busyId === i.id" @change="patch(i, { status: $event.target.value })">
           <option v-for="s in STATUSES" :key="s" :value="s">{{ t(`inquiries.statuses.${s}`) }}</option>
         </select>
+        <template v-if="i.status === 'done'">
+          <label class="small text-secondary" :for="`mr-inq-o-${i.id}`">{{ t('inquiries.outcome') }}</label>
+          <select :id="`mr-inq-o-${i.id}`" class="form-select form-select-sm" style="width: auto" :value="i.outcome || ''" :disabled="busyId === i.id" @change="patch(i, { outcome: $event.target.value || null })">
+            <option value="">{{ t('inquiries.noOutcome') }}</option>
+            <option v-for="o in OUTCOMES" :key="o" :value="o">{{ t(`inquiries.outcomes.${o}`) }}</option>
+          </select>
+        </template>
         <button class="btn btn-outline-secondary btn-sm" @click="openNote(i)"><i class="bi bi-sticky"></i> {{ t('inquiries.note') }}</button>
         <span class="small text-secondary ms-auto">
           <template v-if="i.updatedBy">{{ t('inquiries.lastChange', { name: i.updatedBy.name, date: f.dateTime(i.updatedAt) }) }}</template>
@@ -95,6 +108,74 @@
   <div class="mt-3">
     <PagerNav v-model:page="page" :page-size="pageSize" :total="total" />
   </div>
+
+  <!-- Registrar contato direto (e-mail, WhatsApp, telefone): todo atendimento fica na mesma lista. -->
+  <ModalDialog v-model:show="draft.show" :title="t('inquiries.new')">
+    <p class="small text-secondary">{{ t('inquiries.newHelp') }}</p>
+    <form id="mr-inq-new" class="row g-3" novalidate @submit.prevent="createInquiry">
+      <div class="col-sm-8">
+        <label class="form-label small" for="mr-new-pkg">{{ t('inquiries.package') }}</label>
+        <select id="mr-new-pkg" v-model="draft.packageId" class="form-select" required>
+          <option value="" disabled>{{ t('inquiries.choosePackage') }}</option>
+          <option v-for="p in packages" :key="p.id" :value="p.id">{{ p.name }} ({{ f.statusLabel(p.status) }})</option>
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <label class="form-label small" for="mr-new-channel">{{ t('inquiries.channel') }}</label>
+        <select id="mr-new-channel" v-model="draft.channel" class="form-select">
+          <option v-for="c in MANUAL_CHANNELS" :key="c" :value="c">{{ t(`inquiries.channels.${c}`) }}</option>
+        </select>
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-name">{{ t('inquiry.fields.name') }}</label>
+        <input id="mr-new-name" v-model="draft.name" class="form-control" maxlength="120" />
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-company">{{ t('inquiry.fields.company') }}</label>
+        <input id="mr-new-company" v-model="draft.company" class="form-control" maxlength="160" />
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-email">{{ t('inquiry.fields.email') }}</label>
+        <input id="mr-new-email" v-model="draft.email" type="email" class="form-control" maxlength="255" />
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-phone">{{ t('inquiry.fields.phone') }}</label>
+        <input id="mr-new-phone" v-model="draft.phone" type="tel" class="form-control" maxlength="40" />
+      </div>
+      <div class="col-12 form-text mt-1">{{ t('inquiries.contactHint') }}</div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-country">{{ t('inquiry.fields.country') }}</label>
+        <input id="mr-new-country" v-model="draft.country" class="form-control" maxlength="80" />
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-lang">{{ t('inquiries.replyLanguage') }}</label>
+        <select id="mr-new-lang" v-model="draft.language" class="form-select">
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label small" for="mr-new-message">{{ t('inquiries.buyerMessage') }}</label>
+        <textarea id="mr-new-message" v-model="draft.message" class="form-control" rows="3" maxlength="4000"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label small" for="mr-new-note">{{ t('inquiries.note') }}</label>
+        <textarea id="mr-new-note" v-model="draft.note" class="form-control" rows="2" maxlength="4000"></textarea>
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-new-assignee">{{ t('inquiries.assignee') }}</label>
+        <select id="mr-new-assignee" v-model="draft.assignedTo" class="form-select">
+          <option value="">{{ t('inquiries.unassigned') }}</option>
+          <option v-for="u in team" :key="u.id" :value="u.id">{{ u.name }}</option>
+        </select>
+      </div>
+    </form>
+    <div v-if="draft.error" class="alert alert-danger py-2 small mt-3 mb-0">{{ draft.error }}</div>
+    <template #footer>
+      <button class="btn btn-outline-secondary btn-sm" @click="draft.show = false">{{ t('common.cancel') }}</button>
+      <button class="btn btn-accent btn-sm" type="submit" form="mr-inq-new" :disabled="draft.busy">{{ t('common.save') }}</button>
+    </template>
+  </ModalDialog>
 
   <ModalDialog v-model:show="note.show" size="sm" :title="t('inquiries.note')">
     <label class="form-label small" for="mr-inq-note">{{ t('inquiries.noteHint') }}</label>
@@ -118,6 +199,9 @@ import PagerNav from '../../components/PagerNav.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 
 const STATUSES = ['new', 'in_progress', 'done', 'discarded']
+const OUTCOMES = ['sold', 'not_pursued', 'no_reply']
+const MANUAL_CHANNELS = ['email', 'whatsapp', 'phone', 'other']
+const CHANNEL_ICONS = { form: 'bi-ui-checks', email: 'bi-envelope', whatsapp: 'bi-whatsapp', phone: 'bi-telephone', other: 'bi-chat-dots' }
 
 const f = useFormat()
 const t = f.t
@@ -138,6 +222,45 @@ const busyId = ref(null)
 const filters = reactive({ status: 'open', assignee: '' })
 const searchText = ref('')
 const note = reactive({ show: false, id: null, text: '', busy: false })
+const packages = ref([])
+const emptyDraft = { packageId: '', channel: 'email', name: '', company: '', email: '', phone: '', country: '', message: '', note: '', language: 'en' }
+const draft = reactive({ show: false, busy: false, error: '', assignedTo: '', ...emptyDraft })
+
+async function openNew() {
+  Object.assign(draft, { show: true, busy: false, error: '', assignedTo: myId.value || '', ...emptyDraft })
+  if (!packages.value.length) {
+    try {
+      packages.value = await api.sellerPackages()
+    } catch (err) {
+      draft.error = f.errorMessage(err)
+    }
+  }
+}
+
+async function createInquiry() {
+  draft.error = ''
+  if (!draft.packageId) {
+    draft.error = t('inquiries.choosePackage')
+    return
+  }
+  if (!draft.email.trim() && !draft.phone.trim()) {
+    draft.error = t('errors.INQUIRY_CONTACT_REQUIRED')
+    return
+  }
+  draft.busy = true
+  try {
+    const { packageId, channel, name, company, email, phone, country, message, language } = draft
+    await api.createInquiry({ packageId, channel, name, company, email, phone, country, message, language, note: draft.note, assignedTo: draft.assignedTo || null })
+    draft.show = false
+    notify(t('inquiries.created'))
+    refreshInquiryCount()
+    await load()
+  } catch (err) {
+    draft.error = f.errorMessage(err)
+  } finally {
+    draft.busy = false
+  }
+}
 
 const totalAll = computed(() => STATUSES.reduce((n, s) => n + (counts.value[s] || 0), 0))
 const statusOptions = computed(() => [

@@ -161,6 +161,9 @@ const Inquiry = sequelize.define(
     message: { type: DataTypes.TEXT },
     language: { type: DataTypes.STRING(5), allowNull: false, defaultValue: "en" },
     status: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "new" },
+    channel: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "form" },
+    outcome: { type: DataTypes.STRING(16) },
+    createdBy: { type: DataTypes.UUID },
     assignedTo: { type: DataTypes.UUID },
     note: { type: DataTypes.TEXT },
     updatedBy: { type: DataTypes.UUID }
@@ -184,5 +187,6 @@ Inquiry.belongsTo(Package, { foreignKey: "packageId", as: "package" });
 Inquiry.belongsTo(AccessLink, { foreignKey: "accessLinkId", as: "link" });
 Inquiry.belongsTo(User, { foreignKey: "assignedTo", as: "assignee" });
 Inquiry.belongsTo(User, { foreignKey: "updatedBy", as: "updater" });
+Inquiry.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
 
 module.exports = { sequelize, User, Origin, Package, PackageLine, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting, Inquiry };

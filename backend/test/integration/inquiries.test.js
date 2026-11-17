@@ -118,6 +118,36 @@ test("buyer inquiries and team contact", { skip }, async (t) => {
     assert.deepEqual((await seller.get("/api/v1/seller/inquiries/counts")).data, { new: 1, in_progress: 0, done: 1, discarded: 0 });
   });
 
+  await t.test("seller registers a direct contact; outcome closes the request", async () => {
+    const base = { packageId: sold.id, phone: "+55 11 90000-0001", name: "Walk-in Buyer" };
+    assert.equal((await anon.post("/api/v1/seller/inquiries", { json: { ...base, channel: "whatsapp" } })).status, 401);
+    // "form" é só do site; canal obrigatório.
+    assert.equal((await seller.post("/api/v1/seller/inquiries", { json: { ...base, channel: "form" } })).status, 400);
+    assert.equal((await seller.post("/api/v1/seller/inquiries", { json: base })).status, 400);
+    assert.equal((await seller.post("/api/v1/seller/inquiries", { json: { packageId: sold.id, channel: "phone", name: "No contact" } })).data.error.code, "INQUIRY_CONTACT_REQUIRED");
+
+    const created = await seller.post("/api/v1/seller/inquiries", { json: { ...base, channel: "whatsapp", note: "Asked about pick-up" } });
+    assert.equal(created.status, 201);
+    const i = created.data;
+    assert.equal(i.channel, "whatsapp");
+    assert.equal(i.status, "in_progress");
+    assert.equal(i.assignee.name, "Test Seller");
+    assert.equal(i.createdBy.name, "Test Seller");
+    assert.equal(i.package.number, 2);
+
+    const unassigned = (await seller.post("/api/v1/seller/inquiries", { json: { ...base, channel: "email", email: "x@example.test", assignedTo: null } })).data;
+    assert.equal(unassigned.status, "new");
+
+    const closed = (await seller.patch(`/api/v1/seller/inquiries/${i.id}`, { json: { outcome: "sold" } })).data;
+    assert.equal(closed.status, "done");
+    assert.equal(closed.outcome, "sold");
+    assert.equal((await seller.patch(`/api/v1/seller/inquiries/${i.id}`, { json: { outcome: "cheap" } })).status, 400);
+    const reopened = (await seller.patch(`/api/v1/seller/inquiries/${i.id}`, { json: { status: "in_progress" } })).data;
+    assert.equal(reopened.outcome, null);
+    await seller.del(`/api/v1/seller/inquiries/${i.id}`);
+    await seller.del(`/api/v1/seller/inquiries/${unassigned.id}`);
+  });
+
   await t.test("deleting the package keeps the request readable; delete removes the request", async () => {
     await admin.del(`/api/v1/seller/packages/${active.id}`);
     const items = (await seller.get("/api/v1/seller/inquiries")).data.items;

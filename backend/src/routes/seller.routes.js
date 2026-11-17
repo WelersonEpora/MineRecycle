@@ -84,6 +84,7 @@ router.get("/access-links/:linkId/logs", async (req, res) => res.json(await acce
 
 // ---------- Pedidos de informação (toda a equipe atende) ----------
 router.get("/inquiries", async (req, res) => res.json(await inquiryService.list(req.query, userId(req))));
+router.post("/inquiries", async (req, res) => res.status(201).json(await inquiryService.createBySeller(req.body || {}, userId(req))));
 router.get("/inquiries/counts", async (_req, res) => res.json(await inquiryService.counts()));
 router.patch("/inquiries/:inquiryId", async (req, res) =>
   res.json(await inquiryService.update(req.params.inquiryId, req.body || {}, userId(req)))

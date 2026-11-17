@@ -5,7 +5,8 @@ const { sequelize, Inquiry, Package, User, AccessLink } = require("../models");
 const { NotFoundError, ValidationError } = require("../shared/errors");
 const { optionalString, oneOf, uuid, isUuid, pagination } = require("../shared/validate");
 const { packageAccess, canSendInquiry } = require("../domain/access-policy");
-const { INQUIRY_STATUSES } = require("../domain/constants");
+const { INQUIRY_STATUSES, INQUIRY_CHANNELS, INQUIRY_OUTCOMES } = require("../domain/constants");
+const { nextInquiryState } = require("../domain/inquiry-state");
 const { parseEmail } = require("./contact.service");
 
 // Pedido de informação do comprador (decisão de 2026-11-17). Um pacote por pedido. Nenhum campo é obrigatório
@@ -55,8 +56,41 @@ const INCLUDE = [
   { model: Package, as: "package", attributes: ["id", "number", "name", "status"] },
   { model: AccessLink, as: "link", attributes: ["id", "label"] },
   { model: User, as: "assignee", attributes: ["id", "name"] },
-  { model: User, as: "updater", attributes: ["id", "name"] }
+  { model: User, as: "updater", attributes: ["id", "name"] },
+  { model: User, as: "creator", attributes: ["id", "name"] }
 ];
+
+// Responsável: só usuário ativo do sistema (quem atende precisa poder atualizar o pedido). "me" = quem está logado.
+async function resolveAssignee(value, userId) {
+  if (value === null || value === "") return null;
+  const uid = value === "me" ? userId : uuid(value, "assignedTo");
+  const user = await User.findOne({ where: { id: uid, active: true, deletedAt: null } });
+  if (!user) throw new ValidationError("Choose an active user.", { field: "assignedTo", code: "invalid" });
+  return uid;
+}
+
+// Contato direto (e-mail, WhatsApp, telefone ou outro) registrado à mão pelo vendedor, para todo atendimento ficar no
+// mesmo lugar. Qualquer pacote (o vendedor vê todos). Nasce em atendimento, com quem registrou como responsável, a não
+// ser que outro seja escolhido.
+async function createBySeller(body, userId) {
+  const channel = oneOf(body.channel, "channel", INQUIRY_CHANNELS.filter((c) => c !== "form"));
+  const pkg = await Package.findByPk(uuid(body.packageId, "packageId"));
+  if (!pkg) throw new ValidationError("Choose a package.", { field: "packageId", code: "invalid" });
+  const data = parseCreate(body);
+  const assignedTo = await resolveAssignee(body.assignedTo === undefined ? "me" : body.assignedTo, userId);
+  const created = await Inquiry.create({
+    ...data,
+    channel,
+    packageId: pkg.id,
+    packageName: pkg.name,
+    status: assignedTo ? "in_progress" : "new",
+    assignedTo,
+    note: optionalString(body.note, "note", { max: 4000 }),
+    createdBy: userId,
+    updatedBy: userId
+  });
+  return inquiryDto(await Inquiry.findByPk(created.id, { include: INCLUDE }));
+}
 
 function inquiryDto(i) {
   return {
@@ -72,7 +106,10 @@ function inquiryDto(i) {
     country: i.country,
     message: i.message,
     language: i.language,
+    channel: i.channel,
+    createdBy: i.creator ? { id: i.creator.id, name: i.creator.name } : null,
     status: i.status,
+    outcome: i.outcome,
     assignee: i.assignee ? { id: i.assignee.id, name: i.assignee.name } : null,
     note: i.note,
     updatedBy: i.updater ? { id: i.updater.id, name: i.updater.name } : null,
@@ -142,22 +179,17 @@ async function findOr404(id) {
   return inquiry;
 }
 
-// Situação, responsável e nota interna. "Assumir" = assignedTo "me". Pedido novo que ganha responsável passa a "em
-// atendimento", a não ser que a situação venha junto.
+// Situação, responsável, desfecho e nota interna. "Assumir" = assignedTo "me". Efeitos entre os campos (assumir
+// passa a em atendimento; desfecho conclui) em domain/inquiry-state.js.
 async function update(id, body, userId) {
   const inquiry = await findOr404(id);
-  const data = {};
-  if (body.status !== undefined) data.status = oneOf(body.status, "status", INQUIRY_STATUSES);
-  if (body.assignedTo !== undefined) {
-    if (body.assignedTo === null || body.assignedTo === "") data.assignedTo = null;
-    else {
-      const uid = body.assignedTo === "me" ? userId : uuid(body.assignedTo, "assignedTo");
-      const user = await User.findOne({ where: { id: uid, active: true, deletedAt: null } });
-      if (!user) throw new ValidationError("Choose an active user.", { field: "assignedTo", code: "invalid" });
-      data.assignedTo = uid;
-    }
-    if (data.assignedTo && data.status === undefined && inquiry.status === "new") data.status = "in_progress";
+  const change = {};
+  if (body.status !== undefined) change.status = oneOf(body.status, "status", INQUIRY_STATUSES);
+  if (body.assignedTo !== undefined) change.assignedTo = await resolveAssignee(body.assignedTo, userId);
+  if (body.outcome !== undefined) {
+    change.outcome = body.outcome === null || body.outcome === "" ? null : oneOf(body.outcome, "outcome", INQUIRY_OUTCOMES);
   }
+  const data = nextInquiryState(inquiry, change);
   if (body.note !== undefined) data.note = optionalString(body.note, "note", { max: 4000 });
   await inquiry.update({ ...data, updatedBy: userId });
   return inquiryDto(await Inquiry.findByPk(inquiry.id, { include: INCLUDE }));
@@ -169,4 +201,4 @@ async function remove(id) {
   await inquiry.destroy();
 }
 
-module.exports = { create, list, counts, update, remove };
+module.exports = { create, createBySeller, list, counts, update, remove };

@@ -360,6 +360,20 @@ export default {
     replySubject: 'Re: information request – {name}',
     deleteTitle: 'Delete request',
     deleteConfirm: 'Delete the request from “{name}”? Use it for spam or data that should not be kept.',
+    new: 'New request',
+    newHelp: 'Register a contact that came by email, WhatsApp or phone, so every request is in one place.',
+    package: 'Package',
+    choosePackage: 'Choose the package.',
+    channel: 'Channel',
+    channels: { form: 'Site form', email: 'Email', whatsapp: 'WhatsApp', phone: 'Phone', other: 'Other' },
+    contactHint: 'Leave an email or a phone so the team can answer.',
+    replyLanguage: 'Language to answer in',
+    buyerMessage: 'What the buyer asked',
+    registeredBy: 'registered by {name}',
+    created: 'Request registered.',
+    outcome: 'Outcome',
+    noOutcome: '—',
+    outcomes: { sold: 'Sold to this buyer', not_pursued: 'Did not go ahead', no_reply: 'No reply from buyer' },
     deleted: 'Request deleted.'
   },
   contact: {
@@ -370,6 +384,144 @@ export default {
     whatsappHint: 'Full number with country code.',
     adminOnly: 'Only administrators change the contact.',
     saved: 'Contact saved.'
+  },
+  how: {
+    tab: 'How it works',
+    title: 'How MineRecycle works',
+    intro: 'From the package in STOR to the sale: who does each step, where in the system, and what the buyer sees.',
+    expandAll: 'Open all',
+    collapseAll: 'Close all',
+    where: 'Where:',
+    who: { outside: 'Outside the system', seller: 'Seller', buyer: 'Buyer' },
+    lanes: { prepare: 'Preparation', publish: 'Publication', serve: 'Requests', close: 'Outcome' },
+    steps: {
+      stor: {
+        title: 'Package in STOR',
+        items: {
+          a: 'Each package has a folder in STOR, with the item spreadsheet and the photos.',
+          b: 'The 7-digit code at the start of the spreadsheet name identifies the document.',
+          c: 'Spreadsheets with prices or values stay on your computer: they never go into the system.'
+        }
+      },
+      register: {
+        title: 'Package register',
+        intro: 'The 22 packages already come registered as Draft, with public name, STOR folder, numbers, type, category, origin, locations and STOR codes.',
+        items: { a: 'The seller checks the data and writes the description.', b: 'A package outside the list: "New package" button.' },
+        where: 'Packages → Details tab'
+      },
+      import: {
+        title: 'Import the items',
+        items: {
+          a: 'Download the spreadsheet from STOR and import it into the package. The system reads the code in the file name and checks the spreadsheet belongs to this package.',
+          b: 'Check the header, the columns and the report before saving.',
+          c: 'One spreadsheet per package. Importing again replaces the items.',
+          d: 'A spreadsheet pending validation asks for confirmation. A package without a spreadsheet (Steel Structure): items by hand.'
+        },
+        where: 'Packages → Items tab → Import spreadsheet'
+      },
+      files: {
+        title: 'Photos and files',
+        items: {
+          a: 'Photos, datasheet, drawing, list and proposal, on the package or on an item.',
+          b: 'Each file has a visibility: Public (everyone), Restricted (buyer with a link) or Internal (sellers only).',
+          c: 'A proposal is never public. The first public photo becomes the catalog cover.'
+        },
+        where: 'Packages → Photos and files tab'
+      },
+      activate: {
+        title: 'Publish: status Active',
+        items: {
+          a: 'Once Active, the package is in the public catalog: anyone sees it, without logging in.',
+          b: 'The catalog shows name, description, items, photos and public files. Never a price.'
+        },
+        where: 'Packages → Change status'
+      },
+      browse: {
+        title: 'Visitor finds the package',
+        items: {
+          a: 'Searches by name, description or item; filters by type, origin and location.',
+          b: 'Sees that there are restricted documents (without seeing which) and can ask for access.'
+        },
+        where: 'Catalog (home page)'
+      },
+      link: {
+        title: 'Buyer access link',
+        intro: 'Optional, for a qualified buyer. It can come before or during the conversation.',
+        items: {
+          a: 'Choose the packages and the expiry (up to one year). The buyer sees restricted files and the proposal.',
+          b: 'Every access is logged. The link can be revoked at any time.'
+        },
+        where: 'Access links'
+      },
+      ask: {
+        title: 'Buyer asks for information',
+        items: {
+          a: 'Form on the package page: becomes a New request in the Requests tab.',
+          b: 'Team email or WhatsApp, with the package already in the text: the conversation happens outside the system.',
+          c: 'Sold packages do not take requests.'
+        },
+        where: 'Package page → "Interested in this package?"'
+      },
+      direct: {
+        title: 'Register a direct contact',
+        items: {
+          a: 'Contact by email, WhatsApp or phone: the seller registers it with "New request", choosing the package and the channel.',
+          b: 'This way every request is in the same place.'
+        },
+        where: 'Requests → New request'
+      },
+      take: {
+        title: 'Take the request',
+        items: {
+          a: '"Take it" makes you responsible and moves the request to In progress.',
+          b: 'The responsible person is a system user and can be changed. The internal note records what was done.'
+        },
+        where: 'Requests'
+      },
+      negotiate: {
+        title: 'Package under negotiation',
+        items: {
+          a: 'When the conversation moves forward, change the package status to Under negotiation.',
+          b: 'In the catalog it only shows with "Show packages under negotiation" ticked. Other buyers can still ask for information.'
+        },
+        where: 'Packages → Change status'
+      },
+      outcome: {
+        title: 'Record the outcome',
+        items: {
+          a: 'Choose the outcome: sold to this buyer, did not go ahead, or no reply. The request becomes Done.',
+          b: 'No value or price: just the outcome and the note.'
+        },
+        where: 'Requests → Outcome'
+      },
+      package: {
+        title: 'Update the package',
+        items: {
+          a: 'Sold: leaves the catalog and stops taking requests. A buyer with a link still sees it.',
+          b: 'Active: the negotiation did not go ahead and the package is back in the catalog.',
+          c: 'Inactive: withdrawn for another reason. Nobody outside the team sees it.'
+        },
+        where: 'Packages → Change status'
+      },
+      others: {
+        title: 'Close the other requests',
+        items: {
+          a: 'Package sold: answer and close the other open requests about it.',
+          b: 'Revoke buyer links that no longer make sense.'
+        },
+        where: 'Requests (search by package) and Access links'
+      }
+    },
+    states: {
+      title: 'Package status: who sees what',
+      intro: 'The status decides whether the package is in the catalog, for a buyer with a link, and whether it takes requests.',
+      status: 'Status',
+      catalog: 'Catalog',
+      link: 'Buyer link',
+      requests: 'Requests',
+      withToggle: 'With the box ticked',
+      path: 'Usual path: Draft → Active → Under negotiation → Sold. If the negotiation does not go ahead, back to Active.'
+    }
   },
   origins: {
     title: 'Origins',
@@ -620,6 +772,14 @@ export default {
             term: 'Take it',
             text: 'Makes you responsible and moves a new request to In progress. The responsible person can be changed to anyone on the team.'
           },
+          direct: {
+            term: 'Direct contact',
+            text: 'A request that came by email, WhatsApp or phone is registered by hand with "New request", with the channel. It starts In progress, with you as the responsible person.'
+          },
+          outcome: {
+            term: 'Outcome',
+            text: 'When a request is Done, choose the outcome: sold to this buyer, did not go ahead, or no reply. Choosing an outcome marks the request as Done. No value or price.'
+          },
           status: {
             term: 'Status',
             text: 'New (nobody took it), In progress, Done (answered) or Discarded (spam or nonsense). The internal note records what was done; the last change shows who and when.'
@@ -628,7 +788,7 @@ export default {
         items: {
           a: 'Answer in the language the buyer used on the site (shown on the request).',
           b: 'Requests hold personal data: use them only to answer, and delete spam.',
-          c: 'Emails and WhatsApp messages sent directly do not appear in the Requests tab.'
+          c: 'Emails and WhatsApp messages sent directly only appear in the Requests tab once someone registers them with New request.'
         }
       },
       rules: {

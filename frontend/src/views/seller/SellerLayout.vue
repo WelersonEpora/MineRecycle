@@ -10,7 +10,7 @@
       <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-links' }">{{ t('seller.accessLinks') }}</RouterLink></li>
       <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-settings' }">{{ t('seller.settings') }}</RouterLink></li>
       <li v-if="isAdmin" class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-users' }">{{ t('seller.users') }}</RouterLink></li>
-      <li class="nav-item ms-auto"><RouterLink class="nav-link" :to="{ name: 'seller-help-guide' }" active-class="" :class="{ 'router-link-active': inHelp }"><i class="bi bi-question-circle"></i> {{ t('help.menu') }}</RouterLink></li>
+      <li class="nav-item ms-auto"><RouterLink class="nav-link" :to="{ name: 'seller-help-how' }" active-class="" :class="{ 'router-link-active': inHelp }"><i class="bi bi-question-circle"></i> {{ t('help.menu') }}</RouterLink></li>
       <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-account' }"><i class="bi bi-person"></i> {{ t('seller.account') }}</RouterLink></li>
     </ul>
     <RouterView />
