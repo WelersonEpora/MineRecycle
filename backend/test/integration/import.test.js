@@ -35,7 +35,7 @@ test("spreadsheet import", { skip }, async (t) => {
   const seller = await h.loggedInSeller(server.base);
   const anon = h.client(server.base);
 
-  const pkg = (await seller.post("/api/v1/seller/packages", { json: { number: 1, name: "Electrical", type: "bulk", locations: ["uberaba"] } })).data;
+  const pkg = (await seller.post("/api/v1/seller/packages", { json: { number: 1, name: "Electrical", type: "bulk", locations: ["uberaba"], originId: await h.originId() } })).data;
   const base = `/api/v1/seller/packages/${pkg.id}/imports`;
 
   await t.test("rejects non-Excel files", async () => {
@@ -151,7 +151,7 @@ test("spreadsheet import", { skip }, async (t) => {
 
   await t.test("STOR code in the file name is checked against the packages", async () => {
     const other = (
-      await seller.post("/api/v1/seller/packages", { json: { name: "Other", type: "bulk", locations: ["uberaba"], storDocuments: ["1809601"] } })
+      await seller.post("/api/v1/seller/packages", { json: { name: "Other", type: "bulk", locations: ["uberaba"], storDocuments: ["1809601"], originId: await h.originId() } })
     ).data;
     const startWith = async (name) =>
       (await seller.post(base, { form: h.fileForm({}, [{ field: "file", name, buffer: FIRST }]) })).data;

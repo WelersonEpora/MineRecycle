@@ -10,6 +10,7 @@ const { BUYER_HIDDEN_STATUSES } = require("../domain/constants");
 const env = require("../config/env");
 const accessLog = require("./access-log.service");
 const { packageDto } = require("./dto");
+const { CARD_STATS, cardExtra } = require("./package-card-stats");
 
 const MAX_DAYS = 365;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -184,9 +185,17 @@ async function redeem(token, req) {
   return { cookie: signSession({ typ: "buyer", sub: link.id }, maxAgeMs / 1000), maxAgeMs };
 }
 
+// Pacotes do link com os filtros da vitrine (busca, tipo, origem, local). O comprador vê tudo o que o link cobre,
+// menos rascunho e inativo; vendidos aparecem (podem ser dele). Sem a caixa de negociação.
+async function buyerPackages(viewerLink, query) {
+  const packageService = require("./package.service");
+  return packageService.browse({ id: viewerLink.packageIds, status: { [Op.notIn]: BUYER_HIDDEN_STATUSES } }, query, { negotiationToggle: false });
+}
+
 async function buyerSession(viewerLink) {
   const packages = await Package.findAll({
     where: { id: viewerLink.packageIds, status: { [Op.notIn]: BUYER_HIDDEN_STATUSES } },
+    attributes: { include: CARD_STATS },
     // Mesma ordem da vitrine (números do pacote na planilha de estratégia, depois nome).
     order: [sequelize.literal(`(SELECT min(n) FROM unnest("Package"."stor_numbers") AS n) ASC NULLS LAST`), ["name", "ASC"], ["number", "ASC"]]
   });
@@ -200,8 +209,8 @@ async function buyerSession(viewerLink) {
   return {
     label: viewerLink.label,
     expiresAt: viewerLink.expiresAt,
-    packages: packages.map((p) => packageDto(p, { coverUrl: coverByPackage.get(p.id) || null }))
+    packages: packages.map((p) => packageDto(p, { ...cardExtra(p), coverUrl: coverByPackage.get(p.id) || null }))
   };
 }
 
-module.exports = { list, get, create, update, revoke, logs, redeem, buyerSession, buildUrl };
+module.exports = { list, get, create, update, revoke, logs, redeem, buyerSession, buyerPackages, buildUrl };

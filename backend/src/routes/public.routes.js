@@ -61,6 +61,10 @@ router.get("/access/session", requireBuyer, async (req, res) => {
   res.json(await accessLinkService.buyerSession(req.viewer.link));
 });
 
+router.get("/access/packages", requireBuyer, async (req, res) => {
+  res.json(await accessLinkService.buyerPackages(req.viewer.link, req.query));
+});
+
 router.post("/access/logout", (_req, res) => {
   res.clearCookie(BUYER_COOKIE, clearOptions());
   res.status(204).end();

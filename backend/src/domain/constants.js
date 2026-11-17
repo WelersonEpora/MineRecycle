@@ -1,12 +1,14 @@
 "use strict";
 
 const PACKAGE_TYPES = ["bulk", "equipment"];
+// Categoria do pacote: cor e ícone do cartão da vitrine quando não há foto (decisão de 2026-11-17).
+const PACKAGE_CATEGORIES = ["refractories", "electrical", "piping", "process_equipment", "office", "other"];
 // Um pacote pode estar em vários locais. "at_supplier": ainda no fornecedor; "to_be_confirmed": local não informado.
 const LOCATIONS = ["conceicao_do_araguaia", "uberaba", "niquelandia", "belo_horizonte", "at_supplier", "to_be_confirmed"];
 const PACKAGE_STATUSES = ["draft", "active", "under_negotiation", "sold", "inactive"];
-// Status que a tela Settings pode escolher para a vitrine pública. Rascunho e inativo nunca aparecem.
-const SHOWCASE_ELIGIBLE_STATUSES = ["active", "under_negotiation", "sold"];
-const DEFAULT_SHOWCASE_STATUSES = ["active"];
+// Vitrine pública (regra fixa, decisão de 2026-11-17): ativos e em negociação. A lista só mostra os em negociação
+// quando o visitante marca a caixa; vendidos, rascunhos e inativos nunca aparecem para o público.
+const PUBLIC_STATUSES = ["active", "under_negotiation"];
 // O comprador vê, pelo link, os pacotes do escopo, menos rascunho e inativo.
 const BUYER_HIDDEN_STATUSES = ["draft", "inactive"];
 
@@ -21,10 +23,10 @@ const ACCESS_ACTIONS = ["open", "view_package", "download"];
 
 module.exports = {
   PACKAGE_TYPES,
+  PACKAGE_CATEGORIES,
   LOCATIONS,
   PACKAGE_STATUSES,
-  SHOWCASE_ELIGIBLE_STATUSES,
-  DEFAULT_SHOWCASE_STATUSES,
+  PUBLIC_STATUSES,
   BUYER_HIDDEN_STATUSES,
   ATTACHMENT_KINDS,
   VISIBILITIES,

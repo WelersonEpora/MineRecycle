@@ -48,6 +48,8 @@ em `_sample-data`.
 | Documentos STOR (`stor_documents`) | Códigos das planilhas do pacote | Só vendedores |
 | Pendentes de validação (`stor_documents_pending`) | Códigos que ainda não devem ser importados | Só vendedores |
 | Nº do catálogo (`number`) | Sequência própria, gerada sozinha; só aparece no endereço da página pública | Ninguém na tela pública |
+| Origem (`origin_id`) | De onde vieram os ativos, escolhida na tabela de origens (nome, sigla, ativa); obrigatória | Todos |
+| Categoria (`category`) | Cor e ícone do cartão da vitrine sem foto | Todos |
 
 **Regra dos números.** A fonte é a planilha de estratégia (aba "Cash Flow_Lenders Presentation"), não o nome da pasta.
 O hífen no nome da pasta quer dizer **"e"**: "1-6 Refractories" são os IDs 1 e 6 (os IDs 2 a 5 são o forno elétrico).
@@ -57,6 +59,30 @@ e 12 em Dryer e Kiln; 20 nos dois de Construction Materials).
 
 **Ordenação** (vitrine, lista do vendedor e link do comprador): menor número do pacote, depois o nome público;
 pacotes sem número vão para o fim. O comprador não vê os números.
+
+**Origem ≠ Local** (decisão de 2026-11-17). Origem é de onde vieram os ativos; Local é onde estão hoje. Exemplo:
+"Refractories – Uberaba Dry Port" tem origem Araguaia (ANM) e local Uberaba. As origens ficam numa tabela (nome, sigla,
+ativa) mantida pelo admin em Configuração; não há texto livre. Valores iniciais (migration de dados
+`20261117110100-data-origins`): **Araguaia Nickel Project (ANM)** para todos os pacotes, menos a pasta
+"30-Niquelândia", que é **Niquelândia (VTM)**. Origem inativa deixa de ser oferecida, mas fica nos pacotes que já a usam.
+
+**Filtros da vitrine e do link do comprador** (decisão de 2026-11-17):
+
+- **Quem aparece.** Vitrine: pacotes ativos; os em negociação só com a caixa "Mostrar pacotes em negociação" marcada
+  (desligada por padrão); vendidos, rascunhos e inativos nunca. Regra fixa no código (`PUBLIC_STATUSES`); a antiga
+  configuração "Vitrine pública" da tela Configuração saiu. Link do comprador: todos os pacotes do link, menos rascunho
+  e inativo; vendidos aparecem (podem ser do próprio comprador) e não há caixa de negociação.
+- **Busca:** nome do pacote, descrição e descrição dos itens.
+- **Tipo:** Todos, A granel, Equipamentos.
+- **Origem:** Todos e as origens com pacotes visíveis. O grupo só aparece quando há pacotes visíveis de mais de uma
+  origem.
+- **Local:** Todos e os locais com pacotes visíveis. "A confirmar" nunca é opção: o pacote só "a confirmar" aparece em
+  "Todos". Pacote em dois locais conta nos dois.
+- **Contagens:** cada opção mostra quantos pacotes teria, considerando a busca e os outros grupos, mas não o próprio
+  grupo (regra pura em `backend/src/domain/catalog-filter.js`).
+- **Endereço:** os filtros vão para a URL (`?q=&type=&origin=ANM&location=uberaba&negotiation=1`), para o link
+  filtrado poder ser compartilhado.
+- **Área do vendedor:** continua com o filtro de situação completo, mais Origem.
 
 **Locais: só com fonte em documento.** Locais aceitos: Conceição do Araguaia, Uberaba, Niquelândia, Belo Horizonte,
 No fornecedor e A confirmar. "A confirmar" pode ficar junto de locais conhecidos ("está aqui, e pode haver partes em
@@ -471,8 +497,22 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 1. **Resolvido em 2026-11-16:** a planilha original guardada na importação passou a ser anexo **interno** (só
    vendedores). Planilhas importadas antes disso, se houver, continuam como anexo restrito: confira os anexos de
    lista dos pacotes na tela de arquivos e, se forem planilhas com valores, apague-as.
-2. **Linhas ocultas e filtradas são importadas sem aviso.** Decidir se o importador deve ignorá-las ou, ao menos,
-   avisar na conferência.
+2. **Linhas ocultas e filtradas são importadas sem aviso** (confirmado no código em 2026-11-17; ver Parte 3,
+   pergunta 6).
+   - **Caso real:** o pacote Refractories – Conceição do Araguaia ficou com 149 itens, importados da 1809438 com
+     numeração pela ordem das linhas. A aba tem filtro automático e **65 linhas ocultas**: as linhas 86 a 150 do
+     Excel, que viraram os **itens 85 a 149**. Os itens 1 a 84 são as linhas visíveis. O arquivo não diz se a linha foi
+     escondida à mão ou pelo filtro (as duas aparecem como "oculta").
+   - **Por que o importador não vê:** a leitura usa `XLSX.read` sem `cellStyles: true`; sem essa opção o SheetJS
+     não preenche `!rows[i].hidden`. Com ela, as 65 linhas aparecem marcadas.
+   - **Proposta:** ler com `cellStyles: true`, guardar no plano de importação quais linhas estão ocultas e, na tela de
+     mapeamento, avisar "Esta aba tem N linhas ocultas ou filtradas (linhas X a Y)" com a escolha **importar** ou
+     **não importar** (padrão a decidir). A conferência mostra quantas entraram ou ficaram de fora. Com a numeração
+     pela ordem das linhas, as ocultas puladas não consomem número. Mudança em importação pede teste de integração.
+   - **Unidades:** as 84 linhas visíveis estão em KG; as 65 ocultas estão em PC, M2 e BD. Por isso o cartão da vitrine
+     desse pacote mostra "149 itens" e não o peso total (o peso só aparece quando todos os itens estão em kg ou t).
+   - **Decisão pendente com o cliente:** na 1809438, as 65 linhas ocultas são para vender ou não? Se não forem, basta
+     reimportar sem elas (a reimportação substitui todos os itens do pacote).
 3. ~~Nº do item não é gerado.~~ Resolvido em 2026-11-16: opção *numerar pela ordem das linhas* (Parte 3, pergunta 7).
 4. **Sem unidade fixa.** Planilhas cuja unidade está só no cabeçalho ("Quantidade (metros)", "KG") pedem uma coluna
    de unidade inserida à mão. Avaliar uma opção "unidade fixa para todas as linhas".
@@ -508,7 +548,8 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 - Planilhas pendentes de validação (Parte 1): 1809564, 1809565 e 1809007.
 - Pick-Ups já foi vendido?
 - Quais pacotes ainda estão à venda (alguns já receberam propostas).
-- Linhas ocultas na planilha de refratários de Conceição do Araguaia (1809438): importar ou não.
+- Linhas ocultas na planilha de refratários de Conceição do Araguaia (1809438): 65 linhas (Excel 86 a 150; itens 85
+  a 149 no sistema). Importar ou não.
 - Critério de seleção na planilha de bens do Consórcio Araguaia (1809564).
 - Fotos: no STOR só existem para transformadores, móveis de escritório e Niquelândia; os demais pacotes dependem de
   fotos novas.
@@ -520,15 +561,34 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
 publicado sem confirmação do usuário.**
 
-Último commit publicado: `042f84e` (2026-11-17): migration 7
-(`20261117090000-user-deleted-at`, exclusão lógica de usuário) e senha a partir de 9 caracteres. Antes: `9c63857`
-(migration 6, 1809537 no Steel Structure), `b8cd8f6` (seção "Por que não são 60 mil itens"), `033a74f` (Ajuda com
-Guia e Carga de planilhas) e `14847c9` (migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou
-mudança nova.
+Último commit publicado: `2d840bd` (2026-11-17): configuração da vitrine
+liberada para qualquer vendedor logado (só código, sem migration). Antes: `042f84e` (migration 7, exclusão lógica de
+usuário, e senha a partir de 9 caracteres), `9c63857` (migration 6, 1809537 no Steel Structure), `b8cd8f6` (seção
+"Por que não são 60 mil itens"), `033a74f` (Ajuda com Guia e Carga de planilhas) e `14847c9` (migrations 1 a 5
+abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
 
-**Pendente agora** (sem migration; nada muda no banco):
+**Pendente agora** (nesta ordem no deploy):
 
-- Configuração da vitrine (quais situações aparecem) liberada para qualquer vendedor logado, não só admin.
+| # | Migration | O que altera no servidor |
+|---|---|---|
+| 8 | `20261117100000-package-category` | Coluna `package.category` (padrão `other`) com CHECK das 6 categorias. Nenhum outro dado muda. |
+| 9 | `20261117100100-data-package-category` | Grava a categoria de 17 pacotes pela pasta no STOR (refratários 2, elétrica 4, tubulação 1, equipamentos de processo 8, escritório 2); os outros 5 ficam em "outros". Só troca se a categoria ainda for a padrão. Sem volta automática. |
+
+Também vai junto: cartão da vitrine sem foto no formato "etiqueta de inventário" (cor e ícone da categoria, número em
+destaque), campo Categoria no cabeçalho do pacote, fonte Barlow Condensed hospedada no site e o registro das linhas
+ocultas da 1809438 em Pendências.
+
+| # | Migration | O que altera no servidor |
+|---|---|---|
+| 10 | `20261117110000-origin` | Tabela `origin` (nome, sigla única, ativa) e coluna `package.origin_id`, ainda opcional. |
+| 11 | `20261117110100-data-origins` | Cria ANM e VTM pela sigla, se não existirem. Preenche a origem só dos pacotes sem origem: VTM para "30-Niquelândia", ANM para os demais. Sem volta automática. |
+| 12 | `20261117110200-package-origin-required` | Torna a origem obrigatória no pacote. |
+
+Também vai junto, com as migrations 10 a 12: filtros novos na vitrine e no link do comprador (busca nos itens, chips
+de Tipo, Origem e Local com contagens, caixa de negociação, filtros na URL, painel no celular), regra fixa da vitrine
+(sai a configuração "Vitrine pública"), cadastro de origens em Configuração (admin), campo, coluna e filtro Origem na
+área do vendedor e o cartão sem "nenhum item" quando o pacote não tem itens. A configuração gravada antes
+(`setting.showcase_statuses`) fica no banco, sem uso.
 
 ### Histórico: publicação de 2026-11-16 (`14847c9`)
 

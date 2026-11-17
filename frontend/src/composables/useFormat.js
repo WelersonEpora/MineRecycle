@@ -14,7 +14,10 @@ export function useFormat() {
     dateTime: (v) => formatDate(v, intl.value, { withTime: true }),
     bytes: (v) => formatBytes(v, intl.value),
     errorMessage: (err) => apiErrorMessage(err, t, te),
+    // Número com até `max` casas decimais (ex.: peso em toneladas no cartão da vitrine).
+    num: (v, max = 0) => new Intl.NumberFormat(intl.value, { maximumFractionDigits: max }).format(v),
     typeLabel: (v) => t(`enums.type.${v}`),
+    categoryLabel: (v) => t(`enums.category.${v || 'other'}`),
     locationLabel: (v) => t(`enums.location.${v}`),
     locationsLabel: (list) => (list || []).map((v) => t(`enums.location.${v}`)).join(' · '),
     statusLabel: (v) => t(`enums.status.${v}`),
@@ -23,6 +26,7 @@ export function useFormat() {
 }
 
 export const TYPES = ['bulk', 'equipment']
+export const CATEGORIES = ['refractories', 'electrical', 'piping', 'process_equipment', 'office', 'other']
 export const LOCATIONS = ['conceicao_do_araguaia', 'uberaba', 'niquelandia', 'belo_horizonte', 'at_supplier', 'to_be_confirmed']
 export const STATUSES = ['draft', 'active', 'under_negotiation', 'sold', 'inactive']
 export const KINDS = ['photo', 'datasheet', 'drawing', 'list', 'proposal']

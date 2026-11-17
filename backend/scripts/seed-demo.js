@@ -4,7 +4,14 @@
 //   npm run seed:demo            só roda com o banco sem pacotes
 //   npm run seed:demo -- --reset apaga TODOS os pacotes (e arquivos) antes; recusado com NODE_ENV=production
 const sharp = require("sharp");
-const { sequelize, Package, User } = require("../src/models");
+const { sequelize, Package, User, Origin } = require("../src/models");
+
+// Origem dos pacotes de exemplo: a principal (ANM), criada pela migration de dados de origens.
+async function defaultOriginId() {
+  const origin = await Origin.findOne({ where: { code: "ANM" } });
+  if (!origin) throw new Error("Origin ANM not found: run the migrations first (npm run db:migrate).");
+  return origin.id;
+}
 const lineService = require("../src/services/line.service");
 const attachmentService = require("../src/services/attachment.service");
 const accessLinkService = require("../src/services/access-link.service");
@@ -187,6 +194,7 @@ async function main() {
 
   for (const spec of PACKAGES) {
     const pkg = await Package.create({
+    originId: await defaultOriginId(),
       number: spec.number,
       name: spec.name,
       type: spec.type,

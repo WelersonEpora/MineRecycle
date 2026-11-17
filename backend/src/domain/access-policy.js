@@ -1,6 +1,6 @@
 "use strict";
 
-const { BUYER_HIDDEN_STATUSES, ALWAYS_RESTRICTED_KINDS } = require("./constants");
+const { BUYER_HIDDEN_STATUSES, PUBLIC_STATUSES, ALWAYS_RESTRICTED_KINDS } = require("./constants");
 
 // Regras de quem vê o quê. Puras (sem banco): o serviço monta o `viewer` e chama estas funções.
 //
@@ -16,8 +16,9 @@ function linkState(link, now = new Date()) {
   return "valid";
 }
 
-function isListedPublicly(pkg, showcaseStatuses) {
-  return pkg.status !== "draft" && pkg.status !== "inactive" && showcaseStatuses.includes(pkg.status);
+// Público: só pacotes ativos ou em negociação (regra fixa; antes vinha da tela Configuração).
+function isListedPublicly(pkg) {
+  return PUBLIC_STATUSES.includes(pkg.status);
 }
 
 function linkCoversPackage(link, pkg, now) {
@@ -30,11 +31,11 @@ function linkCoversPackage(link, pkg, now) {
 }
 
 // Nível de acesso ao pacote: "seller" (tudo), "buyer" (inclui restritos), "public" (só públicos) ou null (nada).
-function packageAccess(pkg, viewer, showcaseStatuses, now = new Date()) {
+function packageAccess(pkg, viewer, now = new Date()) {
   if (!pkg) return null;
   if (viewer?.seller) return "seller";
   if (viewer?.link && linkCoversPackage(viewer.link, pkg, now)) return "buyer";
-  if (isListedPublicly(pkg, showcaseStatuses)) return "public";
+  if (isListedPublicly(pkg)) return "public";
   return null;
 }
 
@@ -59,9 +60,9 @@ function attachmentVisibleTo(attachment, access) {
 
 // Variantes: "original" (arquivo enviado), "web" e "thumb" (só fotos). O original de uma foto pode ter metadados
 // (EXIF, GPS), então o público só recebe as versões redimensionadas, que saem sem metadados.
-function canReadAttachment({ attachment, pkg, viewer, showcaseStatuses, variant = "original", now = new Date() }) {
+function canReadAttachment({ attachment, pkg, viewer, variant = "original", now = new Date() }) {
   if (!attachment || !pkg || attachment.packageId !== pkg.id) return false;
-  const access = packageAccess(pkg, viewer, showcaseStatuses, now);
+  const access = packageAccess(pkg, viewer, now);
   if (!attachmentVisibleTo(attachment, access)) return false;
   if (access === "public" && attachment.kind === "photo" && variant === "original") return false;
   return true;

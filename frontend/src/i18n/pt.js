@@ -13,6 +13,14 @@ export default {
   },
   enums: {
     type: { bulk: 'A granel', equipment: 'Equipamento' },
+    category: {
+      refractories: 'Refratários',
+      electrical: 'Elétrica',
+      piping: 'Tubulação',
+      process_equipment: 'Equipamentos de processo',
+      office: 'Escritório',
+      other: 'Outros'
+    },
     location: {
       conceicao_do_araguaia: 'Conceição do Araguaia',
       uberaba: 'Uberaba',
@@ -81,7 +89,8 @@ export default {
     status: 'Situação',
     empty: 'Nenhum pacote com esses filtros.',
     lines: 'nenhum item | 1 item | {n} itens',
-    viewPackage: 'Ver pacote'
+    viewPackage: 'Ver pacote',
+    highlight: { weight: 'peso total', units: 'unidade | unidade | unidades', items: 'item | item | itens' }
   },
   package: {
     number: 'Pacote {number}',
@@ -157,6 +166,11 @@ export default {
       storDocumentsPending: 'Pendentes de validação (não importar ainda):',
       storDocumentsPendingHint: 'A importação de uma planilha marcada pede confirmação.',
       type: 'Tipo',
+      category: 'Categoria',
+      origin: 'Origem',
+      originChoose: 'Escolha a origem',
+      originHint: 'De onde vieram os ativos. É diferente de Local, que diz onde estão hoje.',
+      categoryHint: 'Define a cor e o ícone do cartão na vitrine quando o pacote não tem foto.',
       location: 'Locais',
       locationsHint: 'Marque todos os locais onde há itens do pacote. Use "A confirmar" enquanto não souber.',
       storDocuments: 'Documentos STOR',
@@ -295,9 +309,34 @@ export default {
     what: 'O quê',
     from: 'IP / navegador'
   },
-  settings: {
-    showcaseTitle: 'Vitrine pública',
-    showcaseHelp: 'Quais situações de pacote aparecem no catálogo público. Rascunhos e inativos nunca aparecem. Compradores com link de acesso sempre veem os pacotes compartilhados com eles.'
+  origins: {
+    title: 'Origens',
+    help: 'De onde vieram os ativos do pacote (diferente de Local, que é onde estão hoje). Cada pacote tem uma origem.',
+    new: 'Nova origem',
+    edit: 'Editar origem',
+    name: 'Nome',
+    code: 'Sigla',
+    codeHint: 'Até 10 letras, números ou hífen.',
+    active: 'Ativa',
+    inactive: 'inativa',
+    packages: 'Pacotes',
+    adminOnly: 'Só administradores incluem e editam origens.',
+    inactiveHint: 'Origem inativa deixa de ser oferecida no cadastro de pacote, mas continua nos pacotes que já a usam.',
+    saved: 'Origem salva.'
+  },
+  filters: {
+    title: 'Filtros',
+    searchPlaceholder: 'Buscar por pacote, item ou descrição',
+    clearSearch: 'Limpar busca',
+    button: 'Filtros',
+    type: 'Tipo',
+    origin: 'Origem',
+    location: 'Local',
+    all: 'Todos',
+    types: { bulk: 'A granel', equipment: 'Equipamentos' },
+    count: 'nenhum pacote | 1 pacote | {n} pacotes',
+    showNegotiation: 'Mostrar pacotes em negociação',
+    clear: 'Limpar filtros'
   },
   users: {
     name: 'Nome',
@@ -405,6 +444,14 @@ export default {
           name: { term: 'Nome público', text: 'Nome em inglês mostrado na vitrine e no link do comprador.' },
           folder: { term: 'Pasta no STOR', text: 'Nome da pasta, com a grafia original. Identifica o pacote e não se repete. Só vendedores.' },
           numbers: { term: 'Nº STOR', text: 'IDs do ativo na planilha de estratégia de vendas. Usados para ordenar a lista. Só vendedores.' },
+          origin: {
+            term: 'Origem',
+            text: 'De onde vieram os ativos (Araguaia Nickel Project, Niquelândia...). É diferente de Locais, que dizem onde estão hoje: os refratários do Porto Seco de Uberaba têm origem Araguaia e local Uberaba. Escolhida numa lista cadastrada em Configuração; aparece como filtro na vitrine quando há pacotes de mais de uma origem.'
+          },
+          category: {
+            term: 'Categoria',
+            text: 'Refratários, elétrica, tubulação, equipamentos de processo, escritório ou outros. Na vitrine, o pacote sem foto aparece como uma etiqueta na cor e com o ícone da categoria e um número em destaque: unidades (equipamento), peso total (a granel, com itens em kg ou t) ou número de itens.'
+          },
           type: {
             term: 'Tipo',
             text: 'A granel, quando o lote é vendido em bloco (refratários, cabos, tubulação), ou equipamento, vendido por equipamento ou conjunto.'
@@ -479,14 +526,14 @@ export default {
         rows: {
           visitor: {
             term: 'Visitante',
-            text: 'A vitrine: só os pacotes nas situações escolhidas em Configuração (padrão: ativo) e os arquivos públicos.'
+            text: 'A vitrine: pacotes ativos e, com a caixa "Mostrar pacotes em negociação" marcada, os em negociação, com os arquivos públicos. Vendidos e rascunhos nunca aparecem.'
           },
           buyer: {
             term: 'Comprador com link',
-            text: 'Os pacotes do link, menos rascunho e inativo, com os arquivos públicos e restritos. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
+            text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos e os mesmos filtros da vitrine. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
           },
-          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos. Também escolhe, em Configuração, o que a vitrine mostra.' },
-          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários.' }
+          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos.' },
+          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários e o cadastro de origens (Configuração).' }
         }
       },
       rules: {
@@ -601,6 +648,9 @@ export default {
     IMPORT_DOCUMENT_PENDING: 'Esta planilha está pendente de validação. Confirme para importar mesmo assim.',
     ITEM_NO_TAKEN: 'Este nº de item já existe no pacote.',
     USER_DELETE_SELF: 'Você não pode excluir o seu próprio usuário.',
+    ORIGIN_CODE_TAKEN: 'Já existe uma origem com esta sigla.',
+    ORIGIN_INACTIVE: 'Esta origem está inativa. Escolha uma origem ativa.',
+    ORIGIN_INVALID: 'Escolha a origem do pacote.',
     EMAIL_TAKEN: 'Já existe um usuário com este e-mail.',
     PAYLOAD_TOO_LARGE: 'Arquivo grande demais.',
     IMPORT_FILE_TYPE: 'Envie um arquivo Excel (.xlsx ou .xls).',

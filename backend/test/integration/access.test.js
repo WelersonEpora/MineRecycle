@@ -22,9 +22,10 @@ test("access links and attachment visibility", { skip }, async (t) => {
   const seller = await h.loggedInSeller(server.base);
   const anon = h.client(server.base);
   const { AccessLink, AccessLog } = require("../../src/models");
+  const anm = await h.originId("ANM");
 
   const mk = async (number, status) => {
-    const p = (await seller.post("/api/v1/seller/packages", { json: { number, name: `Pkg ${number}`, type: "equipment", locations: ["niquelandia"] } })).data;
+    const p = (await seller.post("/api/v1/seller/packages", { json: { number, name: `Pkg ${number}`, type: "equipment", locations: ["niquelandia"], originId: anm } })).data;
     if (status !== "draft") await seller.put(`/api/v1/seller/packages/${p.id}/status`, { json: { status } });
     return p;
   };
@@ -55,7 +56,7 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.deepEqual([meta.width, meta.height], [480, 360]);
   });
 
-  await t.test("anonymous visitor sees only public attachments of showcase packages", async () => {
+  await t.test("anonymous visitor sees only public attachments of public packages", async () => {
     const detail = (await anon.get("/api/v1/catalog/packages/10")).data;
     assert.equal(detail.access, "public");
     assert.deepEqual(detail.attachments.map((a) => a.id).sort(), [photo.id, publicDoc.id].sort());
@@ -68,11 +69,14 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.equal((await anon.get(`/api/v1/files/${publicDoc.id}/original`)).status, 200);
     assert.equal((await anon.get(`/api/v1/files/${internalDoc.id}/original`)).status, 404);
     assert.equal((await anon.get(`/api/v1/files/${draftPhoto.id}/thumb`)).status, 404);
-    assert.equal((await anon.get("/api/v1/catalog/packages/11")).status, 404);
+    // Em negociação: a página é pública; na lista, só com a caixa marcada.
+    assert.equal((await anon.get("/api/v1/catalog/packages/11")).status, 200);
     assert.equal((await anon.get("/api/v1/catalog/packages/13")).status, 404);
 
     const list = (await anon.get("/api/v1/catalog/packages")).data.items.map((p) => p.number);
     assert.deepEqual(list, [10]);
+    const withNegotiation = (await anon.get("/api/v1/catalog/packages?negotiation=1")).data.items.map((p) => p.number);
+    assert.deepEqual(withNegotiation, [10, 11, 12]);
   });
 
   await t.test("restricted files are never cached; seller reads everything", async () => {
@@ -134,6 +138,12 @@ test("access links and attachment visibility", { skip }, async (t) => {
 
     const session = (await buyer.get("/api/v1/access/session")).data;
     assert.deepEqual(session.packages.map((p) => p.number), [10, 11]);
+    // Filtros do link: sem a caixa de negociação; só os pacotes do link.
+    const browse = (await buyer.get("/api/v1/access/packages")).data;
+    assert.deepEqual(browse.items.map((p) => p.number), [10, 11]);
+    assert.equal(browse.facets.type.all, 2);
+    assert.deepEqual((await buyer.get("/api/v1/access/packages?type=bulk")).data.items, []);
+    assert.equal((await anon.get("/api/v1/access/packages")).status, 401);
 
     const detail = (await buyer.get("/api/v1/catalog/packages/10")).data;
     assert.equal(detail.access, "buyer");
@@ -148,8 +158,9 @@ test("access links and attachment visibility", { skip }, async (t) => {
     // Pacote em negociação: fora da vitrine, mas no escopo do link.
     assert.equal((await buyer.get("/api/v1/catalog/packages/11")).data.access, "buyer");
     assert.equal((await buyer.get(`/api/v1/files/${negotiatingDoc.id}/original`)).status, 200);
-    // Fora do escopo.
-    assert.equal((await buyer.get("/api/v1/catalog/packages/12")).status, 404);
+    // Fora do escopo: o 12 está em negociação e é público, então o comprador o vê como visitante.
+    assert.equal((await buyer.get("/api/v1/catalog/packages/12")).data.access, "public");
+    assert.equal((await buyer.get("/api/v1/catalog/packages/13")).status, 404);
     assert.equal((await buyer.get(`/api/v1/files/${draftPhoto.id}/thumb`)).status, 404);
     assert.ok(other.id);
   });
@@ -167,7 +178,9 @@ test("access links and attachment visibility", { skip }, async (t) => {
 
   await t.test("changing the scope takes effect immediately", async () => {
     await seller.patch(`/api/v1/seller/access-links/${created.id}`, { json: { packageIds: [active.id] } });
-    assert.equal((await buyer.get("/api/v1/catalog/packages/11")).status, 404);
+    // O 11 saiu do link: continua público (em negociação), mas sem os arquivos restritos.
+    assert.equal((await buyer.get("/api/v1/catalog/packages/11")).data.access, "public");
+    assert.equal((await buyer.get(`/api/v1/files/${negotiatingDoc.id}/original`)).status, 404);
   });
 
   await t.test("an expired link stops working, even with the cookie already set", async () => {
@@ -196,15 +209,21 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.ok((await AccessLog.count()) > 0);
   });
 
-  await t.test("showcase statuses come from settings (any logged-in seller)", async () => {
-    assert.equal((await anon.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["active", "under_negotiation"] } })).status, 401);
-    const bad = await seller.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["draft"] } });
-    assert.equal(bad.status, 400);
-    const ok = await seller.put("/api/v1/seller/settings", { json: { showcaseStatuses: ["active", "under_negotiation"] } });
-    assert.equal(ok.status, 200);
-    const list = (await anon.get("/api/v1/catalog/packages")).data.items.map((p) => p.number);
-    assert.deepEqual(list, [10, 11, 12]);
+  await t.test("sold packages never show publicly, but stay visible on the buyer's link", async () => {
+    await seller.put(`/api/v1/seller/packages/${other.id}/status`, { json: { status: "sold" } });
+    const list = (await anon.get("/api/v1/catalog/packages?negotiation=1")).data.items.map((p) => p.number);
+    assert.deepEqual(list, [10, 11]);
+    assert.equal((await anon.get("/api/v1/catalog/packages/12")).status, 404);
     assert.equal((await anon.get(`/api/v1/files/${negotiatingDoc.id}/original`)).status, 404);
+
+    const link = (
+      await seller.post("/api/v1/seller/access-links", {
+        json: { label: "Owner", expiresAt: new Date(Date.now() + 7 * DAY).toISOString(), packageIds: [other.id] }
+      })
+    ).data;
+    const owner = h.client(server.base);
+    assert.equal((await owner.post("/api/v1/access/redeem", { json: { token: link.url.split("#")[1] } })).status, 204);
+    assert.deepEqual((await owner.get("/api/v1/access/packages")).data.items.map((p) => p.number), [12]);
   });
 
   await t.test("deactivated seller loses access at once", async () => {

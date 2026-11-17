@@ -1,3 +1,19 @@
+/* Barlow Condensed (SIL OFL 1.1, licença em /fonts/OFL-barlow-condensed.txt), hospedada no próprio site. */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/barlow-condensed-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/barlow-condensed-700.woff2') format('woff2');
+}
+
 :root {
   --mr-ink: #1f2a33;
   --mr-ink-soft: #3b4a56;
@@ -7,6 +23,9 @@
   --mr-card: #ffffff;
   --mr-border: #e2ddd4;
   --mr-muted: #6b7680;
+  /* Âmbar para texto pequeno sobre branco (contraste de 5,6:1). */
+  --mr-accent-text: #8a5a12;
+  --mr-font-num: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
   --bs-body-bg: var(--mr-bg);
   --bs-body-color: var(--mr-ink);
   --bs-link-color: #1d5f8a;
@@ -84,14 +103,75 @@ body {
   width: 100%;
   display: block;
 }
-.mr-cover-empty {
+/* Cartão sem foto: "etiqueta de inventário" (decisão de 2026-11-17). Cor e ícone por categoria; texto branco com
+   contraste de 5,9:1 ou mais em todas as cores. */
+.mr-cover-tag {
+  --mr-cat: #6b5f52;
+  position: relative;
+  overflow: hidden;
   aspect-ratio: 4 / 3;
-  background: repeating-linear-gradient(45deg, #ddd8ce, #ddd8ce 10px, #e6e1d8 10px, #e6e1d8 20px);
+  max-width: 100%;
+  background: var(--mr-cat);
+  color: #fff;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.mr-cat-refractories { --mr-cat: #9a4a2e; }
+.mr-cat-electrical { --mr-cat: #2f5d8a; }
+.mr-cat-piping { --mr-cat: #2e6b6b; }
+.mr-cat-process_equipment { --mr-cat: #3b4a56; }
+.mr-cat-office { --mr-cat: #5b6b3a; }
+.mr-cat-other { --mr-cat: #6b5f52; }
+.mr-cover-water {
+  position: absolute;
+  right: -14%;
+  bottom: -20%;
+  width: 72%;
+  aspect-ratio: 1;
+  opacity: 0.16;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--mr-muted);
-  font-size: 2rem;
+  pointer-events: none;
+}
+.mr-cover-water .mr-cat-icon {
+  width: 100%;
+  height: 100%;
+  font-size: 9rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mr-cover-stencil,
+.mr-cover-num,
+.mr-cover-lbl {
+  position: relative;
+  font-family: var(--mr-font-num);
+}
+.mr-cover-stencil {
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  padding: 0 0.45rem;
+}
+.mr-cover-num {
+  font-weight: 700;
+  font-size: 3.2rem;
+  line-height: 0.95;
+  margin-top: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.mr-cover-lbl {
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
 .mr-number {
   font-variant-numeric: tabular-nums;
@@ -260,4 +340,159 @@ body {
     transform: translateY(8px);
     opacity: 0;
   }
+}
+
+/* Filtros da vitrine e do link do comprador (CatalogFilters.vue, ChipGroup.vue). Mesma largura da grade e mesmo
+   cartão branco com borda e canto dos cartões de pacote. */
+.mr-filters {
+  background: var(--mr-card);
+  border: 1px solid var(--mr-border);
+  border-radius: 0.6rem;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.mr-search {
+  position: relative;
+}
+.mr-search > .bi-search {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mr-muted);
+  pointer-events: none;
+}
+.mr-search .form-control {
+  padding-left: 2.3rem;
+  padding-right: 2.5rem;
+  background: var(--mr-bg);
+}
+.mr-search .form-control::-webkit-search-cancel-button {
+  display: none;
+}
+.mr-search-clear {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--mr-muted);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.4rem;
+}
+.mr-search-clear:hover,
+.mr-search-clear:focus-visible {
+  background: var(--mr-bg);
+  color: var(--mr-ink);
+}
+.mr-filter-groups {
+  display: grid;
+  gap: 0.55rem;
+}
+.mr-chip-group {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.25rem 0.75rem;
+  align-items: start;
+}
+.mr-chip-label {
+  font-size: 0.8rem;
+  color: var(--mr-muted);
+  padding-top: 0.3rem;
+}
+.mr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.mr-chip {
+  font-size: 0.85rem;
+  border: 1px solid var(--mr-border);
+  background: var(--mr-card);
+  color: var(--mr-ink);
+  border-radius: 99px;
+  padding: 0.2rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mr-chip:hover {
+  border-color: var(--mr-muted);
+}
+.mr-chip[aria-checked='true'] {
+  background: var(--mr-ink);
+  border-color: var(--mr-ink);
+  color: #fff;
+}
+.mr-chip:focus-visible {
+  outline: 2px solid var(--mr-accent);
+  outline-offset: 2px;
+}
+.mr-chip-count {
+  font-size: 0.75rem;
+  color: var(--mr-muted);
+  font-variant-numeric: tabular-nums;
+}
+.mr-chip[aria-checked='true'] .mr-chip-count {
+  color: inherit;
+  opacity: 0.75;
+}
+.mr-filter-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.25rem;
+  font-size: 0.9rem;
+}
+.mr-filter-reset {
+  margin-left: auto;
+  color: var(--mr-accent-text);
+  padding: 0;
+}
+.mr-filters-toggle {
+  justify-self: start;
+  border: 1px solid var(--mr-border);
+  background: var(--mr-card);
+  color: var(--mr-ink);
+  border-radius: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.mr-filters-badge {
+  background: var(--mr-accent-text);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  padding: 0 0.45rem;
+}
+@media (max-width: 767.98px) {
+  .mr-filter-groups {
+    display: none;
+  }
+  .mr-filter-groups.is-open {
+    display: grid;
+    border-top: 1px solid var(--mr-border);
+    padding-top: 0.75rem;
+  }
+  .mr-chip-group {
+    grid-template-columns: 1fr;
+  }
+  .mr-chip-label {
+    padding-top: 0;
+  }
+  .mr-filter-reset {
+    margin-left: 0;
+  }
+}
+.mr-loading {
+  opacity: 0.6;
+  transition: opacity 0.15s;
 }

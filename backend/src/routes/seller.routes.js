@@ -9,7 +9,7 @@ const lineService = require("../services/line.service");
 const attachmentService = require("../services/attachment.service");
 const importService = require("../services/import.service");
 const accessLinkService = require("../services/access-link.service");
-const settingsService = require("../services/settings.service");
+const originService = require("../services/origin.service");
 const userService = require("../services/user.service");
 const authService = require("../services/auth.service");
 
@@ -87,9 +87,10 @@ router.put("/me/password", async (req, res) => {
 });
 
 // ---------- Administração ----------
-router.get("/settings", async (_req, res) => res.json(await settingsService.getAll()));
-// Situações exibidas na vitrine: qualquer vendedor logado pode mudar (decisão de 2026-11-17).
-router.put("/settings", async (req, res) => res.json(await settingsService.update(req.body || {}, userId(req))));
+// Origens: todos os vendedores leem (cadastro de pacote); só admin inclui e edita.
+router.get("/origins", async (_req, res) => res.json(await originService.list()));
+router.post("/origins", requireAdmin, async (req, res) => res.status(201).json(await originService.create(req.body || {})));
+router.patch("/origins/:originId", requireAdmin, async (req, res) => res.json(await originService.update(req.params.originId, req.body || {})));
 router.get("/users", requireAdmin, async (_req, res) => res.json(await userService.list()));
 router.post("/users", requireAdmin, async (req, res) => res.status(201).json(await userService.create(req.body || {})));
 router.patch("/users/:userId", requireAdmin, async (req, res) =>

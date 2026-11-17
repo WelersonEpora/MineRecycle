@@ -21,6 +21,21 @@
         <option v-for="ty in TYPES" :key="ty" :value="ty">{{ f.typeLabel(ty) }}</option>
       </select>
     </div>
+    <div class="col-6">
+      <label class="form-label small" for="mr-pkg-origin">{{ t('seller.fields.origin') }} <span class="text-danger">*</span></label>
+      <select id="mr-pkg-origin" v-model="model.originId" class="form-select" required>
+        <option value="" disabled>{{ t('seller.fields.originChoose') }}</option>
+        <option v-for="o in originChoices" :key="o.id" :value="o.id">{{ o.name }} ({{ o.code }}){{ o.active ? '' : ` · ${t('origins.inactive')}` }}</option>
+      </select>
+      <div class="form-text">{{ t('seller.fields.originHint') }}</div>
+    </div>
+    <div class="col-6">
+      <label class="form-label small" for="mr-pkg-category">{{ t('seller.fields.category') }}</label>
+      <select id="mr-pkg-category" v-model="model.category" class="form-select">
+        <option v-for="c in CATEGORIES" :key="c" :value="c">{{ f.categoryLabel(c) }}</option>
+      </select>
+      <div class="form-text">{{ t('seller.fields.categoryHint') }}</div>
+    </div>
     <fieldset class="col-6">
       <legend class="form-label small mb-1">{{ t('seller.fields.location') }}</legend>
       <div v-for="l in LOCATIONS" :key="l" class="form-check">
@@ -55,8 +70,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useFormat, TYPES, LOCATIONS } from '../../composables/useFormat.js'
+import { computed, onMounted, ref } from 'vue'
+import { api } from '../../services/api.js'
+import { useFormat, TYPES, LOCATIONS, CATEGORIES } from '../../composables/useFormat.js'
 
 const model = defineModel({ type: Object, required: true })
 const f = useFormat()
@@ -82,6 +98,20 @@ const storNumbersText = computed({
       .split(/[\s,;-]+/)
       .filter(Boolean)
       .map((v) => (/^\d+$/.test(v) ? Number(v) : v))
+  }
+})
+
+// Origens: só as ativas, mais a atual do pacote (mesmo inativa, para não sumir do campo).
+const origins = ref([])
+const originChoices = computed(() => origins.value.filter((o) => o.active || o.id === model.value.originId))
+onMounted(async () => {
+  try {
+    origins.value = await api.origins()
+    // Pacote novo: com uma só origem ativa, já vem escolhida.
+    const active = origins.value.filter((o) => o.active)
+    if (!model.value.originId && active.length === 1) model.value.originId = active[0].id
+  } catch {
+    origins.value = []
   }
 })
 

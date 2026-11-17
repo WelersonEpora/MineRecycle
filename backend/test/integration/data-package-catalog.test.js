@@ -13,7 +13,9 @@ test("package catalog data migration", { skip }, async (t) => {
   const run = () => migration.up(sequelize.getQueryInterface());
   const all = async () => (await sequelize.query(`SELECT * FROM package ORDER BY number`, { type: sequelize.QueryTypes.SELECT }));
   const byFolder = async (folder) => (await all()).find((p) => p.stor_folder === folder);
-  // A conexão fecha no último teste do arquivo.
+  // A conexão fecha no último teste do arquivo. Esta migration é anterior à origem: roda com a coluna liberada.
+  const restore = await h.legacyPackageSchema();
+  t.after(() => restore());
 
   await t.test("empty database: creates every package once, even when run twice", async () => {
     await h.resetDatabase();
@@ -78,14 +80,15 @@ test("package catalog data migration", { skip }, async (t) => {
   });
 });
 
-test("steel structure document migration: links 1809537 as pending, once", { skip }, async (t) => {
+test("steel structure document migration: links 1809537 as pending, once", { skip }, async () => {
   const { sequelize } = require("../../src/models");
   const catalog = require("../../database/migrations/20261116210100-data-package-catalog");
   const migration = require("../../database/migrations/20261116220000-data-steel-structure-document");
   const qi = sequelize.getQueryInterface();
   const steel = async () =>
     (await sequelize.query(`SELECT * FROM package WHERE stor_folder = '19-30-Steel Structure'`, { type: sequelize.QueryTypes.SELECT }))[0];
-  t.after(() => h.cleanup());
+  // A conexão fecha no último teste do arquivo.
+  const restore = await h.legacyPackageSchema();
 
   await h.resetDatabase();
   await migration.up(qi); // sem o pacote: não faz nada nem falha
@@ -103,4 +106,66 @@ test("steel structure document migration: links 1809537 as pending, once", { ski
   await sequelize.query(`UPDATE package SET stor_documents_pending = '{}' WHERE id = $1`, { bind: [first.id] });
   await migration.up(qi);
   assert.deepEqual((await steel()).stor_documents_pending, []);
+  await restore();
+});
+
+test("package category data migration: sets categories once, keeps seller changes", { skip }, async () => {
+  const { sequelize } = require("../../src/models");
+  const catalog = require("../../database/migrations/20261116210100-data-package-catalog");
+  const migration = require("../../database/migrations/20261117100100-data-package-category");
+  const qi = sequelize.getQueryInterface();
+  const byFolder = async (folder) =>
+    (await sequelize.query(`SELECT * FROM package WHERE stor_folder = $1`, { bind: [folder], type: sequelize.QueryTypes.SELECT }))[0];
+  const restore = await h.legacyPackageSchema();
+
+  await h.resetDatabase();
+  await catalog.up(qi);
+  // Vendedor já escolheu outra categoria para Piping antes da migration: fica como está.
+  await sequelize.query(`UPDATE package SET category = 'process_equipment' WHERE stor_folder = '28-Pipping'`);
+  await migration.up(qi);
+  assert.equal((await byFolder("10-12-13 Kiln")).category, "process_equipment");
+  assert.equal((await byFolder("1-6 Refractories – Porto Seco de Uberaba")).category, "refractories");
+  assert.equal((await byFolder("TI e Escritório")).category, "office");
+  assert.equal((await byFolder("19-30-Steel Structure")).category, "other");
+  assert.equal((await byFolder("28-Pipping")).category, "process_equipment");
+
+  const before = (await byFolder("27-Electrical Cables")).updated_at.getTime();
+  await migration.up(qi);
+  assert.equal((await byFolder("27-Electrical Cables")).updated_at.getTime(), before);
+  await restore();
+});
+
+test("origin data migration: ANM and VTM once, fills only packages without origin", { skip }, async (t) => {
+  const { sequelize } = require("../../src/models");
+  const catalog = require("../../database/migrations/20261116210100-data-package-catalog");
+  const migration = require("../../database/migrations/20261117110100-data-origins");
+  const qi = sequelize.getQueryInterface();
+  const rows = (sql, bind) => sequelize.query(sql, { bind, type: sequelize.QueryTypes.SELECT });
+  const codeOf = async (folder) =>
+    (await rows(`SELECT o.code FROM package p JOIN origin o ON o.id = p.origin_id WHERE p.stor_folder = $1`, [folder]))[0]?.code;
+  t.after(() => h.cleanup());
+
+  const restore = await h.legacyPackageSchema();
+  await h.resetDatabase();
+  await sequelize.query(`DELETE FROM origin`);
+  await catalog.up(qi);
+  // Origem já cadastrada à mão, com outro nome: não duplica nem renomeia.
+  await sequelize.query(`INSERT INTO origin (id, name, code, active) VALUES (gen_random_uuid(), 'Projeto Araguaia', 'ANM', true)`);
+  // Pacote que o vendedor já pôs em outra origem: fica.
+  await sequelize.query(`INSERT INTO origin (id, name, code, active) VALUES (gen_random_uuid(), 'Fictícia', 'FIC', true)`);
+  await sequelize.query(`UPDATE package SET origin_id = (SELECT id FROM origin WHERE code = 'FIC') WHERE stor_folder = '28-Pipping'`);
+
+  await migration.up(qi);
+  await migration.up(qi);
+  const origins = await rows(`SELECT code, name FROM origin ORDER BY code`);
+  assert.deepEqual(origins, [
+    { code: "ANM", name: "Projeto Araguaia" },
+    { code: "FIC", name: "Fictícia" },
+    { code: "VTM", name: "Niquelândia" }
+  ]);
+  assert.equal(await codeOf("30-Niquelândia"), "VTM");
+  assert.equal(await codeOf("10-12-13 Kiln"), "ANM");
+  assert.equal(await codeOf("28-Pipping"), "FIC");
+  assert.equal((await rows(`SELECT count(*)::int AS n FROM package WHERE origin_id IS NULL`))[0].n, 0);
+  await restore();
 });

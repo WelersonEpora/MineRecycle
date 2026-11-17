@@ -1,17 +1,19 @@
 "use strict";
 
 const { Op } = require("sequelize");
-const { sequelize, Package, Attachment, AccessLinkPackage } = require("../models");
+const { sequelize, Package, Origin, Attachment, AccessLinkPackage } = require("../models");
 const { NotFoundError, ConflictError, ValidationError } = require("../shared/errors");
-const { requiredString, optionalString, oneOf, positiveInt, uuid } = require("../shared/validate");
-const { PACKAGE_TYPES, LOCATIONS, PACKAGE_STATUSES } = require("../domain/constants");
+const { requiredString, optionalString, oneOf, positiveInt, uuid, isUuid } = require("../shared/validate");
+const { PACKAGE_TYPES, PACKAGE_CATEGORIES, LOCATIONS, PACKAGE_STATUSES, PUBLIC_STATUSES } = require("../domain/constants");
+const { parseCatalogQuery, filterCatalog } = require("../domain/catalog-filter");
 const { isStorDocumentCode } = require("../import/stor-code");
 const { packageAccess, isEffectivelyRestricted, attachmentVisibleTo } = require("../domain/access-policy");
 const { storage, keys } = require("../storage");
-const settingsService = require("./settings.service");
+const originService = require("./origin.service");
 const lineService = require("./line.service");
 const accessLog = require("./access-log.service");
 const { packageDto, attachmentDto } = require("./dto");
+const { CARD_STATS, cardExtra } = require("./package-card-stats");
 
 const LINE_COUNT = [sequelize.literal(`(SELECT count(*) FROM package_line l WHERE l.package_id = "Package"."id")::int`), "lineCount"];
 // Ordem da vitrine e da lista do vendedor: menor número do pacote (planilha de estratégia), depois o nome; sem número
@@ -21,6 +23,7 @@ const PACKAGE_ORDER = [
   ["name", "ASC"],
   ["number", "ASC"]
 ];
+const ORIGIN_INCLUDE = { model: Origin, as: "origin", attributes: ["id", "name", "code", "active"] };
 const ATTACHMENT_COUNT = [sequelize.literal(`(SELECT count(*) FROM attachment a WHERE a.package_id = "Package"."id")::int`), "attachmentCount"];
 
 function escapeLike(s) {
@@ -30,6 +33,7 @@ function escapeLike(s) {
 function filters(query) {
   const where = {};
   if (PACKAGE_TYPES.includes(query.type)) where.type = query.type;
+  if (isUuid(query.originId)) where.originId = query.originId.toLowerCase();
   if (LOCATIONS.includes(query.location)) where.locations = { [Op.contains]: [query.location] };
   const q = typeof query.q === "string" ? query.q.trim().slice(0, 100) : "";
   if (q) {
@@ -55,27 +59,49 @@ async function coverThumbs(packageIds) {
 
 // ---------- Vitrine pública ----------
 
-async function listPublic(query = {}) {
-  const statuses = await settingsService.getShowcaseStatuses();
-  const where = { ...filters(query), status: statuses };
-  if (PACKAGE_STATUSES.includes(query.status) && statuses.includes(query.status)) where.status = query.status;
+// Busca da vitrine e do link do comprador: nome, descrição e descrição dos itens.
+function textSearch(q) {
+  if (!q) return null;
+  const like = `%${escapeLike(q)}%`;
+  return {
+    [Op.or]: [
+      { name: { [Op.iLike]: like } },
+      { description: { [Op.iLike]: like } },
+      sequelize.literal(`EXISTS (SELECT 1 FROM package_line l WHERE l.package_id = "Package"."id" AND l.description ILIKE ${sequelize.escape(like)})`)
+    ]
+  };
+}
+
+// Lista com filtros e contagens (vitrine e link do comprador). `where` limita ao que o visitante pode ver.
+async function browse(where, query, { negotiationToggle }) {
+  const f = parseCatalogQuery(query);
+  const search = textSearch(f.q);
   const packages = await Package.findAll({
-    where,
-    attributes: { include: [LINE_COUNT] },
+    where: search ? { [Op.and]: [where, search] } : where,
+    attributes: { include: CARD_STATS },
+    include: [ORIGIN_INCLUDE],
     order: PACKAGE_ORDER
   });
-  const covers = await coverThumbs(packages.map((p) => p.id));
+  const plain = packages.map((p) => ({ p, type: p.type, originCode: p.origin?.code, locations: p.locations, status: p.status }));
+  const { items, facets } = filterCatalog(plain, f, { negotiationToggle });
+  const covers = await coverThumbs(items.map((x) => x.p.id));
+  const names = new Map(packages.filter((p) => p.origin).map((p) => [p.origin.code, p.origin.name]));
+  facets.origin.options = facets.origin.options.map((o) => ({ ...o, name: names.get(o.value) || o.value }));
   return {
-    items: packages.map((p) => packageDto(p, { lineCount: p.get("lineCount"), coverUrl: covers.get(p.id) || null })),
-    showcaseStatuses: statuses
+    items: items.map(({ p }) => packageDto(p, { ...cardExtra(p), coverUrl: covers.get(p.id) || null })),
+    facets
   };
+}
+
+// Vitrine pública: ativos e em negociação (estes só com a caixa marcada); nunca vendido, rascunho ou inativo.
+async function listPublic(query = {}) {
+  return browse({ status: PUBLIC_STATUSES }, query, { negotiationToggle: true });
 }
 
 async function findAccessible(number, viewer) {
   const n = positiveInt(number, "number");
-  const pkg = await Package.findOne({ where: { number: n } });
-  const statuses = await settingsService.getShowcaseStatuses();
-  const access = packageAccess(pkg, viewer, statuses);
+  const pkg = await Package.findOne({ where: { number: n }, include: [ORIGIN_INCLUDE] });
+  const access = packageAccess(pkg, viewer);
   // Pacote inexistente e pacote fora do alcance dão a mesma resposta.
   if (!access) throw new NotFoundError("Package not found.");
   return { pkg, access };
@@ -149,6 +175,8 @@ function parsePackageInput(body, { partial }) {
   if (numberGiven || (partial && body.number !== undefined)) out.number = positiveInt(body.number, "number", { max: 999999 });
   if (!partial || body.name !== undefined) out.name = requiredString(body.name, "name", { max: 200 });
   if (!partial || body.type !== undefined) out.type = oneOf(body.type, "type", PACKAGE_TYPES);
+  // Categoria: opcional no cadastro (padrão "other").
+  if (body.category !== undefined || !partial) out.category = oneOf(body.category ?? "other", "category", PACKAGE_CATEGORIES);
   if (!partial || body.locations !== undefined) out.locations = parseLocations(body.locations);
   if (!partial || body.description !== undefined) out.description = optionalString(body.description, "description", { max: 20000 });
   if (!partial || body.storDocuments !== undefined) out.storDocuments = parseStorDocuments(body.storDocuments);
@@ -214,6 +242,7 @@ async function listForSeller(query = {}) {
   const packages = await Package.findAll({
     where,
     attributes: { include: [LINE_COUNT, ATTACHMENT_COUNT] },
+    include: [ORIGIN_INCLUDE],
     order: PACKAGE_ORDER
   });
   const covers = await coverThumbs(packages.map((p) => p.id));
@@ -228,7 +257,7 @@ async function listForSeller(query = {}) {
 }
 
 async function getForSeller(id) {
-  const pkg = await Package.findByPk(uuid(id, "id"), { attributes: { include: [LINE_COUNT, ATTACHMENT_COUNT] } });
+  const pkg = await Package.findByPk(uuid(id, "id"), { attributes: { include: [LINE_COUNT, ATTACHMENT_COUNT] }, include: [ORIGIN_INCLUDE] });
   if (!pkg) throw new NotFoundError("Package not found.");
   const linkCount = await AccessLinkPackage.count({ where: { packageId: pkg.id } });
   return packageDto(pkg, { ...sellerExtra(pkg), lineCount: pkg.get("lineCount"), attachmentCount: pkg.get("attachmentCount"), linkCount });
@@ -236,6 +265,7 @@ async function getForSeller(id) {
 
 async function create(body, userId) {
   const data = parsePackageInput(body, { partial: false });
+  data.originId = await originService.resolveForPackage(body.originId);
   reconcilePending(data);
   await assertStorFolderFree(data.storFolder);
   if (data.number === undefined) data.number = ((await Package.max("number")) || 0) + 1;
@@ -248,6 +278,7 @@ async function update(id, body, userId) {
   const pkg = await Package.findByPk(uuid(id, "id"));
   if (!pkg) throw new NotFoundError("Package not found.");
   const data = parsePackageInput(body, { partial: true });
+  if (body.originId !== undefined) data.originId = await originService.resolveForPackage(body.originId, pkg.originId);
   reconcilePending(data, pkg);
   if (data.storFolder !== undefined) await assertStorFolderFree(data.storFolder, pkg.id);
   if (data.number !== undefined) await assertNumberFree(data.number, pkg.id);
@@ -271,6 +302,8 @@ async function remove(id) {
 
 module.exports = {
   listPublic,
+  browse,
+  ORIGIN_INCLUDE,
   getForViewer,
   listLinesForViewer,
   listForSeller,

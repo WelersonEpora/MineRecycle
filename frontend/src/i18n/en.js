@@ -13,6 +13,14 @@ export default {
   },
   enums: {
     type: { bulk: 'Bulk', equipment: 'Equipment' },
+    category: {
+      refractories: 'Refractories',
+      electrical: 'Electrical',
+      piping: 'Piping',
+      process_equipment: 'Process equipment',
+      office: 'Office',
+      other: 'Other'
+    },
     location: {
       conceicao_do_araguaia: 'Conceição do Araguaia',
       uberaba: 'Uberaba',
@@ -81,7 +89,8 @@ export default {
     status: 'Status',
     empty: 'No packages match these filters.',
     lines: 'no items | 1 item | {n} items',
-    viewPackage: 'View package'
+    viewPackage: 'View package',
+    highlight: { weight: 'total weight', units: 'unit | unit | units', items: 'item | item | items' }
   },
   package: {
     number: 'Package {number}',
@@ -157,6 +166,11 @@ export default {
       storDocumentsPending: 'Pending validation (do not import yet):',
       storDocumentsPendingHint: 'Importing a ticked spreadsheet asks for confirmation.',
       type: 'Type',
+      category: 'Category',
+      origin: 'Origin',
+      originChoose: 'Choose the origin',
+      originHint: 'Where the assets came from. Unlike Location, which says where they are now.',
+      categoryHint: 'Sets the color and icon of the catalog card when the package has no photo.',
       location: 'Locations',
       locationsHint: 'Tick every location holding items of this package. Use "To be confirmed" while unknown.',
       storDocuments: 'STOR documents',
@@ -295,9 +309,34 @@ export default {
     what: 'What',
     from: 'IP / browser'
   },
-  settings: {
-    showcaseTitle: 'Public showcase',
-    showcaseHelp: 'Which package statuses appear in the public catalog. Draft and inactive packages never appear. Buyers with an access link always see the packages shared with them.'
+  origins: {
+    title: 'Origins',
+    help: 'Where the package assets came from (unlike Location, which is where they are now). Each package has one origin.',
+    new: 'New origin',
+    edit: 'Edit origin',
+    name: 'Name',
+    code: 'Code',
+    codeHint: 'Up to 10 letters, digits or hyphens.',
+    active: 'Active',
+    inactive: 'inactive',
+    packages: 'Packages',
+    adminOnly: 'Only administrators add and edit origins.',
+    inactiveHint: 'An inactive origin is no longer offered for packages, but stays on the packages that already use it.',
+    saved: 'Origin saved.'
+  },
+  filters: {
+    title: 'Filters',
+    searchPlaceholder: 'Search by package, item or description',
+    clearSearch: 'Clear search',
+    button: 'Filters',
+    type: 'Type',
+    origin: 'Origin',
+    location: 'Location',
+    all: 'All',
+    types: { bulk: 'Bulk', equipment: 'Equipment' },
+    count: 'no packages | 1 package | {n} packages',
+    showNegotiation: 'Show packages under negotiation',
+    clear: 'Clear filters'
   },
   users: {
     name: 'Name',
@@ -405,6 +444,14 @@ export default {
           name: { term: 'Public name', text: 'English name shown in the catalog and on the buyer link.' },
           folder: { term: 'STOR folder', text: 'Folder name, spelled as in STOR. Identifies the package and is unique. Sellers only.' },
           numbers: { term: 'STOR no.', text: 'Asset IDs in the sales strategy spreadsheet. Used to sort the list. Sellers only.' },
+          origin: {
+            term: 'Origin',
+            text: 'Where the assets came from (Araguaia Nickel Project, Niquelândia...). Unlike Locations, which say where they are now: the Uberaba Dry Port refractories have origin Araguaia and location Uberaba. Chosen from a list kept in Settings; shows as a catalog filter when there are packages from more than one origin.'
+          },
+          category: {
+            term: 'Category',
+            text: 'Refractories, electrical, piping, process equipment, office or other. In the catalog, a package without a photo shows as a tag in the category color and icon, with one highlighted number: units (equipment), total weight (bulk, with items in kg or t) or number of items.'
+          },
           type: {
             term: 'Type',
             text: 'Bulk, when the lot is sold as a whole (refractories, cables, piping), or equipment, sold per item or set.'
@@ -479,14 +526,14 @@ export default {
         rows: {
           visitor: {
             term: 'Visitor',
-            text: 'The catalog: only packages in the statuses chosen in Settings (default: active) and public files.'
+            text: 'The catalog: active packages and, with "Show packages under negotiation" ticked, those under negotiation, with their public files. Sold and draft packages never appear.'
           },
           buyer: {
             term: 'Buyer with a link',
-            text: 'The packages on the link, except draft and inactive, with public and restricted files. The link is valid until the set date (one year at most) and can be revoked at any time.'
+            text: 'The packages on the link, except draft and inactive (sold ones show: they may be theirs), with public and restricted files and the same filters as the catalog. The link is valid until the set date (one year at most) and can be revoked at any time.'
           },
-          seller: { term: 'Seller', text: 'Everything: all packages and statuses, the STOR identification and internal files. Also chooses, in Settings, what the catalog shows.' },
-          admin: { term: 'Administrator', text: 'Same as a seller, plus user management.' }
+          seller: { term: 'Seller', text: 'Everything: all packages and statuses, the STOR identification and internal files.' },
+          admin: { term: 'Administrator', text: 'Same as a seller, plus user management and the origin list (Settings).' }
         }
       },
       rules: {
@@ -601,6 +648,9 @@ export default {
     IMPORT_DOCUMENT_PENDING: 'This spreadsheet is pending validation. Confirm to import it anyway.',
     ITEM_NO_TAKEN: 'This item number already exists in the package.',
     USER_DELETE_SELF: 'You cannot delete your own user.',
+    ORIGIN_CODE_TAKEN: 'Another origin already uses this code.',
+    ORIGIN_INACTIVE: 'This origin is inactive. Choose an active origin.',
+    ORIGIN_INVALID: 'Choose the package origin.',
     EMAIL_TAKEN: 'A user with this email already exists.',
     PAYLOAD_TOO_LARGE: 'File too large.',
     IMPORT_FILE_TYPE: 'Upload an Excel file (.xlsx or .xls).',

@@ -126,7 +126,7 @@ function setTab(key) {
 async function load() {
   try {
     pkg.value = await api.sellerPackage(route.params.id)
-    form.value = { number: pkg.value.number, name: pkg.value.name, type: pkg.value.type, locations: [...(pkg.value.locations || [])], storDocuments: [...(pkg.value.storDocuments || [])], storDocumentsPending: [...(pkg.value.storDocumentsPending || [])], storFolder: pkg.value.storFolder || '', storNumbers: [...(pkg.value.storNumbers || [])], description: pkg.value.description || '' }
+    form.value = { number: pkg.value.number, name: pkg.value.name, type: pkg.value.type, category: pkg.value.category || 'other', originId: pkg.value.originId || '', locations: [...(pkg.value.locations || [])], storDocuments: [...(pkg.value.storDocuments || [])], storDocumentsPending: [...(pkg.value.storDocumentsPending || [])], storFolder: pkg.value.storFolder || '', storNumbers: [...(pkg.value.storNumbers || [])], description: pkg.value.description || '' }
     attachments.value = await api.attachments(route.params.id)
   } catch (err) {
     error.value = f.errorMessage(err)

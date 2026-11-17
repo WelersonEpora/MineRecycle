@@ -9,10 +9,20 @@
       <button class="btn btn-sm btn-outline-secondary" @click="end">{{ t('access.endSession') }}</button>
     </div>
     <h2 class="h6 text-uppercase text-secondary">{{ t('access.packages') }}</h2>
-    <div v-if="error" class="alert alert-danger">{{ error }}</div>
-    <p v-else-if="!data" class="text-secondary">{{ t('common.loading') }}</p>
-    <div v-else class="row g-3">
-      <div v-for="p in data.packages" :key="p.id" class="col-12 col-sm-6 col-lg-4 col-xl-3">
+    <!-- Mesmos filtros da vitrine, só sobre os pacotes do link; sem a caixa de negociação (o comprador vê tudo do link). -->
+    <CatalogFilters
+      id-prefix="mr-buy"
+      :filters="filters"
+      :facets="result?.facets"
+      :total="result?.items.length || 0"
+      @set="(k, v) => (filters[k] = v)"
+      @reset="reset"
+    />
+    <div v-if="error" class="alert alert-danger">{{ f.errorMessage(error) }}</div>
+    <p v-else-if="loading && !result" class="text-secondary">{{ t('common.loading') }}</p>
+    <p v-else-if="!result?.items.length" class="text-secondary">{{ t('catalog.empty') }}</p>
+    <div v-else class="row g-3" :class="{ 'mr-loading': loading }">
+      <div v-for="p in result.items" :key="p.id" class="col-12 col-sm-6 col-lg-4 col-xl-3">
         <PackageCard :pkg="p" />
       </div>
     </div>
@@ -24,21 +34,26 @@ import { onMounted, ref } from 'vue'
 import { useFormat } from '../composables/useFormat.js'
 import { useSession } from '../stores/session.js'
 import { api } from '../services/api.js'
+import { useCatalogFilters } from '../composables/useCatalogFilters.js'
 import PackageCard from '../components/PackageCard.vue'
+import CatalogFilters from '../components/CatalogFilters.vue'
 
 const f = useFormat()
 const t = f.t
 const session = useSession()
 const data = ref(null)
-const error = ref('')
 const ended = ref(false)
+const { filters, result, loading, error, reset } = useCatalogFilters((params) =>
+  session.state.buyer ? api.buyerPackages(params) : Promise.resolve({ items: [], facets: null })
+)
 
+// Nome do link e validade.
 onMounted(async () => {
   if (!session.state.buyer) return
   try {
     data.value = await api.buyerSession()
-  } catch (err) {
-    error.value = f.errorMessage(err)
+  } catch {
+    data.value = null
   }
 })
 

@@ -21,6 +21,18 @@ const User = sequelize.define(
   { tableName: "app_user" }
 );
 
+// Origem dos ativos do pacote (de onde vieram), diferente do local (onde estão hoje). Decisão de 2026-11-17.
+const Origin = sequelize.define(
+  "Origin",
+  {
+    id,
+    name: { type: DataTypes.STRING(120), allowNull: false },
+    code: { type: DataTypes.STRING(10), allowNull: false, unique: true },
+    active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }
+  },
+  { tableName: "origin" }
+);
+
 const Package = sequelize.define(
   "Package",
   {
@@ -28,6 +40,8 @@ const Package = sequelize.define(
     number: { type: DataTypes.INTEGER, allowNull: false, unique: true },
     name: { type: DataTypes.STRING(200), allowNull: false },
     type: { type: DataTypes.STRING(16), allowNull: false },
+    category: { type: DataTypes.STRING(24), allowNull: false, defaultValue: "other" },
+    originId: { type: DataTypes.UUID, allowNull: false },
     description: { type: DataTypes.TEXT },
     locations: { type: DataTypes.ARRAY(DataTypes.STRING(40)), allowNull: false },
     storDocuments: { type: DataTypes.ARRAY(DataTypes.STRING(16)), allowNull: false, defaultValue: [] },
@@ -131,6 +145,8 @@ const Setting = sequelize.define(
   { tableName: "setting", createdAt: false }
 );
 
+Package.belongsTo(Origin, { foreignKey: "originId", as: "origin" });
+Origin.hasMany(Package, { foreignKey: "originId", as: "packages" });
 Package.hasMany(PackageLine, { foreignKey: "packageId", as: "lines" });
 PackageLine.belongsTo(Package, { foreignKey: "packageId", as: "package" });
 PackageLine.belongsTo(PackageLine, { foreignKey: "parentLineId", as: "parent" });
@@ -142,4 +158,4 @@ Package.belongsToMany(AccessLink, { through: AccessLinkPackage, foreignKey: "pac
 AccessLog.belongsTo(AccessLink, { foreignKey: "accessLinkId", as: "link" });
 AccessLink.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
 
-module.exports = { sequelize, User, Package, PackageLine, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting };
+module.exports = { sequelize, User, Origin, Package, PackageLine, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting };

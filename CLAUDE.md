@@ -46,7 +46,7 @@ sem necessidade concreta.
 | Repositório | Público no GitHub (mantém gratuito o runner ARM do build, como no FinMind). Por isso, nada confidencial no código. |
 | Domínio | `minerecycle.weslab.com.br`, pelo Nginx Proxy Manager da `servidor02`, frontend em `127.0.0.1:8085` (8084 é a porta do ambiente local). |
 | Prévia | Basic Auth no nginx do frontend, por `SITE_PASSWORD` (vazio = aberto). Usada só no início; desligada em 2026-11-16 a pedido do usuário. |
-| Vitrine | Qualquer vendedor logado escolhe na tela Settings quais situações aparecem (padrão: só `active`). Antes só o admin; liberado em 2026-11-17. |
+| Vitrine | Regra fixa desde 2026-11-17 (`PUBLIC_STATUSES`): ativos; em negociação só com a caixa "Mostrar pacotes em negociação" (a página do pacote em negociação é pública); vendidos, rascunhos e inativos nunca. A antiga escolha na tela Settings saiu. O link do comprador mostra todos os pacotes do link menos rascunho e inativo: vendidos aparecem (podem ser do comprador). |
 | Reimportação | Substitui todos os itens do pacote; anexos ligados a itens são religados pelo nº do item. |
 | Vendedores | Uma equipe só: todos editam todos os pacotes, cada um com login próprio. Papéis `seller` e `admin`. |
 | Idioma | Inglês padrão, português opcional, bandeirinha na barra superior; a escolha fica no navegador. O conteúdo cadastrado (nomes, descrições, itens) não é traduzido. |
@@ -63,6 +63,10 @@ sem necessidade concreta.
 | Senha (2026-11-17) | Mínimo de 9 caracteres (antes 10), na criação de usuário, na troca de senha e no admin inicial. Constante `MIN_PASSWORD_LENGTH` em `auth.service.js`. |
 
 | Exclusão de usuário (2026-11-17) | Exclusão **lógica** (`app_user.deleted_at`; excluído fica também inativo, por CHECK). Some da lista, não entra e a sessão aberta cai na próxima requisição. Incluir de novo o mesmo e-mail reativa o registro com os dados novos, mantendo o histórico. Ninguém exclui a si mesmo (por isso sempre sobra um admin ativo). Desativar continua existindo, para afastamento temporário. |
+
+| Cartão da vitrine sem foto (2026-11-17) | Variação "etiqueta de inventário": fundo na cor da **categoria** do pacote (campo `category`: refractories, electrical, piping, process_equipment, office, other; CHECK no banco), ícone da categoria ao fundo e um número em destaque em Barlow Condensed (hospedada em `frontend/public/fonts`, licença OFL junto). Número: equipamento = unidades (soma de PC/SET/KIT dos itens principais); a granel = peso total quando todos os itens estão em KG ou T; senão, número de itens (regra pura em `domain/card-highlight.js`). Foto pública substitui o cartão. Sem foto de banco de imagens. |
+
+| Origem e filtros (2026-11-17) | Origem (de onde vieram os ativos) ≠ Local (onde estão). Tabela `origin` (nome, sigla, ativa), referência obrigatória no pacote; ANM para todos, VTM para "30-Niquelândia" (migration de dados). Cadastro em Settings, só admin; sem exclusão, só desativar. Vitrine e link do comprador: busca (nome, descrição, itens), chips de Tipo, Origem (só com mais de uma origem visível) e Local (sem "A confirmar"), com contagens que consideram os outros filtros; filtros na URL; regra pura em `domain/catalog-filter.js`. |
 
 Decisão nova do usuário: registre aqui, com a data.
 

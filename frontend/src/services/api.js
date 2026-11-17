@@ -17,6 +17,7 @@ export const api = {
   packageLines: (number, params) => data(http.get(`/catalog/packages/${number}/lines`, { params })),
   redeem: (token) => http.post('/access/redeem', { token }),
   buyerSession: () => data(http.get('/access/session')),
+  buyerPackages: (params) => data(http.get('/access/packages', { params })),
   buyerLogout: () => http.post('/access/logout'),
 
   // Vendedor: pacotes
@@ -68,8 +69,9 @@ export const api = {
   accessLinkLogs: (linkId) => data(http.get(`/seller/access-links/${linkId}/logs`)),
 
   // Administração e conta
-  settings: () => data(http.get('/seller/settings')),
-  updateSettings: (body) => data(http.put('/seller/settings', body)),
+  origins: () => data(http.get('/seller/origins')),
+  createOrigin: (body) => data(http.post('/seller/origins', body)),
+  updateOrigin: (id, body) => data(http.patch(`/seller/origins/${id}`, body)),
   users: () => data(http.get('/seller/users')),
   createUser: (body) => data(http.post('/seller/users', body)),
   updateUser: (userId, body) => data(http.patch(`/seller/users/${userId}`, body)),

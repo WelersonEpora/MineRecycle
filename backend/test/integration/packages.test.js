@@ -15,7 +15,8 @@ test("package number and locations", { skip }, async (t) => {
   await h.resetDatabase();
   const seller = await h.loggedInSeller(server.base);
   const anon = h.client(server.base);
-  const create = (json) => seller.post("/api/v1/seller/packages", { json });
+  const anm = await h.originId("ANM");
+  const create = (json) => seller.post("/api/v1/seller/packages", { json: { originId: anm, ...json } });
 
   await t.test("number is generated when not given", async () => {
     const first = await create({ name: "1-6 Refractories", type: "bulk", locations: ["conceicao_do_araguaia", "uberaba"] });
@@ -102,5 +103,31 @@ test("package number and locations", { skip }, async (t) => {
     assert.deepEqual(atUberaba, ["10-12-13 Kiln"]);
     const inNiquelandia = (await anon.get("/api/v1/catalog/packages?location=niquelandia")).data.items;
     assert.equal(inNiquelandia.length, 0);
+  });
+
+  await t.test("category and card highlight", async () => {
+    const bad = await create({ name: "Bad Category", type: "bulk", locations: ["uberaba"], category: "toys" });
+    assert.equal(bad.status, 400);
+    const bulk = (await create({ name: "Fictitious Bricks", type: "bulk", locations: ["uberaba"], category: "refractories" })).data;
+    assert.equal(bulk.category, "refractories");
+    const equip = (await create({ name: "Fictitious Kiln", type: "equipment", locations: ["uberaba"] })).data;
+    assert.equal(equip.category, "other");
+    const line = (id, json) => seller.post(`/api/v1/seller/packages/${id}/lines`, { json });
+    await line(bulk.id, { itemNo: "1", description: "Brick A", quantity: "1500", unit: "KG" });
+    await line(bulk.id, { itemNo: "2", description: "Brick B", quantity: "2", unit: "T" });
+    await line(equip.id, { itemNo: "1", description: "Kiln shell", quantity: "2", unit: "PC" });
+    await line(equip.id, { itemNo: "3", description: "Cable", quantity: "40", unit: "M" });
+    await line(equip.id, { itemNo: "2", description: "Drive set", quantity: "1", unit: "SET" });
+    await seller.patch(`/api/v1/seller/packages/${equip.id}`, { json: { category: "process_equipment" } });
+    for (const p of [bulk, equip]) await seller.put(`/api/v1/seller/packages/${p.id}/status`, { json: { status: "active" } });
+
+    const items = (await anon.get("/api/v1/catalog/packages")).data.items;
+    const pubBulk = items.find((p) => p.name === "Fictitious Bricks");
+    const pubEquip = items.find((p) => p.name === "Fictitious Kiln");
+    assert.equal(pubBulk.category, "refractories");
+    assert.deepEqual(pubBulk.highlight, { kind: "weight", value: 3.5 });
+    assert.equal(pubEquip.category, "process_equipment");
+    // Só PC, SET e KIT contam como unidades (o item em metros fica de fora).
+    assert.deepEqual(pubEquip.highlight, { kind: "units", value: 3 });
   });
 });

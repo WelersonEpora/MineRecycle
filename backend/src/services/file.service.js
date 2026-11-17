@@ -5,7 +5,6 @@ const { NotFoundError } = require("../shared/errors");
 const { isUuid } = require("../shared/validate");
 const { canReadAttachment, packageAccess, isEffectivelyRestricted } = require("../domain/access-policy");
 const { storage } = require("../storage");
-const settingsService = require("./settings.service");
 const accessLog = require("./access-log.service");
 
 const VARIANTS = ["original", "web", "thumb"];
@@ -22,15 +21,14 @@ async function open(attachmentId, variant, viewer, req) {
   if (!isUuid(attachmentId) || !VARIANTS.includes(variant)) throw new NotFoundError("File not found.");
   const attachment = await Attachment.findByPk(attachmentId);
   const pkg = attachment ? await Package.findByPk(attachment.packageId) : null;
-  const showcaseStatuses = await settingsService.getShowcaseStatuses();
-  if (!canReadAttachment({ attachment, pkg, viewer, showcaseStatuses, variant })) throw new NotFoundError("File not found.");
+  if (!canReadAttachment({ attachment, pkg, viewer, variant })) throw new NotFoundError("File not found.");
 
   const key = { original: attachment.storageKey, web: attachment.webKey, thumb: attachment.thumbKey }[variant];
   if (!key) throw new NotFoundError("File not found.");
   const file = await storage.open(key);
   if (!file) throw new NotFoundError("File not found.");
 
-  const access = packageAccess(pkg, viewer, showcaseStatuses);
+  const access = packageAccess(pkg, viewer);
   if (access === "buyer" && variant === "original") {
     await accessLog.record(viewer.link.id, "download", { packageId: pkg.id, attachmentId: attachment.id }, req);
   }

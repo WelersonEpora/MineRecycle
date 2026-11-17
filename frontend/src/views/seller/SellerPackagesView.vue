@@ -15,6 +15,13 @@
       </select>
     </div>
     <div>
+      <label class="form-label small mb-1">{{ t('seller.fields.origin') }}</label>
+      <select v-model="filters.originId" class="form-select form-select-sm">
+        <option value="">{{ t('common.all') }}</option>
+        <option v-for="o in origins" :key="o.id" :value="o.id">{{ o.name }}</option>
+      </select>
+    </div>
+    <div>
       <label class="form-label small mb-1">{{ t('catalog.location') }}</label>
       <select v-model="filters.location" class="form-select form-select-sm">
         <option value="">{{ t('common.all') }}</option>
@@ -37,6 +44,7 @@
           <th class="text-nowrap">{{ t('seller.fields.storNumbersShort') }}</th>
           <th>{{ t('seller.fields.name') }}</th>
           <th>{{ t('seller.fields.type') }}</th>
+          <th>{{ t('seller.fields.origin') }}</th>
           <th>{{ t('seller.fields.location') }}</th>
           <th>{{ t('catalog.status') }}</th>
           <th class="mr-num">{{ t('seller.lineCount') }}</th>
@@ -46,7 +54,7 @@
       </thead>
       <tbody>
         <tr v-if="!loading && !items.length">
-          <td colspan="9" class="text-secondary">{{ t('seller.noPackages') }}</td>
+          <td colspan="10" class="text-secondary">{{ t('seller.noPackages') }}</td>
         </tr>
         <tr v-for="p in items" :key="p.id" role="button" @click="open(p)">
           <td style="width: 64px">
@@ -64,6 +72,7 @@
             </div>
           </td>
           <td class="small">{{ f.typeLabel(p.type) }}</td>
+          <td class="small" :title="p.origin?.name">{{ p.origin?.code }}</td>
           <td class="small">{{ f.locationsLabel(p.locations) }}</td>
           <td><StatusBadge :status="p.status" /></td>
           <td class="mr-num">{{ p.lineCount }}</td>
@@ -96,7 +105,12 @@ import PackageForm from '../../components/seller/PackageForm.vue'
 const f = useFormat()
 const t = f.t
 const router = useRouter()
-const filters = reactive({ status: '', type: '', location: '', q: '' })
+const filters = reactive({ status: '', type: '', originId: '', location: '', q: '' })
+const origins = ref([])
+api
+  .origins()
+  .then((list) => (origins.value = list))
+  .catch(() => {})
 const items = ref([])
 const loading = ref(true)
 const error = ref('')
@@ -119,7 +133,7 @@ async function load() {
 
 function openCreate() {
   const next = items.value.reduce((m, p) => Math.max(m, p.number), 0) + 1
-  draft.value = { number: next, name: '', storFolder: '', storNumbers: [], type: 'bulk', locations: [], storDocuments: [], storDocumentsPending: [], description: '' }
+  draft.value = { number: next, name: '', storFolder: '', storNumbers: [], type: 'bulk', category: 'other', originId: '', locations: [], storDocuments: [], storDocumentsPending: [], description: '' }
   createError.value = ''
   creating.value = true
 }

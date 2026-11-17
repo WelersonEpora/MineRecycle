@@ -9,7 +9,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { Op } = require("sequelize");
-const { sequelize, Package } = require("../src/models");
+const { sequelize, Package, Origin } = require("../src/models");
+
+// Origem dos pacotes de exemplo: a principal (ANM), criada pela migration de dados de origens.
+async function defaultOriginId() {
+  const origin = await Origin.findOne({ where: { code: "ANM" } });
+  if (!origin) throw new Error("Origin ANM not found: run the migrations first (npm run db:migrate).");
+  return origin.id;
+}
 const sheet = require("../src/import/spreadsheet");
 const { buildImportPlan, validateMapping } = require("../src/import/import-plan");
 const lineService = require("../src/services/line.service");
@@ -52,6 +59,7 @@ async function importSpreadsheet(file, number) {
   }
   const plan = buildImportPlan(rows, { headerRowIndex, firstRowNumber, mapping, inferHierarchy: true });
   const pkg = await Package.create({
+    originId: await defaultOriginId(),
     number,
     name: `Sample bulk package ${number}`,
     type: "bulk",
@@ -81,6 +89,7 @@ async function importPdfPhotos(dir, number) {
     photos.push({ buffer, ext: info.format === "jpeg" ? ".jpg" : `.${info.format}` });
   }
   const pkg = await Package.create({
+    originId: await defaultOriginId(),
     number,
     name: `Sample equipment package ${number}`,
     type: "equipment",
