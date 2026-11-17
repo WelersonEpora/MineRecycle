@@ -1,4 +1,5 @@
 <template>
+  <HelpTabs />
   <div class="row g-4">
     <!-- Índice -->
     <nav class="col-lg-3 d-none d-lg-block">
@@ -94,6 +95,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n'
+import HelpTabs from '../../components/seller/HelpTabs.vue'
 
 const { t, tm } = useI18n()
 

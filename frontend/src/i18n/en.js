@@ -318,8 +318,140 @@ export default {
     changed: 'Password changed.'
   },
   // Seller area help (HelpView.vue). No braces, at signs or vertical bars: they are vue-i18n syntax.
+  guide: {
+    tab: 'MineRecycle guide',
+    title: 'MineRecycle guide',
+    intro: 'How the system is organized, where the package data comes from and the rules that apply to everyone.',
+    goToImport: 'See the step-by-step spreadsheet loading',
+    sections: {
+      overview: {
+        title: 'What MineRecycle is',
+        intro:
+          'A temporary platform that connects sellers and buyers of the assets of a halted mining project. Buyers learn about the packages through the catalog or an access link and negotiate directly with the sales team.',
+        items: {
+          a: 'There are no prices on the platform: no price field, no price on screen and no public file with values.',
+          b: 'The site is in English, with Portuguese as an option. Names, descriptions and items are not translated.',
+          c: 'A single sales team: every seller can edit every package, each with their own login.'
+        }
+      },
+      stor: {
+        title: 'How STOR is organized',
+        intro:
+          "STOR Global is the client's document and materials repository. It has no package register: what exists are folders and hand-made spreadsheets.",
+        items: {
+          a: 'Each sales package is a folder under Packages. Folder names mix numbers and text, for example 7-8-11 Crushers or 28-Pipping.',
+          b: 'Each document has a 7-digit code at the start of the downloaded file name (for example 1809438_REV0_VER0_...).',
+          c: 'The STOR material code is something else: it sits inside the spreadsheet, on the item row, and can repeat across rows.',
+          d: 'Each package has its own spreadsheet, each in its own format: the header row moves, column names vary and some have no item number or unit.',
+          e: 'Some packages have no spreadsheet, only PDFs and photos. Their items are entered by hand.',
+          f: 'STOR only has photos of the substation transformers, the office furniture and Niquelândia. The other packages need new photos.',
+          g: 'Not every folder is a package: the auction contract (Superbid), the sale of the whole project (32-Project) and the joint negotiation (32-BULK Sale) are left out.'
+        }
+      },
+      packages: {
+        title: 'Packages',
+        intro: 'Each package header holds what buyers see and the STOR identification, which only sellers see.',
+        rows: {
+          name: { term: 'Public name', text: 'English name shown in the catalog and on the buyer link.' },
+          folder: { term: 'STOR folder', text: 'Folder name, spelled as in STOR. Identifies the package and is unique. Sellers only.' },
+          numbers: { term: 'STOR no.', text: 'Asset IDs in the sales strategy spreadsheet. Used to sort the list. Sellers only.' },
+          type: {
+            term: 'Type',
+            text: 'Bulk, when the lot is sold as a whole (refractories, cables, piping), or equipment, sold per item or set.'
+          },
+          locations: { term: 'Locations', text: 'Where the goods are. A package can have several. To be confirmed can sit next to a known location.' },
+          documents: {
+            term: 'STOR documents',
+            text: "Codes of the package's spreadsheets. A code marked as pending still awaits the client's validation. Sellers only."
+          },
+          status: { term: 'Status', text: 'Draft, active, under negotiation, sold or inactive. Draft and inactive never show to buyers.' }
+        },
+        items: {
+          a: 'One spreadsheet per package: importing again replaces all items. When a folder has one spreadsheet per location, it becomes one package per location, like the Conceição do Araguaia and Uberaba refractories.',
+          b: 'The initial package register came from the STOR survey. What is edited here is kept: system updates do not overwrite seller changes.'
+        }
+      },
+      numbers: {
+        title: 'Package numbers and list order',
+        items: {
+          a: 'Numbers come from the sales strategy spreadsheet, not from the folder name.',
+          b: 'In folder names the hyphen means "and", not a range: 1-6 are assets 1 and 6.',
+          c: 'The same number can be in more than one package. For example, 10 and 12 are in both the dryer and the kiln.',
+          d: 'When the spreadsheet has no ID that clearly matches the package, the number is left empty. Sellers can fill it in on the package header.',
+          e: 'Lists are sorted by the lowest package number, then by name. Packages without a number go last.',
+          f: 'Buyers see no numbers at all: neither the STOR no. nor the catalog no., which only appears in the page address.'
+        },
+        note: 'The sales strategy spreadsheet has values and buyer contacts. It is a reference only and is never imported or attached.'
+      },
+      locations: {
+        title: 'Locations',
+        intro: 'A location is only added when a document points to it. When in doubt, use To be confirmed.',
+        rows: {
+          cda: { term: 'Conceição do Araguaia', text: 'The project site.' },
+          uberaba: { term: 'Uberaba', text: 'The Uberaba Dry Port (EADI), where equipment and materials are stored.' },
+          niquelandia: { term: 'Niquelândia', text: 'The Niquelândia refinery.' },
+          bh: { term: 'Belo Horizonte', text: 'Office furniture and equipment.' },
+          supplier: { term: 'At supplier', text: 'Goods still held by the supplier.' },
+          tbc: { term: 'To be confirmed', text: 'No document yet, or parts of the package at an unknown location.' }
+        }
+      },
+      items: {
+        title: 'Items',
+        items: {
+          a: 'Each item is identified by the package and the item number, which is text (1, 1.2, 10A). If the spreadsheet has no item number, the import can number items by row order.',
+          b: 'Kits: 1.1 and 1.2 become sub-items of item 1 when item 1 is in the same spreadsheet.',
+          c: 'Quantity is the total quantity in the row unit, not the number of packs.',
+          d: 'Numbers are read in Brazilian format first (1.234,5). When a value is ambiguous, the review warns.',
+          e: 'Units are standardized by a synonym table (pç, Peça and un become PC). Unknown units are kept as written.',
+          f: 'Columns with no field in the system, such as supplier, weight, category and values, do not become item data. They stay in the original spreadsheet kept in the package, which only sellers see.',
+          g: 'Hidden and filtered rows are imported too. If they should not go in, delete them in a copy before uploading.',
+          h: 'A spreadsheet with a code pending validation is only imported after confirmation.'
+        }
+      },
+      files: {
+        title: 'Photos and files',
+        rows: {
+          public: { term: 'Public', text: 'Any visitor sees it when the package is in the catalog.' },
+          restricted: { term: 'Restricted', text: 'Only people with an access link to the package, plus sellers.' },
+          internal: { term: 'Internal', text: 'Logged-in sellers only. Used for the original import spreadsheet, which may contain values.' }
+        },
+        items: {
+          a: 'Photos get a web version and a thumbnail, without metadata. The public never receives the original photo file, which may carry GPS location.',
+          b: 'Proposals are never public: they are restricted or internal.',
+          c: 'A file can belong to the package or to an item. A file linked to an item stays on the same item number after a re-import.',
+          d: 'Before uploading a PDF, check whether it has prices, values or buyer names. If it does, use Internal.'
+        }
+      },
+      access: {
+        title: 'Who sees what',
+        rows: {
+          visitor: {
+            term: 'Visitor',
+            text: 'The catalog: only packages in the statuses chosen in Settings (default: active) and public files.'
+          },
+          buyer: {
+            term: 'Buyer with a link',
+            text: 'The packages on the link, except draft and inactive, with public and restricted files. The link is valid until the set date (one year at most) and can be revoked at any time.'
+          },
+          seller: { term: 'Seller', text: 'Everything: all packages and statuses, the STOR identification and internal files.' },
+          admin: { term: 'Administrator', text: 'Same as a seller, plus user management and catalog settings.' }
+        }
+      },
+      rules: {
+        title: 'Rules that always apply',
+        items: {
+          a: 'No price, value or buyer name goes into the package register, the items or a public file.',
+          b: 'Client data is confidential. Spreadsheets and documents go in only through the system screens.',
+          c: 'One package, one spreadsheet. Importing again replaces the items; it does not add to them.',
+          d: 'Locations only with a document as source.',
+          e: 'When unsure about a number, a location or whether a spreadsheet should be imported, leave it open and confirm with the client.'
+        }
+      }
+    }
+  },
   help: {
     menu: 'Help',
+    tab: 'Spreadsheet loading',
     title: 'Help: loading spreadsheets',
     intro: 'How to download the package spreadsheets from STOR and import them into MineRecycle, one spreadsheet per package.',
     contents: 'On this page',

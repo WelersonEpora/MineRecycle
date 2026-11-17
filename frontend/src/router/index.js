@@ -19,7 +19,9 @@ const routes = [
       { path: 'settings', name: 'seller-settings', component: () => import('../views/seller/SettingsView.vue') },
       { path: 'users', name: 'seller-users', component: () => import('../views/seller/UsersView.vue'), meta: { admin: true } },
       { path: 'account', name: 'seller-account', component: () => import('../views/seller/AccountView.vue') },
-      { path: 'help', name: 'seller-help', component: () => import('../views/seller/HelpView.vue') }
+      { path: 'help', redirect: { name: 'seller-help-guide' } },
+      { path: 'help/guide', name: 'seller-help-guide', component: () => import('../views/seller/GuideView.vue') },
+      { path: 'help/import', name: 'seller-help-import', component: () => import('../views/seller/HelpView.vue') }
     ]
   },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') }

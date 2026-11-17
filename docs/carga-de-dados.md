@@ -516,8 +516,20 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 
 ## Parte 5: Pendente de publicação
 
-O que já está no ambiente local e ainda não foi para o servidor (último commit publicado: `f382864`, versão inicial).
-Atualizar esta seção a cada ajuste. **Nada é publicado sem confirmação do usuário.**
+O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
+publicado sem confirmação do usuário.**
+
+Último commit publicado: `14847c9` (2026-11-16), com as migrations 1 a 5 abaixo, aplicadas no servidor pelo deploy
+sem erro. Daqui para frente, acrescente aqui cada migration ou mudança nova.
+
+**Pendente agora** (só código de tela, nenhuma migration; nada muda no banco):
+
+- Ajuda com duas páginas: **Guia do MineRecycle** (STOR, pacotes, números, locais, itens, arquivos, quem vê o quê e
+  regras) e **Carga de planilhas** (o passo a passo de antes). Endereços `/seller/help/guide` e `/seller/help/import`;
+  `/seller/help` abre o Guia.
+- Esta seção atualizada.
+
+### Histórico: publicação de 2026-11-16 (`14847c9`)
 
 Regras (decisão de 2026-11-16):
 

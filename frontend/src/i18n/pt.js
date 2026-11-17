@@ -318,8 +318,140 @@ export default {
     changed: 'Senha trocada.'
   },
   // Ajuda da área do vendedor (HelpView.vue). Sem chaves, arroba nem barra vertical: são sintaxe do vue-i18n.
+  guide: {
+    tab: 'Guia do MineRecycle',
+    title: 'Guia do MineRecycle',
+    intro: 'Como o sistema está organizado, de onde vêm os dados dos pacotes e as regras que valem para todos.',
+    goToImport: 'Ver o passo a passo da carga de planilhas',
+    sections: {
+      overview: {
+        title: 'O que é o MineRecycle',
+        intro:
+          'Plataforma temporária que conecta vendedores e compradores dos ativos de um projeto de mineração paralisado. O comprador conhece os pacotes pela vitrine ou por um link de acesso e negocia direto com a equipe de vendas.',
+        items: {
+          a: 'Não há preço na plataforma: nem campo, nem tela, nem arquivo público com valor.',
+          b: 'O site é em inglês, com português como opção. Nomes, descrições e itens cadastrados não são traduzidos.',
+          c: 'Uma equipe só de vendedores: todos podem editar todos os pacotes, cada um com o seu login.'
+        }
+      },
+      stor: {
+        title: 'Como o STOR está organizado',
+        intro:
+          'O STOR Global é o repositório de documentos e materiais do cliente. Ele não tem cadastro de pacotes: o que existe são pastas e planilhas feitas à mão.',
+        items: {
+          a: 'Cada pacote de venda é uma pasta dentro de Packages. O nome da pasta mistura números e texto, por exemplo 7-8-11 Crushers ou 28-Pipping.',
+          b: 'Cada documento tem um código de 7 dígitos, que vem no começo do nome do arquivo baixado (por exemplo 1809438_REV0_VER0_...).',
+          c: 'O código STOR do material é outra coisa: fica dentro da planilha, na linha do item, e pode se repetir em várias linhas.',
+          d: 'Cada pacote tem a sua própria planilha, cada uma num formato: o cabeçalho muda de linha, os nomes das colunas variam e algumas não têm nº do item ou unidade.',
+          e: 'Alguns pacotes não têm planilha, só PDFs e fotos. Nesses, os itens são cadastrados à mão.',
+          f: 'Fotos no STOR só existem para os transformadores das subestações, os móveis de escritório e Niquelândia. Os demais pacotes dependem de fotos novas.',
+          g: 'Nem toda pasta é um pacote: o contrato de leilão (Superbid), a venda do projeto inteiro (32-Project) e a negociação conjunta (32-BULK Sale) ficam de fora.'
+        }
+      },
+      packages: {
+        title: 'Pacotes',
+        intro: 'O cabeçalho de cada pacote reúne o que o comprador vê e a identificação no STOR, que só os vendedores veem.',
+        rows: {
+          name: { term: 'Nome público', text: 'Nome em inglês mostrado na vitrine e no link do comprador.' },
+          folder: { term: 'Pasta no STOR', text: 'Nome da pasta, com a grafia original. Identifica o pacote e não se repete. Só vendedores.' },
+          numbers: { term: 'Nº STOR', text: 'IDs do ativo na planilha de estratégia de vendas. Usados para ordenar a lista. Só vendedores.' },
+          type: {
+            term: 'Tipo',
+            text: 'A granel, quando o lote é vendido em bloco (refratários, cabos, tubulação), ou equipamento, vendido por equipamento ou conjunto.'
+          },
+          locations: { term: 'Locais', text: 'Onde os bens estão. Um pacote pode ter vários. A confirmar pode ficar junto de um local conhecido.' },
+          documents: {
+            term: 'Documentos STOR',
+            text: 'Códigos das planilhas do pacote. Um código marcado como pendente ainda aguarda validação do cliente. Só vendedores.'
+          },
+          status: { term: 'Situação', text: 'Rascunho, ativo, em negociação, vendido ou inativo. Rascunho e inativo nunca aparecem para o comprador.' }
+        },
+        items: {
+          a: 'Uma planilha por pacote: importar de novo substitui todos os itens. Quando uma pasta tem uma planilha por local, ela vira um pacote por local, como os refratários de Conceição do Araguaia e de Uberaba.',
+          b: 'O cadastro inicial dos pacotes veio do levantamento no STOR. O que for editado aqui é mantido: as atualizações do sistema não sobrescrevem o que o vendedor ajustou.'
+        }
+      },
+      numbers: {
+        title: 'Números do pacote e ordem da lista',
+        items: {
+          a: 'A fonte dos números é a planilha de estratégia de vendas, não o nome da pasta.',
+          b: 'No nome da pasta, o hífen quer dizer "e", não intervalo: 1-6 são os ativos 1 e 6.',
+          c: 'O mesmo número pode estar em mais de um pacote. Por exemplo, 10 e 12 estão no secador e no forno.',
+          d: 'Quando a planilha não tem um ID que corresponda com clareza ao pacote, o número fica vazio. O vendedor pode completar no cabeçalho do pacote.',
+          e: 'As listas são ordenadas pelo menor número do pacote e depois pelo nome. Pacotes sem número vão para o fim.',
+          f: 'O comprador não vê número nenhum: nem o Nº STOR, nem o nº do catálogo, que só aparece no endereço da página.'
+        },
+        note: 'A planilha de estratégia de vendas tem valores e contatos de compradores. Ela serve só como referência e nunca é importada nem anexada.'
+      },
+      locations: {
+        title: 'Locais',
+        intro: 'Um local só entra no pacote quando há um documento que o indique. Na dúvida, fica A confirmar.',
+        rows: {
+          cda: { term: 'Conceição do Araguaia', text: 'O site do projeto.' },
+          uberaba: { term: 'Uberaba', text: 'O Porto Seco de Uberaba (EADI), onde há equipamentos e materiais armazenados.' },
+          niquelandia: { term: 'Niquelândia', text: 'A refinaria de Niquelândia.' },
+          bh: { term: 'Belo Horizonte', text: 'Móveis e equipamentos de escritório.' },
+          supplier: { term: 'No fornecedor', text: 'Bens que ainda estão com o fornecedor.' },
+          tbc: { term: 'A confirmar', text: 'Local ainda sem documento, ou partes do pacote em local desconhecido.' }
+        }
+      },
+      items: {
+        title: 'Itens',
+        items: {
+          a: 'Cada item é identificado pelo pacote e pelo nº do item, que é texto (1, 1.2, 10A). Se a planilha não tem nº do item, a importação pode numerar pela ordem das linhas.',
+          b: 'Kits: 1.1 e 1.2 viram subitens do item 1 quando o item 1 está na mesma planilha.',
+          c: 'A quantidade é a quantidade total na unidade da linha, não o número de embalagens.',
+          d: 'Números são lidos primeiro no formato brasileiro (1.234,5). Quando o valor é ambíguo, a conferência avisa.',
+          e: 'Unidades são padronizadas por uma tabela de sinônimos (pç, Peça e un viram PC). Unidade desconhecida é mantida como foi escrita.',
+          f: 'Colunas sem campo no sistema, como fornecedor, peso, categoria e valores, não viram dado do item. Elas continuam na planilha original guardada no pacote, que só vendedores veem.',
+          g: 'Linhas ocultas e filtradas da planilha também são importadas. Se não devem entrar, apague-as numa cópia antes de enviar.',
+          h: 'Planilha com código pendente de validação só é importada com confirmação.'
+        }
+      },
+      files: {
+        title: 'Fotos e arquivos',
+        rows: {
+          public: { term: 'Público', text: 'Qualquer visitante vê, quando o pacote está na vitrine.' },
+          restricted: { term: 'Restrito', text: 'Só quem tem link de acesso ao pacote, além dos vendedores.' },
+          internal: { term: 'Interno', text: 'Só vendedores logados. É o caso da planilha original da importação, que pode ter valores.' }
+        },
+        items: {
+          a: 'Fotos ganham uma versão para a web e uma miniatura, sem metadados. O público nunca recebe o arquivo original de uma foto, que pode ter localização GPS.',
+          b: 'Proposta nunca é pública: fica restrita ou interna.',
+          c: 'Um arquivo pode ser do pacote ou de um item. Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
+          d: 'Antes de enviar um PDF, confira se ele tem preço, valor ou nome de comprador. Se tiver, use Interno.'
+        }
+      },
+      access: {
+        title: 'Quem vê o quê',
+        rows: {
+          visitor: {
+            term: 'Visitante',
+            text: 'A vitrine: só os pacotes nas situações escolhidas em Configuração (padrão: ativo) e os arquivos públicos.'
+          },
+          buyer: {
+            term: 'Comprador com link',
+            text: 'Os pacotes do link, menos rascunho e inativo, com os arquivos públicos e restritos. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
+          },
+          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos.' },
+          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários e a configuração da vitrine.' }
+        }
+      },
+      rules: {
+        title: 'Regras que valem sempre',
+        items: {
+          a: 'Nenhum preço, valor ou nome de comprador entra no cadastro, nos itens ou em arquivo público.',
+          b: 'Os dados do cliente são confidenciais. Planilhas e documentos entram só pelas telas do sistema.',
+          c: 'Um pacote tem uma planilha. Importar de novo substitui os itens; não soma.',
+          d: 'Local só com fonte em documento.',
+          e: 'Na dúvida sobre um número, um local ou se uma planilha deve ser importada, deixe em aberto e confirme com o cliente.'
+        }
+      }
+    }
+  },
   help: {
     menu: 'Ajuda',
+    tab: 'Carga de planilhas',
     title: 'Ajuda: carga de planilhas',
     intro: 'Como baixar do STOR as planilhas dos pacotes e importá-las no MineRecycle, uma planilha por pacote.',
     contents: 'Nesta página',
