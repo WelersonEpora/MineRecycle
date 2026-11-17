@@ -60,6 +60,10 @@ sem necessidade concreta.
 
 | Escopo e Steel Structure (2026-11-16) | São 22 pacotes (não "cerca de 25"). O Guia explica por que o site mostra pacotes, e não os ~60 mil itens do projeto (seção "Por que não são 60 mil itens", pública por decisão do usuário). A planilha 1809537 existe, mas é uma **proposta** (preço e valor): fica ligada ao Steel Structure como pendente, nunca é importada; os itens desse pacote entram à mão. |
 
+| Senha (2026-11-17) | Mínimo de 9 caracteres (antes 10), na criação de usuário, na troca de senha e no admin inicial. Constante `MIN_PASSWORD_LENGTH` em `auth.service.js`. |
+
+| Exclusão de usuário (2026-11-17) | Exclusão **lógica** (`app_user.deleted_at`; excluído fica também inativo, por CHECK). Some da lista, não entra e a sessão aberta cai na próxima requisição. Incluir de novo o mesmo e-mail reativa o registro com os dados novos, mantendo o histórico. Ninguém exclui a si mesmo (por isso sempre sobra um admin ativo). Desativar continua existindo, para afastamento temporário. |
+
 Decisão nova do usuário: registre aqui, com a data.
 
 ## Arquitetura

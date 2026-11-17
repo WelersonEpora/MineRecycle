@@ -20,7 +20,7 @@ async function resolve(cookies) {
     }
     if (payload) {
       const user = await User.findByPk(payload.sub);
-      if (user && user.active) viewer.seller = { id: user.id, role: user.role, name: user.name, email: user.email };
+      if (user && user.active && !user.deletedAt) viewer.seller = { id: user.id, role: user.role, name: user.name, email: user.email };
     }
   }
 

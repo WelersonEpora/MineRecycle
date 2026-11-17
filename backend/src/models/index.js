@@ -14,7 +14,9 @@ const User = sequelize.define(
     passwordHash: { type: DataTypes.STRING(100), allowNull: false },
     role: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "seller" },
     active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
-    lastLoginAt: { type: DataTypes.DATE }
+    lastLoginAt: { type: DataTypes.DATE },
+    // Exclusão lógica: preenchido = excluído (e inativo). Ver user.service.js.
+    deletedAt: { type: DataTypes.DATE }
   },
   { tableName: "app_user" }
 );

@@ -94,5 +94,9 @@ router.post("/users", requireAdmin, async (req, res) => res.status(201).json(awa
 router.patch("/users/:userId", requireAdmin, async (req, res) =>
   res.json(await userService.update(req.params.userId, req.body || {}, userId(req)))
 );
+router.delete("/users/:userId", requireAdmin, async (req, res) => {
+  await userService.remove(req.params.userId, userId(req));
+  res.status(204).end();
+});
 
 module.exports = router;

@@ -520,17 +520,16 @@ Ligações de anexos a linhas que se perderam numa importação errada não volt
 O que já está no ambiente local e ainda não foi para o servidor. Atualizar esta seção a cada ajuste. **Nada é
 publicado sem confirmação do usuário.**
 
-Último commit publicado: `b8cd8f6` (2026-11-16): seção "Por que não são 60 mil
-itens" no Guia do MineRecycle (só tela, sem migration). Antes: `033a74f` (Ajuda com Guia e Carga de planilhas) e
+Último commit publicado: `9c63857` (2026-11-16): migration 6
+(`20261116220000-data-steel-structure-document`, liga 1809537 ao Steel Structure como pendente) e "22 pacotes" no
+Guia. Antes: `b8cd8f6` (seção "Por que não são 60 mil itens"), `033a74f` (Ajuda com Guia e Carga de planilhas) e
 `14847c9` (migrations 1 a 5 abaixo). Daqui para frente, acrescente aqui cada migration ou mudança nova.
 
-**Pendente agora** (nesta ordem no deploy):
+**Pendente agora:**
 
-| # | Migration | O que altera no servidor |
-|---|---|---|
-| 6 | `20261116220000-data-steel-structure-document` | Acrescenta o código 1809537 ao pacote da pasta "19-30-Steel Structure", marcado como pendente. Só se o código ainda não estiver lá; não remove nada; não mexe em itens, nome, locais nem situação. Sem volta automática. |
-
-Também vai junto (só tela): no Guia, "22 pacotes" no lugar de "cerca de 25".
+- Senha com pelo menos 9 caracteres (antes 10). Senhas já cadastradas continuam valendo.
+- Exclusão de usuário (lógica), na tela Usuários. Migration 7 `20261117090000-user-deleted-at`: acrescenta a coluna
+  `app_user.deleted_at` (vazia para todos) e a regra "excluído é inativo". Nenhum usuário existente muda.
 
 ### Histórico: publicação de 2026-11-16 (`14847c9`)
 

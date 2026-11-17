@@ -8,7 +8,7 @@
       </div>
       <div class="mb-3">
         <label class="form-label small" for="mr-new">{{ t('account.newPassword') }}</label>
-        <input id="mr-new" v-model="next" type="password" class="form-control" autocomplete="new-password" minlength="10" required />
+        <input id="mr-new" v-model="next" type="password" class="form-control" autocomplete="new-password" minlength="9" required />
         <div class="form-text">{{ t('users.passwordHint') }}</div>
       </div>
       <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>

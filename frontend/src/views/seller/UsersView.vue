@@ -22,7 +22,12 @@
           <td>{{ t(`enums.role.${u.role}`) }}</td>
           <td>{{ u.active ? t('common.yes') : t('common.no') }}</td>
           <td class="small">{{ f.dateTime(u.lastLoginAt) }}</td>
-          <td class="text-end"><button class="btn btn-sm btn-link" @click="openForm(u)"><i class="bi bi-pencil"></i></button></td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-link" :title="t('common.edit')" @click="openForm(u)"><i class="bi bi-pencil"></i></button>
+            <button v-if="u.id !== myId" class="btn btn-sm btn-link text-danger" :title="t('users.delete')" @click="remove(u)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -66,13 +71,17 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useFormat } from '../../composables/useFormat.js'
 import { api } from '../../services/api.js'
 import ModalDialog from '../../components/ModalDialog.vue'
+import { confirmDialog, notify } from '../../composables/useDialog.js'
+import { useSession } from '../../stores/session.js'
 
 const f = useFormat()
 const t = f.t
+const session = useSession()
+const myId = computed(() => session.state.user?.id)
 const users = ref([])
 const error = ref('')
 const form = reactive({ show: false, id: null, name: '', email: '', role: 'seller', active: true, password: '', error: '', busy: false })
@@ -107,7 +116,8 @@ async function save() {
       if (form.password) body.password = form.password
       await api.updateUser(form.id, body)
     } else {
-      await api.createUser({ name: form.name, email: form.email, role: form.role, password: form.password })
+      const created = await api.createUser({ name: form.name, email: form.email, role: form.role, password: form.password })
+      if (created.reactivated) notify(t('users.reactivated'), 'info', 8000)
     }
     form.show = false
     await load()
@@ -115,6 +125,20 @@ async function save() {
     form.error = f.errorMessage(err)
   } finally {
     form.busy = false
+  }
+}
+
+// Exclusão lógica: some da lista e perde o acesso; volta se o mesmo e-mail for incluído de novo.
+async function remove(u) {
+  const ok = await confirmDialog({ title: t('users.deleteTitle'), message: t('users.deleteConfirm', { name: u.name }), confirmLabel: t('common.delete') })
+  if (!ok) return
+  error.value = ''
+  try {
+    await api.deleteUser(u.id)
+    notify(t('users.deleted'))
+    await load()
+  } catch (err) {
+    error.value = f.errorMessage(err)
   }
 }
 

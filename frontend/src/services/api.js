@@ -73,5 +73,6 @@ export const api = {
   users: () => data(http.get('/seller/users')),
   createUser: (body) => data(http.post('/seller/users', body)),
   updateUser: (userId, body) => data(http.patch(`/seller/users/${userId}`, body)),
+  deleteUser: (userId) => http.delete(`/seller/users/${userId}`),
   changePassword: (currentPassword, newPassword) => http.put('/seller/me/password', { currentPassword, newPassword })
 }

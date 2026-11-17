@@ -6,6 +6,9 @@ const { UnauthorizedError, ValidationError } = require("../shared/errors");
 const { signSession } = require("../shared/tokens");
 const env = require("../config/env");
 
+// Tamanho mínimo da senha (decisão do usuário em 2026-11-17: a partir de 9 caracteres).
+const MIN_PASSWORD_LENGTH = 9;
+
 // Hash fixo para comparar quando o e-mail não existe: o tempo de resposta não revela quais e-mails têm conta.
 const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 12);
 
@@ -19,7 +22,7 @@ async function login(email, password) {
   }
   const user = await User.findOne({ where: { email: email.trim().toLowerCase() } });
   const ok = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
-  if (!user || !ok || !user.active) throw new UnauthorizedError("Invalid email or password.", null, "INVALID_CREDENTIALS");
+  if (!user || !ok || !user.active || user.deletedAt) throw new UnauthorizedError("Invalid email or password.", null, "INVALID_CREDENTIALS");
 
   user.lastLoginAt = new Date();
   await user.save();
@@ -37,8 +40,8 @@ async function changeOwnPassword(userId, currentPassword, newPassword) {
 }
 
 async function hashPassword(password) {
-  if (typeof password !== "string" || password.length < 10 || password.length > 200) {
-    throw new ValidationError("Password must have at least 10 characters.", { field: "password", code: "too_short" });
+  if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH || password.length > 200) {
+    throw new ValidationError(`Password must have at least ${MIN_PASSWORD_LENGTH} characters.`, { field: "password", code: "too_short" });
   }
   return bcrypt.hash(password, 12);
 }

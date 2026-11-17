@@ -309,7 +309,12 @@ export default {
     newUser: 'Novo usuário',
     password: 'Senha',
     newPassword: 'Nova senha (em branco para manter)',
-    passwordHint: 'Pelo menos 10 caracteres.'
+    passwordHint: 'Pelo menos 9 caracteres.',
+    delete: 'Excluir usuário',
+    deleteTitle: 'Excluir usuário',
+    deleteConfirm: '“{name}” sai da lista e perde o acesso na hora. O histórico dele fica guardado. Para voltar, inclua de novo o mesmo e-mail.',
+    deleted: 'Usuário excluído.',
+    reactivated: 'Este e-mail pertencia a um usuário excluído. Ele foi reativado com os dados informados.'
   },
   account: {
     changePassword: 'Trocar senha',
@@ -596,6 +601,7 @@ export default {
     STOR_FOLDER_TAKEN: 'Outro pacote já usa esta pasta do STOR.',
     IMPORT_DOCUMENT_PENDING: 'Esta planilha está pendente de validação. Confirme para importar mesmo assim.',
     ITEM_NO_TAKEN: 'Este nº de item já existe no pacote.',
+    USER_DELETE_SELF: 'Você não pode excluir o seu próprio usuário.',
     EMAIL_TAKEN: 'Já existe um usuário com este e-mail.',
     PAYLOAD_TOO_LARGE: 'Arquivo grande demais.',
     IMPORT_FILE_TYPE: 'Envie um arquivo Excel (.xlsx ou .xls).',

@@ -309,7 +309,12 @@ export default {
     newUser: 'New user',
     password: 'Password',
     newPassword: 'New password (leave blank to keep)',
-    passwordHint: 'At least 10 characters.'
+    passwordHint: 'At least 9 characters.',
+    delete: 'Delete user',
+    deleteTitle: 'Delete user',
+    deleteConfirm: '“{name}” leaves the list and loses access immediately. Their history is kept. To bring them back, add the same email again.',
+    deleted: 'User deleted.',
+    reactivated: 'This email belonged to a deleted user, who was reactivated with the data you entered.'
   },
   account: {
     changePassword: 'Change password',
@@ -596,6 +601,7 @@ export default {
     STOR_FOLDER_TAKEN: 'Another package already uses this STOR folder.',
     IMPORT_DOCUMENT_PENDING: 'This spreadsheet is pending validation. Confirm to import it anyway.',
     ITEM_NO_TAKEN: 'This item number already exists in the package.',
+    USER_DELETE_SELF: 'You cannot delete your own user.',
     EMAIL_TAKEN: 'A user with this email already exists.',
     PAYLOAD_TOO_LARGE: 'File too large.',
     IMPORT_FILE_TYPE: 'Upload an Excel file (.xlsx or .xls).',
