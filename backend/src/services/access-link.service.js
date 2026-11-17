@@ -55,14 +55,14 @@ function linkDto(link, stats = {}) {
     state: linkState(link),
     createdAt: link.createdAt,
     createdBy: link.creator ? { id: link.creator.id, name: link.creator.name } : null,
-    packages: (link.packages || []).map((p) => ({ id: p.id, number: p.number, name: p.name, status: p.status })),
+    packages: (link.packages || []).map((p) => ({ id: p.id, number: p.number, name: p.name, storFolder: p.storFolder || null, status: p.status })),
     accessCount: stats.accessCount ?? 0,
     lastAccessAt: stats.lastAccessAt ?? null
   };
 }
 
 const LINK_INCLUDE = [
-  { association: "packages", attributes: ["id", "number", "name", "status"], through: { attributes: [] } },
+  { association: "packages", attributes: ["id", "number", "name", "storFolder", "status"], through: { attributes: [] } },
   { association: "creator", attributes: ["id", "name"] }
 ];
 
@@ -187,7 +187,8 @@ async function redeem(token, req) {
 async function buyerSession(viewerLink) {
   const packages = await Package.findAll({
     where: { id: viewerLink.packageIds, status: { [Op.notIn]: BUYER_HIDDEN_STATUSES } },
-    order: [["number", "ASC"]]
+    // Mesma ordem da vitrine (números do pacote na planilha de estratégia, depois nome).
+    order: [sequelize.literal(`(SELECT min(n) FROM unnest("Package"."stor_numbers") AS n) ASC NULLS LAST`), ["name", "ASC"], ["number", "ASC"]]
   });
   const covers = await Attachment.findAll({
     where: { packageId: packages.map((p) => p.id), kind: "photo", thumbKey: { [Op.ne]: null } },

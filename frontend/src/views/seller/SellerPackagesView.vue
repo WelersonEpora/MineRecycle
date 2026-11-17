@@ -34,7 +34,7 @@
       <thead class="table-light small">
         <tr>
           <th></th>
-          <th>#</th>
+          <th class="text-nowrap">{{ t('seller.fields.storNumbersShort') }}</th>
           <th>{{ t('seller.fields.name') }}</th>
           <th>{{ t('seller.fields.type') }}</th>
           <th>{{ t('seller.fields.location') }}</th>
@@ -52,10 +52,19 @@
           <td style="width: 64px">
             <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
           </td>
-          <td class="mr-number">{{ p.number }}</td>
-          <td class="fw-medium">{{ p.name }}</td>
+          <td class="mr-number text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
+          <td>
+            <div class="fw-medium">{{ p.name }}</div>
+            <div v-if="p.storFolder" class="small text-secondary"><i class="bi bi-folder2"></i> <span class="mr-mono">{{ p.storFolder }}</span></div>
+            <div v-if="p.storDocuments?.length" class="small text-secondary mr-mono">
+              {{ t('seller.storShort') }}
+              <span v-for="(d, i) in p.storDocuments" :key="d"
+                >{{ i ? ' · ' : '' }}{{ d }}<span v-if="p.storDocumentsPending?.includes(d)" class="badge text-bg-warning ms-1">{{ t('seller.pendingShort') }}</span></span
+              >
+            </div>
+          </td>
           <td class="small">{{ f.typeLabel(p.type) }}</td>
-          <td class="small">{{ f.locationLabel(p.location) }}</td>
+          <td class="small">{{ f.locationsLabel(p.locations) }}</td>
           <td><StatusBadge :status="p.status" /></td>
           <td class="mr-num">{{ p.lineCount }}</td>
           <td class="mr-num">{{ p.attachmentCount }}</td>
@@ -110,7 +119,7 @@ async function load() {
 
 function openCreate() {
   const next = items.value.reduce((m, p) => Math.max(m, p.number), 0) + 1
-  draft.value = { number: next, name: '', type: 'bulk', location: 'uberaba', description: '' }
+  draft.value = { number: next, name: '', storFolder: '', storNumbers: [], type: 'bulk', locations: [], storDocuments: [], storDocumentsPending: [], description: '' }
   createError.value = ''
   creating.value = true
 }

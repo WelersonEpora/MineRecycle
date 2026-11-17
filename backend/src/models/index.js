@@ -27,7 +27,11 @@ const Package = sequelize.define(
     name: { type: DataTypes.STRING(200), allowNull: false },
     type: { type: DataTypes.STRING(16), allowNull: false },
     description: { type: DataTypes.TEXT },
-    location: { type: DataTypes.STRING(40), allowNull: false },
+    locations: { type: DataTypes.ARRAY(DataTypes.STRING(40)), allowNull: false },
+    storDocuments: { type: DataTypes.ARRAY(DataTypes.STRING(16)), allowNull: false, defaultValue: [] },
+    storDocumentsPending: { type: DataTypes.ARRAY(DataTypes.STRING(16)), allowNull: false, defaultValue: [] },
+    storFolder: { type: DataTypes.STRING(200) },
+    storNumbers: { type: DataTypes.ARRAY(DataTypes.INTEGER), allowNull: false, defaultValue: [] },
     status: { type: DataTypes.STRING(24), allowNull: false, defaultValue: "draft" },
     createdBy: { type: DataTypes.UUID },
     updatedBy: { type: DataTypes.UUID }

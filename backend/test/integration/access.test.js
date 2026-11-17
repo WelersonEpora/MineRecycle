@@ -24,7 +24,7 @@ test("access links and attachment visibility", { skip }, async (t) => {
   const { AccessLink, AccessLog } = require("../../src/models");
 
   const mk = async (number, status) => {
-    const p = (await seller.post("/api/v1/seller/packages", { json: { number, name: `Pkg ${number}`, type: "equipment", location: "niquelandia" } })).data;
+    const p = (await seller.post("/api/v1/seller/packages", { json: { number, name: `Pkg ${number}`, type: "equipment", locations: ["niquelandia"] } })).data;
     if (status !== "draft") await seller.put(`/api/v1/seller/packages/${p.id}/status`, { json: { status } });
     return p;
   };
@@ -39,6 +39,7 @@ test("access links and attachment visibility", { skip }, async (t) => {
   const datasheet = await uploadTo(active.id, { kind: "datasheet", visibility: "restricted" }, { name: "ficha.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
   const proposal = await uploadTo(active.id, { kind: "proposal", visibility: "public" }, { name: "proposta.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
   const publicDoc = await uploadTo(active.id, { kind: "drawing", visibility: "public" }, { name: "layout.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
+  const internalDoc = await uploadTo(active.id, { kind: "list", visibility: "internal" }, { name: "planilha.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
   const draftPhoto = await uploadTo(draft.id, { kind: "photo" }, { name: "d.png", buffer: await png() });
   const negotiatingDoc = await uploadTo(negotiating.id, { kind: "datasheet" }, { name: "n.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
 
@@ -65,6 +66,7 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.equal((await anon.get(`/api/v1/files/${proposal.id}/original`)).status, 404);
     assert.equal((await anon.get(`/api/v1/files/${photo.id}/original`)).status, 404);
     assert.equal((await anon.get(`/api/v1/files/${publicDoc.id}/original`)).status, 200);
+    assert.equal((await anon.get(`/api/v1/files/${internalDoc.id}/original`)).status, 404);
     assert.equal((await anon.get(`/api/v1/files/${draftPhoto.id}/thumb`)).status, 404);
     assert.equal((await anon.get("/api/v1/catalog/packages/11")).status, 404);
     assert.equal((await anon.get("/api/v1/catalog/packages/13")).status, 404);
@@ -78,6 +80,8 @@ test("access links and attachment visibility", { skip }, async (t) => {
     assert.equal(res.status, 200);
     assert.equal(res.headers.get("cache-control"), "private, no-store");
     assert.equal((await seller.get(`/api/v1/files/${draftPhoto.id}/original`)).status, 200);
+    assert.equal((await seller.get(`/api/v1/files/${internalDoc.id}/original`)).status, 200);
+    assert.equal((await seller.get("/api/v1/catalog/packages/10")).data.attachments.length, 5);
   });
 
   await t.test("draft packages cannot be shared", async () => {
@@ -134,6 +138,9 @@ test("access links and attachment visibility", { skip }, async (t) => {
     const detail = (await buyer.get("/api/v1/catalog/packages/10")).data;
     assert.equal(detail.access, "buyer");
     assert.equal(detail.attachments.length, 4);
+    // Interno (planilha original da importação): nem o comprador vê.
+    assert.ok(!detail.attachments.some((a) => a.id === internalDoc.id));
+    assert.equal((await buyer.get(`/api/v1/files/${internalDoc.id}/original`)).status, 404);
     assert.equal((await buyer.get(`/api/v1/files/${datasheet.id}/original`)).status, 200);
     assert.equal((await buyer.get(`/api/v1/files/${proposal.id}/original`)).status, 200);
     assert.equal((await buyer.get(`/api/v1/files/${photo.id}/original`)).status, 200);

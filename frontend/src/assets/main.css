@@ -210,3 +210,54 @@ body {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.85em;
 }
+
+/* Confirmação (AppDialogs.vue): acima de outros modais e centralizada. */
+.mr-modal.mr-modal-sm {
+  max-width: 460px;
+}
+.mr-modal-backdrop:has(.mr-modal-sm) {
+  z-index: 1070;
+  align-items: center;
+}
+.mr-toasts {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(380px, calc(100vw - 2rem));
+}
+.mr-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  border-left: 4px solid var(--bs-secondary);
+  font-size: 0.9rem;
+  animation: mr-toast-in 0.18s ease-out;
+}
+.mr-toast-success {
+  border-left-color: var(--bs-success);
+}
+.mr-toast-success .bi {
+  color: var(--bs-success);
+}
+.mr-toast-danger {
+  border-left-color: var(--bs-danger);
+}
+.mr-toast-danger .bi {
+  color: var(--bs-danger);
+}
+.mr-toast-info .bi {
+  color: var(--bs-primary);
+}
+@keyframes mr-toast-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}

@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { linkState, packageAccess, canReadAttachment, effectiveVisibility } = require("./access-policy");
+const { linkState, packageAccess, canReadAttachment, attachmentVisibleTo, effectiveVisibility } = require("./access-policy");
 
 const NOW = new Date("2026-11-16T12:00:00Z");
 const FUTURE = new Date("2026-12-16T12:00:00Z");
@@ -68,6 +68,19 @@ test("restricted attachments: never public, always for buyer in scope and seller
   assert.equal(canReadAttachment(args(seller)), true);
   assert.equal(canReadAttachment(args(buyer({ expiresAt: PAST }))), false);
   assert.equal(canReadAttachment(args(buyer({ packageIds: ["p2"] }))), false);
+});
+
+test("internal attachments: seller only, never buyer or public", () => {
+  const internal = att({ kind: "list", visibility: "internal" });
+  const args = (viewer) => ({ attachment: internal, pkg: pkg("active"), viewer, showcaseStatuses: SHOWCASE, now: NOW });
+  assert.equal(canReadAttachment(args(anon)), false);
+  assert.equal(canReadAttachment(args(buyer())), false);
+  assert.equal(canReadAttachment(args(seller)), true);
+  assert.equal(attachmentVisibleTo(internal, "buyer"), false);
+  assert.equal(attachmentVisibleTo(internal, "public"), false);
+  assert.equal(attachmentVisibleTo(internal, "seller"), true);
+  assert.equal(effectiveVisibility("list", "internal"), "internal");
+  assert.equal(effectiveVisibility("proposal", "internal"), "internal");
 });
 
 test("proposal is restricted even if stored as public", () => {

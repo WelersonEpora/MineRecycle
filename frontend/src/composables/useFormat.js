@@ -16,13 +16,14 @@ export function useFormat() {
     errorMessage: (err) => apiErrorMessage(err, t, te),
     typeLabel: (v) => t(`enums.type.${v}`),
     locationLabel: (v) => t(`enums.location.${v}`),
+    locationsLabel: (list) => (list || []).map((v) => t(`enums.location.${v}`)).join(' · '),
     statusLabel: (v) => t(`enums.status.${v}`),
     kindLabel: (v) => t(`enums.kind.${v}`)
   }
 }
 
 export const TYPES = ['bulk', 'equipment']
-export const LOCATIONS = ['conceicao_do_araguaia', 'uberaba', 'niquelandia']
+export const LOCATIONS = ['conceicao_do_araguaia', 'uberaba', 'niquelandia', 'belo_horizonte', 'at_supplier', 'to_be_confirmed']
 export const STATUSES = ['draft', 'active', 'under_negotiation', 'sold', 'inactive']
 export const KINDS = ['photo', 'datasheet', 'drawing', 'list', 'proposal']
 export const UNITS = ['PC', 'M', 'M2', 'M3', 'KG', 'T', 'L', 'SET', 'KIT', 'ROLL', 'BOX', 'PAIR', 'LOT', 'GAL', 'BAG', 'CAN', 'SHEET', 'BAR', 'TUBE']

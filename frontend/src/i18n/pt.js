@@ -16,7 +16,10 @@ export default {
     location: {
       conceicao_do_araguaia: 'Conceição do Araguaia',
       uberaba: 'Uberaba',
-      niquelandia: 'Niquelândia'
+      niquelandia: 'Niquelândia',
+      belo_horizonte: 'Belo Horizonte',
+      at_supplier: 'No fornecedor',
+      to_be_confirmed: 'A confirmar'
     },
     status: {
       draft: 'Rascunho',
@@ -32,7 +35,7 @@ export default {
       list: 'Lista',
       proposal: 'Proposta'
     },
-    visibility: { public: 'Público', restricted: 'Restrito' },
+    visibility: { public: 'Público', restricted: 'Restrito', internal: 'Interno' },
     role: { seller: 'Vendedor', admin: 'Administrador' },
     linkState: { valid: 'Válido', expired: 'Expirado', revoked: 'Revogado' },
     action: { open: 'Abriu o link', view_package: 'Viu o pacote', download: 'Baixou arquivo' }
@@ -63,6 +66,11 @@ export default {
     copied: 'Copiado',
     actions: 'Ações',
     confirmDelete: 'Excluir definitivamente? Não dá para desfazer.'
+  },
+  dialog: {
+    confirm: 'Confirmar',
+    typeToConfirm: 'Para confirmar, digite',
+    deleteFileTitle: 'Excluir arquivo'
   },
   catalog: {
     title: 'Ativos de mineração à venda',
@@ -128,6 +136,8 @@ export default {
     users: 'Usuários',
     account: 'Minha conta',
     newPackage: 'Novo pacote',
+    storShort: 'STOR',
+    pendingShort: 'pendente',
     lineCount: 'Itens',
     attachmentCount: 'Arquivos',
     updated: 'Atualizado',
@@ -135,10 +145,22 @@ export default {
     viewPublic: 'Ver página',
     tabs: { details: 'Dados', lines: 'Itens', attachments: 'Fotos e arquivos', links: 'Links de acesso' },
     fields: {
-      number: 'Número',
-      name: 'Nome',
+      number: 'Nº do catálogo',
+      numberHint: 'Usado no endereço da página pública. Preenchido sozinho; o comprador não o vê.',
+      name: 'Nome público (inglês)',
+      nameHint: 'Aparece na vitrine e no link do comprador.',
+      storFolder: 'Pasta no STOR',
+      storFolderHint: 'Nome da pasta do pacote no STOR, escrito exatamente igual. Só vendedores veem.',
+      storNumbers: 'Números do pacote',
+      storNumbersShort: 'Nº STOR',
+      storNumbersHint: 'IDs na planilha de estratégia de vendas, ex.: 1, 6. Ordenam as listas; o comprador não vê.',
+      storDocumentsPending: 'Pendentes de validação (não importar ainda):',
+      storDocumentsPendingHint: 'A importação de uma planilha marcada pede confirmação.',
       type: 'Tipo',
-      location: 'Local',
+      location: 'Locais',
+      locationsHint: 'Marque todos os locais onde há itens do pacote. Use "A confirmar" enquanto não souber.',
+      storDocuments: 'Documentos STOR',
+      storDocumentsHint: 'Códigos das planilhas deste pacote no STOR (7 dígitos, separados por vírgula). O código está no começo do nome do arquivo baixado. Só vendedores veem.',
       description: 'Descrição'
     },
     saved: 'Salvo.',
@@ -151,10 +173,12 @@ export default {
       draft: 'Voltar para rascunho'
     },
     deletePackage: 'Excluir pacote',
-    deletePackageConfirm: 'Excluir o pacote {number} com todos os itens, fotos e arquivos? Não dá para desfazer.',
+    deletePackageTitle: 'Excluir pacote',
+    deletePackageConfirm: 'O pacote “{name}” será excluído com todos os itens, fotos e arquivos. Não dá para desfazer.',
     addLine: 'Adicionar item',
     editLine: 'Editar item',
     importSpreadsheet: 'Importar planilha',
+    deleteLineTitle: 'Excluir item',
     deleteLineConfirm: 'Excluir o item {itemNo}?',
     unitHint: 'Normalizada automaticamente (UN, pç → PC; MT → M…)'
   },
@@ -168,7 +192,8 @@ export default {
     packageLevel: 'Pacote inteiro',
     title: 'Título',
     titleSingleOnly: 'Título (só para um arquivo)',
-    proposalRestricted: 'Propostas são sempre restritas.',
+    proposalRestricted: 'Propostas nunca são públicas.',
+    internalNote: 'Interno: só vendedores logados veem, nunca o comprador com link.',
     publicPhotoNote: 'O público vê só as fotos redimensionadas, sem os metadados da câmera.',
     photos: 'Fotos',
     documents: 'Documentos',
@@ -195,7 +220,12 @@ export default {
     required: 'obrigatório',
     notMapped: '— não usar —',
     inferHierarchy: 'Detectar kits pela numeração (1.1 e 1.2 pertencem a 1)',
-    keepFile: 'Guardar a planilha como arquivo restrito do pacote',
+    numberRows: 'A planilha não tem nº do item: numerar pela ordem das linhas (1, 2, 3…)',
+    numberRowsHint: 'Numa reimportação, os arquivos ligados a itens seguem o número. Se a ordem das linhas mudar, a foto do item 5 passa para a nova linha 5.',
+    mappingMissing: 'Escolha a coluna de: {fields}.',
+    mappingMissingItem: 'Escolha a coluna de: {fields}. Se a planilha não tem nº do item, marque “numerar pela ordem das linhas”.',
+    mappingDuplicate: 'A mesma coluna está em “{a}” e em “{b}”. Escolha uma coluna diferente para cada campo.',
+    keepFile: 'Guardar a planilha como arquivo interno do pacote (só vendedores, nunca o comprador)',
     check: 'Conferir',
     summary: '{valid} linhas válidas de {total}. {invalid} linhas com erro. {children} subitens.',
     unknownUnits: 'Unidades não reconhecidas (mantidas como escritas):',
@@ -211,6 +241,16 @@ export default {
     commit: 'Importar {n} itens',
     done: '{n} itens importados.',
     sampleLines: 'Prévia dos itens importados',
+    stor: {
+      thisPackage: 'Planilha {code}: é deste pacote ({name}).',
+      otherPackage: 'A planilha {code} está cadastrada em outro pacote: {packages}. Confira se abriu o pacote certo.',
+      confirmOther: 'Importar mesmo assim neste pacote',
+      pending: 'A planilha {code} está marcada como pendente de validação: ainda não deveria ser importada.',
+      confirmPending: 'Sei que está pendente e quero importar mesmo assim',
+      notLinked: 'A planilha {code} ainda não está ligada a nenhum pacote.',
+      addToPackage: 'Ligar o código {code} a este pacote ao importar',
+      noCode: 'O nome do arquivo não começa com um código do STOR. Confira se a planilha é deste pacote.'
+    },
     codes: {
       item_no_missing: 'Nº do item vazio',
       item_no_duplicate: 'Nº do item repetido',
@@ -243,6 +283,7 @@ export default {
     created: 'Criado',
     createdBy: 'por {name}',
     revoke: 'Revogar',
+    revokeTitle: 'Revogar link',
     revokeConfirm: 'Revogar o link “{label}”? O comprador perde o acesso na hora.',
     logs: 'Registro de acessos',
     noLogs: 'Nenhum acesso ainda.',
@@ -276,6 +317,90 @@ export default {
     newPassword: 'Nova senha',
     changed: 'Senha trocada.'
   },
+  // Ajuda da área do vendedor (HelpView.vue). Sem chaves, arroba nem barra vertical: são sintaxe do vue-i18n.
+  help: {
+    menu: 'Ajuda',
+    title: 'Ajuda: carga de planilhas',
+    intro: 'Como baixar do STOR as planilhas dos pacotes e importá-las no MineRecycle, uma planilha por pacote.',
+    contents: 'Nesta página',
+    export: {
+      title: '1. Baixar a planilha do STOR',
+      intro:
+        'As listas de venda ficam no STOR Global, o sistema de documentos e materiais do cliente. Cada pacote tem a sua própria planilha, feita à mão e com formato próprio; não existe uma lista única.',
+      whereLabels: { site: 'Endereço', project: 'Projeto', folder: 'Pasta dos pacotes' },
+      where: {
+        site: 'stor.storglobal.com/storweb',
+        project: 'ANM - Araguaia Nickel Project',
+        folder: 'Suprimentos/Supply › Projeto Araguaia - ANM › Assets Sales › Packages'
+      },
+      steps: {
+        s1: 'Abra Documento › Gestão de Documentos.',
+        s2: 'Na árvore de pastas, selecione Assets Sales.',
+        s3: 'Digite o código do documento no campo de busca e clique na lupa. A busca só funciona com uma pasta selecionada e procura também nas subpastas.',
+        s4: 'Marque a linha do documento e clique em Download.',
+        s5: 'Salve o arquivo no seu computador. O nome do arquivo já começa pelo código do documento.'
+      },
+      careTitle: 'Cuidados no STOR',
+      care: {
+        c1: 'Use somente Download. Não use Novo, Importar, Salvar nem Enviar.',
+        c2: 'Na tela de detalhes de um documento, saia sempre por Cancelar.',
+        c3: 'Planilhas com preços ou valores são confidenciais: guarde-as só no seu computador e não as repasse por e-mail ou chat.'
+      }
+    },
+    prepare: {
+      title: '2. Conferir a planilha antes de enviar',
+      intro: 'Abra o arquivo no Excel e confira os pontos abaixo. Se precisar mudar algo, trabalhe numa cópia.',
+      items: {
+        i1: 'Formato: .xlsx ou .xls. Se vier .xlsm, salve uma cópia como .xlsx.',
+        i2: 'Se o arquivo tiver várias abas, você escolhe a aba certa na importação.',
+        i3: 'O nº do item é obrigatório. Se a planilha não tiver essa coluna, marque “numerar pela ordem das linhas” (1, 2, 3…). Numa reimportação, mantenha a ordem das linhas para as fotos continuarem no item certo.',
+        i4: 'Se a unidade só aparece no título da coluna (por exemplo, Quantidade (metros)), insira uma coluna de unidade com m, kg etc.',
+        i5: 'Linhas ocultas ou escondidas por filtro são importadas como as outras. Apague na cópia as que não estão à venda.',
+        i6: 'Linhas de total ou subtotal no fim da planilha aparecem como erro: apague-as ou pule-as na conferência.'
+      }
+    },
+    upload: {
+      title: '3. Importar no MineRecycle',
+      steps: {
+        s1: 'Em Pacotes, abra o pacote. Se ele ainda não existir, crie com Novo pacote: o nome público em inglês (o que o comprador vê), a pasta no STOR escrita exatamente igual (ex.: 1-6 Refractories), os números do pacote na planilha de estratégia, o tipo e todos os locais. Deixe-o em rascunho enquanto confere.',
+        s2: 'Na aba Itens, clique em Importar planilha, escolha o arquivo e clique em Ler arquivo. O sistema confere o código do STOR no nome do arquivo e avisa se a planilha for de outro pacote.',
+        s3: 'Confira a aba e a linha do cabeçalho (a linha com os títulos das colunas). A prévia destaca a linha escolhida; troque o número se estiver errado.',
+        s4: 'Para cada campo, escolha a coluna correspondente. O sistema sugere colunas pelo título: confira. Colunas de preço, valor ou total ficam em "não usar".',
+        s5: 'Clique em Conferir. Nada é gravado ainda: veja quantas linhas são válidas, os erros e avisos por linha da planilha e a prévia dos itens.',
+        s6: 'Se houver erros, corrija a planilha e envie de novo, ou marque a opção de pular as linhas com erro.',
+        s7: 'Clique em Importar. Os itens atuais do pacote são substituídos pelos da planilha.',
+        s8: 'Confira os itens na aba Itens e, quando estiver tudo certo, mude a situação do pacote.'
+      },
+      goToPackages: 'Ir para Pacotes'
+    },
+    fields: {
+      title: 'Campos da importação',
+      colField: 'Campo',
+      colRequired: 'Obrigatório',
+      colNotes: 'Observação',
+      yes: 'sim',
+      no: 'não',
+      notes: {
+        itemNo: 'Texto, como 1, 1.2 ou 10A. Não pode se repetir no pacote. 1.2 vira subitem de 1.',
+        description: 'Até 4.000 caracteres.',
+        quantity: 'Aceita decimal, com vírgula ou ponto (12,5). Célula vazia gera só um aviso.',
+        unit: 'Padronizada: UN, pç e PEÇ viram PC; MT vira M; kg vira KG. Unidade desconhecida é mantida e sinalizada na conferência.',
+        storCode: 'Código do item no STOR.',
+        tag: 'Tag do equipamento.',
+        warehouseLocation: 'Endereço no almoxarifado.'
+      },
+      discarded: 'Colunas não usadas (fornecedor, peso, preço, valor etc.) não são gravadas nos itens.'
+    },
+    after: {
+      title: '4. Depois da importação',
+      items: {
+        i1: 'Importar de novo substitui todos os itens do pacote: não soma nem duplica. Fotos ligadas a um item continuam ligadas se o nº do item se mantiver.',
+        i2: 'Não há botão de desfazer. Para corrigir, importe a planilha certa de novo ou edite os itens um a um.',
+        i3: 'Com a opção de guardar a planilha marcada, o arquivo original fica em Fotos e arquivos como Interno: só vendedores logados o veem, nunca o comprador com link nem o público.',
+        i4: 'Pacotes sem planilha no STOR são cadastrados à mão, item por item, na aba Itens.'
+      }
+    }
+  },
   errors: {
     generic: 'Algo deu errado. Tente de novo.',
     network: 'Não foi possível falar com o servidor.',
@@ -288,13 +413,15 @@ export default {
     LINK_EXPIRED: 'Este link de acesso expirou. Peça um novo ao vendedor.',
     LINK_REVOKED: 'Este link de acesso foi revogado. Fale com o vendedor.',
     NUMBER_TAKEN: 'Já existe um pacote com este número.',
+    STOR_FOLDER_TAKEN: 'Outro pacote já usa esta pasta do STOR.',
+    IMPORT_DOCUMENT_PENDING: 'Esta planilha está pendente de validação. Confirme para importar mesmo assim.',
     ITEM_NO_TAKEN: 'Este nº de item já existe no pacote.',
     EMAIL_TAKEN: 'Já existe um usuário com este e-mail.',
     PAYLOAD_TOO_LARGE: 'Arquivo grande demais.',
     IMPORT_FILE_TYPE: 'Envie um arquivo Excel (.xlsx ou .xls).',
     IMPORT_UNREADABLE: 'Não foi possível ler a planilha.',
     IMPORT_NOT_FOUND: 'Esta importação expirou. Envie o arquivo de novo.',
-    IMPORT_MAPPING_INVALID: 'Escolha uma coluna diferente para cada campo obrigatório.',
+    IMPORT_MAPPING_INVALID: 'Confira as colunas: falta a coluna de um campo obrigatório ou a mesma coluna está em dois campos.',
     IMPORT_HAS_ERRORS: 'A planilha tem linhas com erro. Corrija ou escolha pular essas linhas.',
     IMPORT_EMPTY: 'Não há linhas válidas para importar.'
   },

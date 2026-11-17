@@ -10,9 +10,10 @@
         </div>
         <div class="col-md-2">
           <label class="form-label small">{{ t('attachments.visibility') }}</label>
-          <select v-model="visibility" class="form-select form-select-sm" :disabled="kind === 'proposal'">
+          <select v-model="visibility" class="form-select form-select-sm">
             <option value="public">{{ t('enums.visibility.public') }}</option>
             <option value="restricted">{{ t('enums.visibility.restricted') }}</option>
+            <option value="internal">{{ t('enums.visibility.internal') }}</option>
           </select>
         </div>
         <div class="col-md-3">
@@ -41,7 +42,8 @@
             @change="files = [...$event.target.files]"
           />
           <div class="form-text">
-            <span v-if="kind === 'proposal'">{{ t('attachments.proposalRestricted') }}</span>
+            <span v-if="visibility === 'internal'">{{ t('attachments.internalNote') }}</span>
+            <span v-else-if="kind === 'proposal'">{{ t('attachments.proposalRestricted') }}</span>
             <span v-else-if="kind === 'photo'">{{ t('attachments.publicPhotoNote') }}</span>
           </div>
         </div>
@@ -122,6 +124,7 @@
 <script setup>
 import { computed, h, onMounted, ref, watch } from 'vue'
 import { useFormat, KINDS } from '../../composables/useFormat.js'
+import { confirmDialog } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 
 const props = defineProps({ packageId: { type: String, required: true } })
@@ -165,7 +168,7 @@ async function upload() {
     await api.uploadAttachments(
       props.packageId,
       files.value,
-      { kind: kind.value, visibility: kind.value === 'proposal' ? 'restricted' : visibility.value, lineId: lineId.value, title: files.value.length === 1 ? title.value : '' },
+      { kind: kind.value, visibility: kind.value === 'proposal' && visibility.value === 'public' ? 'restricted' : visibility.value, lineId: lineId.value, title: files.value.length === 1 ? title.value : '' },
       (p) => (progress.value = p)
     )
     files.value = []
@@ -192,8 +195,10 @@ async function patch(att, body) {
   }
 }
 
+// Alterna só entre público e restrito. Interno não muda pela tela (evita expor por engano a planilha com valores);
+// para mudar, apague e envie de novo.
 function toggleVisibility(att) {
-  if (att.kind === 'proposal') return
+  if (att.kind === 'proposal' || att.visibility === 'internal') return
   patch(att, { visibility: att.visibility === 'public' ? 'restricted' : 'public' })
 }
 
@@ -206,7 +211,8 @@ async function move(list, index, delta) {
 }
 
 async function remove(att) {
-  if (!window.confirm(t('common.confirmDelete'))) return
+  const ok = await confirmDialog({ title: t('dialog.deleteFileTitle'), message: t('common.confirmDelete'), confirmLabel: t('common.delete') })
+  if (!ok) return
   try {
     await api.deleteAttachment(att.id)
     items.value = items.value.filter((a) => a.id !== att.id)
@@ -216,18 +222,32 @@ async function remove(att) {
   }
 }
 
-const VisibilityToggle = (p, { emit: e }) =>
-  h(
+const VISIBILITY_STYLE = {
+  public: { btn: 'btn-outline-success', icon: 'bi bi-globe' },
+  restricted: { btn: 'btn-outline-warning', icon: 'bi bi-lock' },
+  internal: { btn: 'btn-outline-danger', icon: 'bi bi-shield-lock' }
+}
+
+function visibilityTitle(att) {
+  if (att.visibility === 'internal') return t('attachments.internalNote')
+  if (att.kind === 'proposal') return t('attachments.proposalRestricted')
+  return att.visibility === 'public' ? t('attachments.makeRestricted') : t('attachments.makePublic')
+}
+
+const VisibilityToggle = (p, { emit: e }) => {
+  const style = VISIBILITY_STYLE[p.att.visibility] || VISIBILITY_STYLE.restricted
+  return h(
     'button',
     {
       type: 'button',
-      class: ['btn btn-sm py-0', p.att.visibility === 'public' ? 'btn-outline-success' : 'btn-outline-warning'],
-      title: p.att.kind === 'proposal' ? t('attachments.proposalRestricted') : p.att.visibility === 'public' ? t('attachments.makeRestricted') : t('attachments.makePublic'),
-      disabled: p.att.kind === 'proposal',
+      class: ['btn btn-sm py-0', style.btn],
+      title: visibilityTitle(p.att),
+      disabled: p.att.kind === 'proposal' || p.att.visibility === 'internal',
       onClick: () => e('toggle')
     },
-    [h('i', { class: p.att.visibility === 'public' ? 'bi bi-globe' : 'bi bi-lock' }), ' ', t(`enums.visibility.${p.att.visibility}`)]
+    [h('i', { class: style.icon }), ' ', t(`enums.visibility.${p.att.visibility}`)]
   )
+}
 VisibilityToggle.props = ['att']
 VisibilityToggle.emits = ['toggle']
 

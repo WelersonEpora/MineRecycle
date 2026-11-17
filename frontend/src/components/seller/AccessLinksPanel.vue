@@ -31,7 +31,7 @@
               </div>
             </td>
             <td class="small">
-              <span v-for="p in l.packages" :key="p.id" class="badge text-bg-light border me-1" :title="p.name">#{{ p.number }}</span>
+              <span v-for="p in l.packages" :key="p.id" class="badge text-bg-light border me-1" :title="p.storFolder || ''">{{ p.name }}</span>
             </td>
             <td class="small text-nowrap">{{ f.dateTime(l.expiresAt) }}</td>
             <td>
@@ -76,7 +76,7 @@
             <div v-for="p in shareable" :key="p.id" class="form-check">
               <input :id="`mr-lp-${p.id}`" v-model="form.packageIds" class="form-check-input" type="checkbox" :value="p.id" />
               <label class="form-check-label small" :for="`mr-lp-${p.id}`">
-                #{{ p.number }} {{ p.name }} <StatusBadge :status="p.status" />
+                {{ p.name }} <span v-if="p.storFolder" class="text-secondary mr-mono">({{ p.storFolder }})</span> <StatusBadge :status="p.status" />
               </label>
             </div>
           </div>
@@ -116,7 +116,7 @@
               <td class="text-nowrap">{{ f.dateTime(e.at) }}</td>
               <td>
                 {{ t(`enums.action.${e.action}`) }}
-                <span v-if="e.package" class="text-secondary">· #{{ e.package.number }}</span>
+                <span v-if="e.package" class="text-secondary">· {{ e.package.name }}</span>
                 <span v-if="e.attachment" class="text-secondary">· {{ e.attachment.title }}</span>
               </td>
               <td class="text-secondary text-truncate" style="max-width: 260px" :title="e.userAgent">{{ e.ip }} · {{ e.userAgent }}</td>
@@ -131,6 +131,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useFormat } from '../../composables/useFormat.js'
+import { confirmDialog } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 import { dateInputValue, endOfDayIso } from '../../utils/format.js'
 import ModalDialog from '../ModalDialog.vue'
@@ -224,7 +225,8 @@ async function save() {
 }
 
 async function revoke(l) {
-  if (!window.confirm(t('links.revokeConfirm', { label: l.label }))) return
+  const ok = await confirmDialog({ title: t('links.revokeTitle'), message: t('links.revokeConfirm', { label: l.label }), confirmLabel: t('links.revoke') })
+  if (!ok) return
   try {
     await api.revokeAccessLink(l.id)
     await load()

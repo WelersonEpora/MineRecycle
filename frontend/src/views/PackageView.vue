@@ -13,11 +13,10 @@
 
     <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
       <div class="flex-grow-1">
-        <div class="mr-number small">{{ t('package.number', { number: pkg.number }) }}</div>
         <h1 class="h3 mb-2">{{ pkg.name }}</h1>
         <div class="d-flex flex-wrap gap-2 small">
           <span class="badge rounded-pill text-bg-light border">{{ f.typeLabel(pkg.type) }}</span>
-          <span class="badge rounded-pill text-bg-light border"><i class="bi bi-geo-alt"></i> {{ f.locationLabel(pkg.location) }}</span>
+          <span class="badge rounded-pill text-bg-light border"><i class="bi bi-geo-alt"></i> {{ f.locationsLabel(pkg.locations) }}</span>
           <StatusBadge :status="pkg.status" />
           <span class="text-secondary">{{ t('catalog.lines', pkg.lineCount) }}</span>
         </div>

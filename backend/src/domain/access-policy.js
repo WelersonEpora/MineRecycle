@@ -38,8 +38,23 @@ function packageAccess(pkg, viewer, showcaseStatuses, now = new Date()) {
   return null;
 }
 
+// Restrito para o público: tudo que não é "public" (restrito e interno) e as propostas.
 function isEffectivelyRestricted(attachment) {
   return attachment.visibility !== "public" || ALWAYS_RESTRICTED_KINDS.includes(attachment.kind);
+}
+
+// Interno: só vendedor logado (nem o comprador com link). Ex.: a planilha original guardada na importação, que pode
+// ter colunas de valor.
+function isInternal(attachment) {
+  return attachment.visibility === "internal";
+}
+
+// O anexo aparece para este nível de acesso ao pacote ("seller", "buyer", "public")? Não trata variantes de foto.
+function attachmentVisibleTo(attachment, access) {
+  if (access === "seller") return true;
+  if (access === "buyer") return !isInternal(attachment);
+  if (access === "public") return !isEffectivelyRestricted(attachment);
+  return false;
 }
 
 // Variantes: "original" (arquivo enviado), "web" e "thumb" (só fotos). O original de uma foto pode ter metadados
@@ -47,16 +62,15 @@ function isEffectivelyRestricted(attachment) {
 function canReadAttachment({ attachment, pkg, viewer, showcaseStatuses, variant = "original", now = new Date() }) {
   if (!attachment || !pkg || attachment.packageId !== pkg.id) return false;
   const access = packageAccess(pkg, viewer, showcaseStatuses, now);
-  if (!access) return false;
-  if (access === "seller" || access === "buyer") return true;
-  if (isEffectivelyRestricted(attachment)) return false;
-  if (attachment.kind === "photo" && variant === "original") return false;
+  if (!attachmentVisibleTo(attachment, access)) return false;
+  if (access === "public" && attachment.kind === "photo" && variant === "original") return false;
   return true;
 }
 
-// Visibilidade efetiva gravada: proposta é sempre restrita, qualquer que seja o pedido.
+// Visibilidade efetiva gravada: proposta nunca é pública (vira restrita); pode ser interna.
 function effectiveVisibility(kind, requested) {
-  return ALWAYS_RESTRICTED_KINDS.includes(kind) ? "restricted" : requested;
+  if (ALWAYS_RESTRICTED_KINDS.includes(kind) && requested !== "internal") return "restricted";
+  return requested;
 }
 
 module.exports = {
@@ -65,5 +79,7 @@ module.exports = {
   packageAccess,
   canReadAttachment,
   isEffectivelyRestricted,
+  isInternal,
+  attachmentVisibleTo,
   effectiveVisibility
 };

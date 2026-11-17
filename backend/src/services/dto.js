@@ -9,7 +9,7 @@ function packageDto(p, extra = {}) {
     name: p.name,
     type: p.type,
     description: p.description,
-    location: p.location,
+    locations: p.locations,
     status: p.status,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,

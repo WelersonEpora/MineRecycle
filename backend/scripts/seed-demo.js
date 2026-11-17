@@ -118,10 +118,10 @@ const CABLES = [
 ];
 
 const PACKAGES = [
-  { number: 101, name: "Electrical materials - warehouse lot A", type: "bulk", location: "uberaba", status: "active", hue: 210,
+  { number: 101, name: "Electrical materials - warehouse lot A", type: "bulk", locations: ["uberaba"], status: "active", hue: 210,
     description: "Assorted electrical materials stored in the central warehouse. Sold as a single lot. Quantities as per the attached inventory.",
     lines: () => bulkLines(101, ELECTRICAL, 140) },
-  { number: 102, name: "Structural steel - plant building", type: "bulk", location: "niquelandia", status: "active", hue: 25,
+  { number: 102, name: "Structural steel - plant building", type: "bulk", locations: ["niquelandia"], status: "active", hue: 25,
     description: "Structural steel from the dismantled process building, including a stair kit. Sold by weight, as a closed lot.",
     lines: () => {
       const l = bulkLines(102, STRUCTURAL, 36);
@@ -133,10 +133,10 @@ const PACKAGES = [
       ].map((x, i) => ({ ...x, storCode: null, tag: null, warehouseLocation: "Yard 2", parentItemNo: x.itemNo.includes(".") ? "37" : null, sortOrder: 37 + i }));
       return [...l, ...kit];
     } },
-  { number: 103, name: "Power and control cables - assorted reels", type: "bulk", location: "conceicao_do_araguaia", status: "under_negotiation", hue: 140,
+  { number: 103, name: "Power and control cables - assorted reels", type: "bulk", locations: ["conceicao_do_araguaia"], status: "under_negotiation", hue: 140,
     description: "Reels of medium-voltage, control and instrumentation cables. Lengths measured in 2026.",
     lines: () => bulkLines(103, CABLES, 48) },
-  { number: 201, name: "Power transformer 138/13.8 kV, 25 MVA", type: "equipment", location: "conceicao_do_araguaia", status: "active", hue: 260,
+  { number: 201, name: "Power transformer 138/13.8 kV, 25 MVA", type: "equipment", locations: ["conceicao_do_araguaia"], status: "active", hue: 260,
     description: "Oil-immersed power transformer from the main substation. De-energized and preserved since shutdown. Datasheet and test report available.",
     lines: () => [
       { itemNo: "1", description: "Power transformer 138/13.8 kV, 25 MVA, ONAN/ONAF, with OLTC", quantity: "1", unit: "PC", unitRaw: "UN", storCode: null, tag: "TR-01", warehouseLocation: null, parentItemNo: null, sortOrder: 1 },
@@ -148,7 +148,7 @@ const PACKAGES = [
       { kind: "drawing", visibility: "restricted", title: "General arrangement drawing" },
       { kind: "proposal", visibility: "restricted", title: "Commercial proposal" }
     ] },
-  { number: 202, name: "Jaw crusher set", type: "equipment", location: "niquelandia", status: "active", hue: 45,
+  { number: 202, name: "Jaw crusher set", type: "equipment", locations: ["niquelandia"], status: "active", hue: 45,
     description: "Primary jaw crusher with drive motor and vibrating feeder. Sold as a set or per equipment.",
     lines: () => [
       { itemNo: "1", description: "Jaw crusher 1100 x 850 mm", quantity: "1", unit: "PC", unitRaw: "UN", storCode: null, tag: "BR-101", warehouseLocation: null, parentItemNo: null, sortOrder: 1 },
@@ -157,12 +157,12 @@ const PACKAGES = [
     ],
     linePhotos: { 1: "Jaw crusher BR-101", 2: "Motor MO-101", 3: "Feeder AL-101" },
     docs: [{ kind: "datasheet", visibility: "restricted", title: "Crusher manual (excerpt)" }] },
-  { number: 203, name: "Conveyor belt drives", type: "equipment", location: "uberaba", status: "draft", hue: 0,
+  { number: 203, name: "Conveyor belt drives", type: "equipment", locations: ["uberaba"], status: "draft", hue: 0,
     description: "Drive units removed from conveyors CV-01 to CV-04. Being catalogued.",
     lines: () => [
       { itemNo: "1", description: "Drive unit CV-01 (motor 75 kW + gearbox)", quantity: "1", unit: "SET", unitRaw: "CJ", storCode: null, tag: "CV-01", warehouseLocation: null, parentItemNo: null, sortOrder: 1 }
     ] },
-  { number: 204, name: "Diesel generator 500 kVA", type: "equipment", location: "uberaba", status: "sold", hue: 100,
+  { number: 204, name: "Diesel generator 500 kVA", type: "equipment", locations: ["uberaba"], status: "sold", hue: 100,
     description: "Standby diesel generator set with acoustic enclosure.",
     lines: () => [
       { itemNo: "1", description: "Diesel generator set 500 kVA, 380 V", quantity: "1", unit: "PC", unitRaw: "UN", storCode: null, tag: "GE-01", warehouseLocation: null, parentItemNo: null, sortOrder: 1 }
@@ -190,7 +190,7 @@ async function main() {
       number: spec.number,
       name: spec.name,
       type: spec.type,
-      location: spec.location,
+      locations: spec.locations,
       description: spec.description,
       status: spec.status,
       createdBy: userId,
@@ -227,7 +227,7 @@ async function main() {
         visibility: doc.visibility,
         title: doc.title,
         originalName: `${doc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`,
-        buffer: fakePdf(doc.title, [`Package ${spec.number} - ${spec.name}`, `Location: ${spec.location}`]),
+        buffer: fakePdf(doc.title, [`Package ${spec.number} - ${spec.name}`, `Location: ${spec.locations.join(", ")}`]),
         userId
       });
     }

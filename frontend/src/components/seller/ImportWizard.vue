@@ -14,6 +14,40 @@
 
     <!-- 2. Colunas -->
     <div v-else-if="step === 2 && layout">
+      <!-- Conferência do código STOR do nome do arquivo com os pacotes -->
+      <template v-if="stor">
+        <div v-if="stor.inThisPackage && stor.pending" class="alert alert-warning py-2 small">
+          <div class="fw-semibold mb-1"><i class="bi bi-hourglass-split"></i> {{ t('import.stor.pending', { code: stor.code }) }}</div>
+          <div class="form-check mb-0">
+            <input id="mr-stor-pending" v-model="confirmPending" class="form-check-input" type="checkbox" />
+            <label class="form-check-label" for="mr-stor-pending">{{ t('import.stor.confirmPending') }}</label>
+          </div>
+        </div>
+        <div v-else-if="stor.inThisPackage" class="alert alert-success py-2 small">
+          <i class="bi bi-check-circle"></i> {{ t('import.stor.thisPackage', { code: stor.code, number: packageNumber, name: packageName }) }}
+        </div>
+        <div v-else-if="stor.otherPackages.length" class="alert alert-danger py-2 small">
+          <div class="fw-semibold mb-1">
+            <i class="bi bi-exclamation-octagon"></i>
+            {{ t('import.stor.otherPackage', { code: stor.code, packages: stor.otherPackages.map((p) => p.name).join(', ') }) }}
+          </div>
+          <div class="form-check mb-0">
+            <input id="mr-stor-confirm" v-model="confirmOther" class="form-check-input" type="checkbox" />
+            <label class="form-check-label" for="mr-stor-confirm">{{ t('import.stor.confirmOther', { number: packageNumber }) }}</label>
+          </div>
+        </div>
+        <div v-else class="alert alert-warning py-2 small">
+          <div class="mb-1"><i class="bi bi-info-circle"></i> {{ t('import.stor.notLinked', { code: stor.code }) }}</div>
+          <div class="form-check mb-0">
+            <input id="mr-stor-add" v-model="addStorDocument" class="form-check-input" type="checkbox" />
+            <label class="form-check-label" for="mr-stor-add">{{ t('import.stor.addToPackage', { code: stor.code, number: packageNumber }) }}</label>
+          </div>
+        </div>
+      </template>
+      <div v-else class="alert alert-light border py-2 small">
+        <i class="bi bi-info-circle"></i> {{ t('import.stor.noCode') }}
+      </div>
+
       <div class="row g-3 mb-3">
         <div class="col-md-4">
           <label class="form-label small">{{ t('import.sheet') }}</label>
@@ -51,22 +85,28 @@
         <div v-for="field in FIELDS" :key="field.key" class="col-md-6 col-lg-3">
           <label class="form-label small mb-1">
             {{ t(`lines.${field.key}`) }}
-            <span v-if="field.required" class="text-danger">*</span>
+            <span v-if="field.required && !(field.key === 'itemNo' && numberRows)" class="text-danger">*</span>
           </label>
-          <select v-model="mapping[field.key]" class="form-select form-select-sm">
+          <select v-model="mapping[field.key]" class="form-select form-select-sm" :disabled="field.key === 'itemNo' && numberRows">
             <option :value="null">{{ t('import.notMapped') }}</option>
             <option v-for="h in layout.headers" :key="h.index" :value="h.index">{{ h.letter }}{{ h.label ? ` · ${h.label}` : '' }}</option>
           </select>
         </div>
       </div>
       <div class="form-check">
-        <input id="mr-hier" v-model="inferHierarchy" class="form-check-input" type="checkbox" />
+        <input id="mr-number-rows" v-model="numberRows" class="form-check-input" type="checkbox" />
+        <label class="form-check-label small" for="mr-number-rows">{{ t('import.numberRows') }}</label>
+        <div v-if="numberRows" class="form-text">{{ t('import.numberRowsHint') }}</div>
+      </div>
+      <div class="form-check">
+        <input id="mr-hier" :checked="inferHierarchy && !numberRows" class="form-check-input" type="checkbox" :disabled="numberRows" @change="inferHierarchy = $event.target.checked" />
         <label class="form-check-label small" for="mr-hier">{{ t('import.inferHierarchy') }}</label>
       </div>
       <div class="form-check">
         <input id="mr-keep" v-model="keepFile" class="form-check-input" type="checkbox" />
         <label class="form-check-label small" for="mr-keep">{{ t('import.keepFile') }}</label>
       </div>
+      <div v-if="mappingProblem" class="alert alert-warning py-2 small mt-3 mb-0">{{ mappingProblem }}</div>
     </div>
 
     <!-- 3. Conferência -->
@@ -128,7 +168,7 @@
       <button class="btn btn-outline-secondary btn-sm" :disabled="busy" @click="close">{{ t('common.cancel') }}</button>
       <button v-if="step > 1" class="btn btn-outline-secondary btn-sm" :disabled="busy" @click="step--">{{ t('common.back') }}</button>
       <button v-if="step === 1" class="btn btn-accent btn-sm" :disabled="!file || busy" @click="upload">{{ t('import.readFile') }}</button>
-      <button v-if="step === 2" class="btn btn-accent btn-sm" :disabled="busy" @click="check">{{ t('import.check') }}</button>
+      <button v-if="step === 2" class="btn btn-accent btn-sm" :disabled="busy || blockedByOtherPackage || Boolean(mappingProblem)" @click="check">{{ t('import.check') }}</button>
       <button v-if="step === 3" class="btn btn-accent btn-sm" :disabled="busy || !canCommit" @click="commit">
         {{ t('import.commit', { n: report.stats.validRows }) }}
       </button>
@@ -140,13 +180,15 @@
 <script setup>
 import { computed, h, reactive, ref, watch } from 'vue'
 import { useFormat } from '../../composables/useFormat.js'
+import { notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 import ModalDialog from '../ModalDialog.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
   packageId: { type: String, required: true },
-  packageNumber: { type: Number, required: true }
+  packageNumber: { type: Number, required: true },
+  packageName: { type: String, default: '' }
 })
 const emit = defineEmits(['update:show', 'imported'])
 const f = useFormat()
@@ -169,11 +211,46 @@ const sheet = ref('')
 const headerRow = ref(1)
 const mapping = reactive({})
 const inferHierarchy = ref(true)
+// Planilha sem coluna de nº do item: o nº sai da ordem das linhas (1, 2, 3...). Marcado sozinho quando nenhuma coluna
+// parece ser a do item.
+const numberRows = ref(false)
 const keepFile = ref(true)
 const skipInvalid = ref(false)
 const report = ref(null)
 const error = ref('')
 const busy = ref(false)
+// Código STOR do nome do arquivo: { code, inThisPackage, otherPackages } ou null.
+const stor = ref(null)
+const addStorDocument = ref(true)
+const confirmOther = ref(false)
+const confirmPending = ref(false)
+// "Conferir" fica bloqueado até confirmar: planilha de outro pacote, ou planilha pendente de validação.
+const blockedByOtherPackage = computed(
+  () =>
+    Boolean(stor.value?.otherPackages.length && !stor.value.inThisPackage && !confirmOther.value) ||
+    Boolean(stor.value?.inThisPackage && stor.value.pending && !confirmPending.value)
+)
+const willAddStorDocument = computed(() => Boolean(stor.value && !stor.value.inThisPackage && !stor.value.otherPackages.length && addStorDocument.value))
+
+// Conferência do mapeamento antes de chamar a API: campo obrigatório sem coluna, ou a mesma coluna em dois campos.
+const mappingProblem = computed(() => {
+  if (!layout.value) return ''
+  const label = (key) => t(`lines.${key}`)
+  const active = FIELDS.filter((fd) => !(fd.key === 'itemNo' && numberRows.value))
+  const missing = active.filter((fd) => fd.required && (mapping[fd.key] === null || mapping[fd.key] === undefined))
+  if (missing.length) {
+    const names = missing.map((fd) => label(fd.key)).join(', ')
+    return missing.some((fd) => fd.key === 'itemNo') ? t('import.mappingMissingItem', { fields: names }) : t('import.mappingMissing', { fields: names })
+  }
+  const byColumn = new Map()
+  for (const fd of active) {
+    const col = mapping[fd.key]
+    if (col === null || col === undefined) continue
+    if (byColumn.has(col)) return t('import.mappingDuplicate', { a: label(byColumn.get(col)), b: label(fd.key) })
+    byColumn.set(col, fd.key)
+  }
+  return ''
+})
 
 const unknownUnits = computed(() => Object.entries(report.value?.stats.unknownUnits || {}))
 const canCommit = computed(() => report.value && report.value.stats.validRows > 0 && (!report.value.errorCount || skipInvalid.value))
@@ -186,7 +263,12 @@ function reset() {
   error.value = ''
   skipInvalid.value = false
   inferHierarchy.value = true
+  numberRows.value = false
   keepFile.value = true
+  stor.value = null
+  addStorDocument.value = true
+  confirmOther.value = false
+  confirmPending.value = false
 }
 
 function applyLayout(l) {
@@ -194,6 +276,7 @@ function applyLayout(l) {
   sheet.value = l.sheet
   headerRow.value = l.headerRow
   for (const fd of FIELDS) mapping[fd.key] = l.suggestedMapping[fd.key] ?? null
+  numberRows.value = mapping.itemNo === null
 }
 
 async function run(fn) {
@@ -212,15 +295,20 @@ const options = () => ({
   sheet: sheet.value,
   headerRow: headerRow.value,
   mapping: { ...mapping },
-  inferHierarchy: inferHierarchy.value,
+  inferHierarchy: inferHierarchy.value && !numberRows.value,
+  numberRows: numberRows.value,
   keepFile: keepFile.value,
   skipInvalid: skipInvalid.value,
+  addStorDocument: willAddStorDocument.value,
+  confirmPending: confirmPending.value,
   fileName: file.value?.name
 })
 
 const upload = () =>
   run(async () => {
-    applyLayout(await api.startImport(props.packageId, file.value))
+    const started = await api.startImport(props.packageId, file.value)
+    applyLayout(started)
+    stor.value = started.storDocument || null
     step.value = 2
   })
 
@@ -244,7 +332,7 @@ const commit = () =>
     layout.value = null
     emit('imported', r)
     emit('update:show', false)
-    window.alert(t('import.done', { n: r.inserted }))
+    notify(t('import.done', { n: r.inserted }))
   })
 
 function close() {

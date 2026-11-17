@@ -12,6 +12,8 @@ const sheet = require("../import/spreadsheet");
 const { buildImportPlan, validateMapping } = require("../import/import-plan");
 const lineService = require("./line.service");
 const attachmentService = require("./attachment.service");
+const packageService = require("./package.service");
+const { storCodeFromFileName } = require("../import/stor-code");
 
 
 // Importação de planilha por pacote, em três passos:
@@ -89,10 +91,25 @@ function describe(importId, workbook, options = {}) {
   };
 }
 
+// Código STOR no nome do arquivo e a quais pacotes ele já pertence, para a tela conferir se a planilha é deste pacote.
+async function storDocumentInfo(pkg, fileName) {
+  const code = storCodeFromFileName(fileName);
+  if (!code) return null;
+  const owners = await packageService.findByStorDocument(code);
+  return {
+    code,
+    inThisPackage: owners.some((o) => o.id === pkg.id),
+    // Planilha ligada ao pacote, mas ainda não liberada para importar (aguarda validação do cliente).
+    pending: (pkg.storDocumentsPending || []).includes(code),
+    otherPackages: owners.filter((o) => o.id !== pkg.id).map((o) => ({ id: o.id, number: o.number, name: o.name }))
+  };
+}
+
 async function start(packageId, file) {
-  await findPackage(packageId);
+  const pkg = await findPackage(packageId);
   if (!file) throw new ValidationError("No file received.", { field: "file", code: "required" });
-  const ext = path.extname(Buffer.from(file.originalname || "", "latin1").toString("utf8")).toLowerCase();
+  const originalName = Buffer.from(file.originalname || "", "latin1").toString("utf8");
+  const ext = path.extname(originalName).toLowerCase();
   if (!IMPORT_EXTENSIONS.includes(ext)) {
     throw new ValidationError("Upload an Excel file (.xlsx or .xls).", { field: "file", code: "file_type" }, "IMPORT_FILE_TYPE");
   }
@@ -101,7 +118,7 @@ async function start(packageId, file) {
 
   const importId = randomUUID();
   await storage.put(keys.importFile(importId), file.buffer);
-  return describe(importId, workbook);
+  return { ...describe(importId, workbook), storDocument: await storDocumentInfo(pkg, originalName) };
 }
 
 async function describeExisting(importId, options) {
@@ -120,8 +137,13 @@ function parseOptions(body = {}) {
     headerRow: body.headerRow === undefined ? undefined : Number(body.headerRow),
     mapping,
     inferHierarchy: body.inferHierarchy !== false,
+    // Planilha sem coluna de nº do item: numerar pela ordem das linhas.
+    numberRows: body.numberRows === true,
     skipInvalid: body.skipInvalid === true,
     keepFile: body.keepFile !== false,
+    // Acrescentar ao pacote o código STOR do nome do arquivo (quando ainda não está nele).
+    addStorDocument: body.addStorDocument === true,
+    confirmPending: body.confirmPending === true,
     fileName: optionalString(body.fileName, "fileName", { max: 200 })
   };
 }
@@ -129,13 +151,14 @@ function parseOptions(body = {}) {
 function plan(workbook, options) {
   const layout = resolveLayout(workbook, options);
   const columnCount = sheet.headersOf(layout.rows, layout.headerIndex).length;
-  const problems = validateMapping(options.mapping, columnCount);
+  const problems = validateMapping(options.mapping, columnCount, { numberRows: options.numberRows });
   if (problems.length) throw new ValidationError("Column mapping is incomplete.", { mapping: problems }, "IMPORT_MAPPING_INVALID");
   const result = buildImportPlan(layout.rows, {
     headerRowIndex: layout.headerIndex,
     firstRowNumber: layout.firstRowNumber,
     mapping: options.mapping,
-    inferHierarchy: options.inferHierarchy
+    inferHierarchy: options.inferHierarchy,
+    numberRows: options.numberRows
   });
   return { layout, result };
 }
@@ -176,11 +199,18 @@ async function commit(packageId, importId, body, userId) {
     throw new ValidationError("The spreadsheet has invalid rows.", report(result), "IMPORT_HAS_ERRORS");
   }
   if (result.lines.length === 0) throw new ValidationError("No valid rows to import.", report(result), "IMPORT_EMPTY");
+  const fileCode = storCodeFromFileName(options.fileName);
+  if (fileCode && (pkg.storDocumentsPending || []).includes(fileCode) && !options.confirmPending) {
+    throw new ValidationError("This STOR document is pending validation.", { code: fileCode }, "IMPORT_DOCUMENT_PENDING");
+  }
 
   const outcome = await sequelize.transaction(async (transaction) => {
     const replaced = await lineService.replaceLines(pkg.id, result.lines, { transaction });
     await pkg.update({ updatedBy: userId }, { transaction });
-    return replaced;
+    const storDocumentAdded = options.addStorDocument
+      ? await packageService.addStorDocument(pkg, storCodeFromFileName(options.fileName), { transaction })
+      : false;
+    return { ...replaced, storDocumentAdded };
   });
 
   let attachment = null;
@@ -189,7 +219,8 @@ async function commit(packageId, importId, body, userId) {
     attachment = await attachmentService.createFromBuffer({
       packageId: pkg.id,
       kind: "list",
-      visibility: "restricted",
+      // Interno: a planilha pode ter colunas de valor; só o vendedor logado a vê, nunca o comprador.
+      visibility: "internal",
       title: null,
       originalName: fileName,
       buffer,

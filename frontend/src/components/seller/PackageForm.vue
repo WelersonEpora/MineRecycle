@@ -1,36 +1,89 @@
 <template>
   <div class="row g-3">
-    <div class="col-4 col-md-3">
-      <label class="form-label small">{{ t('seller.fields.number') }}</label>
-      <input v-model.number="model.number" type="number" min="1" class="form-control" required />
+    <div class="col-12">
+      <label class="form-label small" for="mr-pkg-name">{{ t('seller.fields.name') }}</label>
+      <input id="mr-pkg-name" v-model="model.name" type="text" maxlength="200" class="form-control" required />
+      <div class="form-text">{{ t('seller.fields.nameHint') }}</div>
     </div>
-    <div class="col-8 col-md-9">
-      <label class="form-label small">{{ t('seller.fields.name') }}</label>
-      <input v-model="model.name" type="text" maxlength="200" class="form-control" required />
+    <div class="col-md-8">
+      <label class="form-label small" for="mr-pkg-folder">{{ t('seller.fields.storFolder') }}</label>
+      <input id="mr-pkg-folder" v-model="model.storFolder" type="text" maxlength="200" class="form-control mr-mono" />
+      <div class="form-text">{{ t('seller.fields.storFolderHint') }}</div>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small" for="mr-pkg-numbers">{{ t('seller.fields.storNumbers') }}</label>
+      <input id="mr-pkg-numbers" v-model.lazy="storNumbersText" type="text" inputmode="numeric" class="form-control mr-mono" />
+      <div class="form-text">{{ t('seller.fields.storNumbersHint') }}</div>
     </div>
     <div class="col-6">
-      <label class="form-label small">{{ t('seller.fields.type') }}</label>
-      <select v-model="model.type" class="form-select">
+      <label class="form-label small" for="mr-pkg-type">{{ t('seller.fields.type') }}</label>
+      <select id="mr-pkg-type" v-model="model.type" class="form-select">
         <option v-for="ty in TYPES" :key="ty" :value="ty">{{ f.typeLabel(ty) }}</option>
       </select>
     </div>
-    <div class="col-6">
-      <label class="form-label small">{{ t('seller.fields.location') }}</label>
-      <select v-model="model.location" class="form-select">
-        <option v-for="l in LOCATIONS" :key="l" :value="l">{{ f.locationLabel(l) }}</option>
-      </select>
+    <fieldset class="col-6">
+      <legend class="form-label small mb-1">{{ t('seller.fields.location') }}</legend>
+      <div v-for="l in LOCATIONS" :key="l" class="form-check">
+        <input :id="`mr-loc-${l}`" v-model="model.locations" class="form-check-input" type="checkbox" :value="l" />
+        <label class="form-check-label small" :for="`mr-loc-${l}`">{{ f.locationLabel(l) }}</label>
+      </div>
+      <div class="form-text">{{ t('seller.fields.locationsHint') }}</div>
+    </fieldset>
+    <div class="col-12">
+      <label class="form-label small" for="mr-stor-docs">{{ t('seller.fields.storDocuments') }}</label>
+      <input id="mr-stor-docs" v-model.lazy="storDocumentsText" type="text" inputmode="numeric" class="form-control mr-mono" />
+      <div class="form-text">{{ t('seller.fields.storDocumentsHint') }}</div>
+      <div v-if="validCodes.length" class="mt-2">
+        <div class="small mb-1">{{ t('seller.fields.storDocumentsPending') }}</div>
+        <div v-for="c in validCodes" :key="c" class="form-check form-check-inline">
+          <input :id="`mr-pend-${c}`" v-model="model.storDocumentsPending" class="form-check-input" type="checkbox" :value="c" />
+          <label class="form-check-label small mr-mono" :for="`mr-pend-${c}`">{{ c }}</label>
+        </div>
+        <div class="form-text">{{ t('seller.fields.storDocumentsPendingHint') }}</div>
+      </div>
     </div>
     <div class="col-12">
-      <label class="form-label small">{{ t('seller.fields.description') }}</label>
-      <textarea v-model="model.description" rows="5" class="form-control"></textarea>
+      <label class="form-label small" for="mr-pkg-desc">{{ t('seller.fields.description') }}</label>
+      <textarea id="mr-pkg-desc" v-model="model.description" rows="5" class="form-control"></textarea>
+    </div>
+    <div class="col-4 col-md-3">
+      <label class="form-label small" for="mr-pkg-number">{{ t('seller.fields.number') }}</label>
+      <input id="mr-pkg-number" v-model.number="model.number" type="number" min="1" class="form-control" />
+      <div class="form-text">{{ t('seller.fields.numberHint') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useFormat, TYPES, LOCATIONS } from '../../composables/useFormat.js'
 
 const model = defineModel({ type: Object, required: true })
 const f = useFormat()
 const t = f.t
+
+const splitList = (text) => text.split(/[\s,;]+/).filter(Boolean)
+
+// Códigos das planilhas no STOR, digitados separados por vírgula ou espaço. A API valida (7 dígitos cada).
+const storDocumentsText = computed({
+  get: () => (model.value.storDocuments || []).join(', '),
+  set: (text) => {
+    model.value.storDocuments = splitList(text)
+    // Pendente só faz sentido para um código que continua na lista.
+    model.value.storDocumentsPending = (model.value.storDocumentsPending || []).filter((c) => model.value.storDocuments.includes(c))
+  }
+})
+
+// Números do pacote na planilha de estratégia: "1, 6" ou "7-8-11". A API valida e ordena.
+const storNumbersText = computed({
+  get: () => (model.value.storNumbers || []).join(', '),
+  set: (text) => {
+    model.value.storNumbers = text
+      .split(/[\s,;-]+/)
+      .filter(Boolean)
+      .map((v) => (/^\d+$/.test(v) ? Number(v) : v))
+  }
+})
+
+const validCodes = computed(() => (model.value.storDocuments || []).filter((c) => /^\d{7}$/.test(c)))
 </script>

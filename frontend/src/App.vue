@@ -6,11 +6,13 @@
   <footer class="container-xl pb-4 pt-2 small text-secondary">
     MineRecycle · {{ t('app.tagline') }}
   </footer>
+  <AppDialogs />
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n'
 import AppTopbar from './components/AppTopbar.vue'
+import AppDialogs from './components/AppDialogs.vue'
 
 const { t } = useI18n()
 </script>

@@ -109,3 +109,33 @@ test("mapping validation", () => {
   const out = validateMapping({ itemNo: 0, description: 1, quantity: 2, unit: 9 }, 4);
   assert.equal(out[0].code, "invalid_column");
 });
+
+test("numberRows: item number comes from row order when the sheet has no item column", () => {
+  // Planilha fictícia sem nº do item; o código se repete entre linhas.
+  const rows = [
+    ["Local", "Descrição", "Código", "Und", "Qtd total"],
+    ["Box A", "Tijolo X", "111", "KG", 1000],
+    [],
+    ["Box B", "Tijolo X", "111", "KG", 500],
+    ["Box C", "Tijolo Y", "222", "KG", "abc"],
+    ["Box D", "Tijolo Z", "333", "KG", 250]
+  ];
+  const mapping = { itemNo: 2, description: 1, quantity: 4, unit: 3, storCode: 2, tag: null, warehouseLocation: 0 };
+  const plan = buildImportPlan(rows, { headerRowIndex: 0, mapping, inferHierarchy: true, numberRows: true });
+  assert.deepEqual(
+    plan.lines.map((l) => [l.itemNo, l.storCode, l.quantity]),
+    [
+      ["1", "111", "1000"],
+      ["2", "111", "500"],
+      ["4", "333", "250"]
+    ]
+  );
+  assert.deepEqual(plan.errors.map((e) => e.code), ["quantity_invalid"]);
+  assert.equal(plan.stats.childLines, 0);
+});
+
+test("mapping validation with numberRows ignores the item column", () => {
+  assert.deepEqual(validateMapping({ itemNo: null, description: 1, quantity: 2, unit: 3 }, 4, { numberRows: true }), []);
+  assert.deepEqual(validateMapping({ itemNo: 1, description: 1, quantity: 2, unit: 3 }, 4, { numberRows: true }), []);
+  assert.deepEqual(validateMapping({ itemNo: null, description: 1, quantity: 2, unit: 3 }, 4), [{ field: "itemNo", code: "required" }]);
+});

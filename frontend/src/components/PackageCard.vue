@@ -5,13 +5,12 @@
       <div v-else class="mr-cover-empty"><i :class="pkg.type === 'equipment' ? 'bi bi-gear-wide-connected' : 'bi bi-boxes'"></i></div>
       <div class="p-3 d-flex flex-column flex-grow-1">
         <div class="d-flex align-items-center gap-2 mb-1 small">
-          <span class="mr-number">#{{ pkg.number }}</span>
           <span class="badge rounded-pill text-bg-light border">{{ f.typeLabel(pkg.type) }}</span>
           <StatusBadge v-if="pkg.status !== 'active'" :status="pkg.status" />
         </div>
         <h3 class="h6 mb-2">{{ pkg.name }}</h3>
         <div class="mt-auto small text-secondary d-flex justify-content-between">
-          <span><i class="bi bi-geo-alt"></i> {{ f.locationLabel(pkg.location) }}</span>
+          <span><i class="bi bi-geo-alt"></i> {{ f.locationsLabel(pkg.locations) }}</span>
           <span v-if="pkg.lineCount !== undefined">{{ t('catalog.lines', pkg.lineCount) }}</span>
         </div>
       </div>

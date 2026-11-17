@@ -8,7 +8,10 @@
           {{ f.kindLabel(d.kind) }}<span v-if="d.sizeBytes"> · {{ f.bytes(d.sizeBytes) }}</span>
         </div>
       </div>
-      <span v-if="d.visibility === 'restricted' || d.kind === 'proposal'" class="badge text-bg-warning">
+      <span v-if="d.visibility === 'internal'" class="badge text-bg-danger">
+        <i class="bi bi-shield-lock"></i> {{ t('enums.visibility.internal') }}
+      </span>
+      <span v-else-if="d.visibility === 'restricted' || d.kind === 'proposal'" class="badge text-bg-warning">
         <i class="bi bi-lock"></i> {{ t('package.restricted') }}
       </span>
     </li>

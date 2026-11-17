@@ -7,8 +7,18 @@
     </nav>
     <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
       <div class="flex-grow-1">
-        <div class="mr-number small">#{{ pkg.number }} · {{ f.typeLabel(pkg.type) }} · {{ f.locationLabel(pkg.location) }}</div>
+        <div class="mr-number small">{{ f.typeLabel(pkg.type) }} · {{ f.locationsLabel(pkg.locations) }}</div>
         <h1 class="h4 mb-1">{{ pkg.name }}</h1>
+        <div v-if="pkg.storFolder || pkg.storNumbers?.length" class="small text-secondary mb-1">
+          <i class="bi bi-folder2"></i> <span class="mr-mono">{{ pkg.storFolder }}</span>
+          <span v-if="pkg.storNumbers?.length"> · {{ t('seller.fields.storNumbersShort') }} {{ pkg.storNumbers.join('-') }}</span>
+        </div>
+        <div v-if="pkg.storDocuments?.length" class="small text-secondary mr-mono mb-1">
+          {{ t('seller.fields.storDocuments') }}:
+          <span v-for="(d, i) in pkg.storDocuments" :key="d"
+            >{{ i ? ' · ' : '' }}{{ d }}<span v-if="pkg.storDocumentsPending?.includes(d)" class="badge text-bg-warning ms-1">{{ t('seller.pendingShort') }}</span></span
+          >
+        </div>
         <StatusBadge :status="pkg.status" />
       </div>
       <div class="d-flex flex-wrap gap-2">
@@ -56,7 +66,7 @@
         </template>
       </LinesTable>
       <LineFormModal v-model:show="lineModal.show" :package-id="pkg.id" :line="lineModal.line" @saved="afterLinesChanged" />
-      <ImportWizard v-model:show="importing" :package-id="pkg.id" :package-number="pkg.number" @imported="afterLinesChanged" />
+      <ImportWizard v-model:show="importing" :package-id="pkg.id" :package-number="pkg.number" :package-name="pkg.name" @imported="afterLinesChanged" />
     </section>
 
     <section v-else-if="tab === 'attachments'">
@@ -73,6 +83,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFormat, STATUSES } from '../../composables/useFormat.js'
+import { confirmDialog } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 import StatusBadge from '../../components/StatusBadge.vue'
 import LinesTable from '../../components/LinesTable.vue'
@@ -115,7 +126,7 @@ function setTab(key) {
 async function load() {
   try {
     pkg.value = await api.sellerPackage(route.params.id)
-    form.value = { number: pkg.value.number, name: pkg.value.name, type: pkg.value.type, location: pkg.value.location, description: pkg.value.description || '' }
+    form.value = { number: pkg.value.number, name: pkg.value.name, type: pkg.value.type, locations: [...(pkg.value.locations || [])], storDocuments: [...(pkg.value.storDocuments || [])], storDocumentsPending: [...(pkg.value.storDocumentsPending || [])], storFolder: pkg.value.storFolder || '', storNumbers: [...(pkg.value.storNumbers || [])], description: pkg.value.description || '' }
     attachments.value = await api.attachments(route.params.id)
   } catch (err) {
     error.value = f.errorMessage(err)
@@ -148,7 +159,13 @@ async function changeStatus(status) {
 
 async function removePackage() {
   menuOpen.value = false
-  if (!window.confirm(t('seller.deletePackageConfirm', { number: pkg.value.number }))) return
+  const ok = await confirmDialog({
+    title: t('seller.deletePackageTitle'),
+    message: t('seller.deletePackageConfirm', { name: pkg.value.name }),
+    confirmLabel: t('seller.deletePackageTitle'),
+    requireText: pkg.value.name
+  })
+  if (!ok) return
   try {
     await api.deletePackage(pkg.value.id)
     router.replace({ name: 'seller-packages' })
@@ -172,7 +189,12 @@ function editLine(line) {
   lineModal.show = true
 }
 async function deleteLine(line) {
-  if (!window.confirm(t('seller.deleteLineConfirm', { itemNo: line.itemNo }))) return
+  const ok = await confirmDialog({
+    title: t('seller.deleteLineTitle'),
+    message: t('seller.deleteLineConfirm', { itemNo: line.itemNo }),
+    confirmLabel: t('common.delete')
+  })
+  if (!ok) return
   try {
     await api.deleteLine(line.id)
     await afterLinesChanged()

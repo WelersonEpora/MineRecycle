@@ -35,7 +35,7 @@ test("spreadsheet import", { skip }, async (t) => {
   const seller = await h.loggedInSeller(server.base);
   const anon = h.client(server.base);
 
-  const pkg = (await seller.post("/api/v1/seller/packages", { json: { number: 1, name: "Electrical", type: "bulk", location: "uberaba" } })).data;
+  const pkg = (await seller.post("/api/v1/seller/packages", { json: { number: 1, name: "Electrical", type: "bulk", locations: ["uberaba"] } })).data;
   const base = `/api/v1/seller/packages/${pkg.id}/imports`;
 
   await t.test("rejects non-Excel files", async () => {
@@ -74,6 +74,14 @@ test("spreadsheet import", { skip }, async (t) => {
     assert.equal(res.data.error.code, "IMPORT_MAPPING_INVALID");
   });
 
+  await t.test("numberRows numbers items by row order and ignores the item column", async () => {
+    const res = await seller.post(`${base}/${importId}/preview`, { json: { mapping: { ...mapping, itemNo: null }, numberRows: true } });
+    assert.equal(res.status, 200);
+    assert.equal(res.data.stats.validRows, 4);
+    assert.equal(res.data.stats.childLines, 0);
+    assert.deepEqual(res.data.errorsByCode, { quantity_invalid: 1 });
+  });
+
   await t.test("commit with errors is refused unless invalid rows are skipped", async () => {
     const refused = await seller.post(`${base}/${importId}/commit`, { json: { mapping } });
     assert.equal(refused.status, 400);
@@ -84,7 +92,7 @@ test("spreadsheet import", { skip }, async (t) => {
     assert.equal(ok.data.inserted, 4);
     assert.equal(ok.data.skippedInvalidRows, 1);
     assert.equal(ok.data.attachment.kind, "list");
-    assert.equal(ok.data.attachment.visibility, "restricted");
+    assert.equal(ok.data.attachment.visibility, "internal");
   });
 
   await t.test("finished import cannot be committed twice", async () => {
@@ -139,6 +147,46 @@ test("spreadsheet import", { skip }, async (t) => {
     const atts = (await seller.get(`/api/v1/seller/packages/${pkg.id}/attachments`)).data;
     assert.equal(atts.find((a) => a.id === att2.id).lineId, newLine2.id);
     assert.equal(atts.find((a) => a.id === att1.id).lineId, null);
+  });
+
+  await t.test("STOR code in the file name is checked against the packages", async () => {
+    const other = (
+      await seller.post("/api/v1/seller/packages", { json: { name: "Other", type: "bulk", locations: ["uberaba"], storDocuments: ["1809601"] } })
+    ).data;
+    const startWith = async (name) =>
+      (await seller.post(base, { form: h.fileForm({}, [{ field: "file", name, buffer: FIRST }]) })).data;
+
+    const plain = await startWith("lista.xlsx");
+    assert.equal(plain.storDocument, null);
+
+    const elsewhere = await startWith("1809601_REV0_VER0_Lista.xlsx");
+    assert.equal(elsewhere.storDocument.code, "1809601");
+    assert.equal(elsewhere.storDocument.inThisPackage, false);
+    assert.deepEqual(elsewhere.storDocument.otherPackages.map((p) => p.id), [other.id]);
+
+    const fresh = await startWith("1809999_REV0_VER0_Lista.xlsx");
+    assert.deepEqual(fresh.storDocument, { code: "1809999", inThisPackage: false, pending: false, otherPackages: [] });
+    const res = await seller.post(`${base}/${fresh.importId}/commit`, {
+      json: { mapping, headerRow: 3, skipInvalid: true, keepFile: false, addStorDocument: true, fileName: "1809999_REV0_VER0_Lista.xlsx" }
+    });
+    assert.equal(res.status, 200);
+    assert.equal(res.data.storDocumentAdded, true);
+    assert.deepEqual((await seller.get(`/api/v1/seller/packages/${pkg.id}`)).data.storDocuments, ["1809999"]);
+
+    // Documento pendente de validação: a importação exige confirmação.
+    await seller.patch(`/api/v1/seller/packages/${pkg.id}`, { json: { storDocumentsPending: ["1809999"] } });
+    const pend = await startWith("1809999_REV0_VER0_Lista.xlsx");
+    assert.equal(pend.storDocument.pending, true);
+    const opts = { mapping, headerRow: 3, skipInvalid: true, keepFile: false, fileName: "1809999_REV0_VER0_Lista.xlsx" };
+    const refused = await seller.post(`${base}/${pend.importId}/commit`, { json: opts });
+    assert.equal(refused.data.error.code, "IMPORT_DOCUMENT_PENDING");
+    assert.equal((await seller.post(`${base}/${pend.importId}/commit`, { json: { ...opts, confirmPending: true } })).status, 200);
+    await seller.patch(`/api/v1/seller/packages/${pkg.id}`, { json: { storDocumentsPending: [] } });
+
+    const again = await startWith("1809999_REV0_VER0_Lista.xlsx");
+    assert.equal(again.storDocument.inThisPackage, true);
+    await seller.del(`${base}/${again.importId}`);
+    for (const id of [plain.importId, elsewhere.importId]) await seller.del(`${base}/${id}`);
   });
 
   await t.test("anonymous users cannot import", async () => {

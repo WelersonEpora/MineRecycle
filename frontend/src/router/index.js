@@ -18,7 +18,8 @@ const routes = [
       { path: 'links', name: 'seller-links', component: () => import('../views/seller/AccessLinksView.vue') },
       { path: 'settings', name: 'seller-settings', component: () => import('../views/seller/SettingsView.vue') },
       { path: 'users', name: 'seller-users', component: () => import('../views/seller/UsersView.vue'), meta: { admin: true } },
-      { path: 'account', name: 'seller-account', component: () => import('../views/seller/AccountView.vue') }
+      { path: 'account', name: 'seller-account', component: () => import('../views/seller/AccountView.vue') },
+      { path: 'help', name: 'seller-help', component: () => import('../views/seller/HelpView.vue') }
     ]
   },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') }

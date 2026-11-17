@@ -16,7 +16,10 @@ export default {
     location: {
       conceicao_do_araguaia: 'Conceição do Araguaia',
       uberaba: 'Uberaba',
-      niquelandia: 'Niquelândia'
+      niquelandia: 'Niquelândia',
+      belo_horizonte: 'Belo Horizonte',
+      at_supplier: 'At supplier',
+      to_be_confirmed: 'To be confirmed'
     },
     status: {
       draft: 'Draft',
@@ -32,7 +35,7 @@ export default {
       list: 'List',
       proposal: 'Proposal'
     },
-    visibility: { public: 'Public', restricted: 'Restricted' },
+    visibility: { public: 'Public', restricted: 'Restricted', internal: 'Internal' },
     role: { seller: 'Seller', admin: 'Administrator' },
     linkState: { valid: 'Valid', expired: 'Expired', revoked: 'Revoked' },
     action: { open: 'Opened the link', view_package: 'Viewed package', download: 'Downloaded file' }
@@ -63,6 +66,11 @@ export default {
     copied: 'Copied',
     actions: 'Actions',
     confirmDelete: 'Delete permanently? This cannot be undone.'
+  },
+  dialog: {
+    confirm: 'Confirm',
+    typeToConfirm: 'To confirm, type',
+    deleteFileTitle: 'Delete file'
   },
   catalog: {
     title: 'Mining assets for sale',
@@ -128,6 +136,8 @@ export default {
     users: 'Users',
     account: 'My account',
     newPackage: 'New package',
+    storShort: 'STOR',
+    pendingShort: 'pending',
     lineCount: 'Items',
     attachmentCount: 'Files',
     updated: 'Updated',
@@ -135,10 +145,22 @@ export default {
     viewPublic: 'View page',
     tabs: { details: 'Details', lines: 'Items', attachments: 'Photos and files', links: 'Access links' },
     fields: {
-      number: 'Number',
-      name: 'Name',
+      number: 'Catalog no.',
+      numberHint: 'Used in the public page address. Filled in automatically; buyers do not see it.',
+      name: 'Public name (English)',
+      nameHint: 'Shown in the catalog and to buyers with a link.',
+      storFolder: 'STOR folder',
+      storFolderHint: 'Name of the package folder in STOR, written exactly the same. Sellers only.',
+      storNumbers: 'Package numbers',
+      storNumbersShort: 'STOR no.',
+      storNumbersHint: 'IDs in the asset sale strategy spreadsheet, e.g. 1, 6. They order the lists; buyers do not see them.',
+      storDocumentsPending: 'Pending validation (do not import yet):',
+      storDocumentsPendingHint: 'Importing a ticked spreadsheet asks for confirmation.',
       type: 'Type',
-      location: 'Location',
+      location: 'Locations',
+      locationsHint: 'Tick every location holding items of this package. Use "To be confirmed" while unknown.',
+      storDocuments: 'STOR documents',
+      storDocumentsHint: 'Codes of this package spreadsheets in STOR (7 digits, comma separated). The code is at the start of the downloaded file name. Sellers only.',
       description: 'Description'
     },
     saved: 'Saved.',
@@ -151,10 +173,12 @@ export default {
       draft: 'Back to draft'
     },
     deletePackage: 'Delete package',
-    deletePackageConfirm: 'Delete package {number} with all its items, photos and files? This cannot be undone.',
+    deletePackageTitle: 'Delete package',
+    deletePackageConfirm: 'Package “{name}” will be deleted with all its items, photos and files. This cannot be undone.',
     addLine: 'Add item',
     editLine: 'Edit item',
     importSpreadsheet: 'Import spreadsheet',
+    deleteLineTitle: 'Delete item',
     deleteLineConfirm: 'Delete item {itemNo}?',
     unitHint: 'Normalized automatically (UN, pç → PC; MT → M…)'
   },
@@ -168,7 +192,8 @@ export default {
     packageLevel: 'Whole package',
     title: 'Title',
     titleSingleOnly: 'Title (single file only)',
-    proposalRestricted: 'Proposals are always restricted.',
+    proposalRestricted: 'Proposals are never public.',
+    internalNote: 'Internal: only logged-in sellers can see it, never buyers with a link.',
     publicPhotoNote: 'Public visitors see resized photos only, without camera metadata.',
     photos: 'Photos',
     documents: 'Documents',
@@ -195,7 +220,12 @@ export default {
     required: 'required',
     notMapped: '— not used —',
     inferHierarchy: 'Detect kits from item numbering (1.1 and 1.2 belong to 1)',
-    keepFile: 'Keep the spreadsheet as a restricted file of the package',
+    numberRows: 'The spreadsheet has no item number: number items by row order (1, 2, 3…)',
+    numberRowsHint: 'On re-import, files linked to items follow the number. If the row order changes, the photo of item 5 moves to the new row 5.',
+    mappingMissing: 'Choose the column for: {fields}.',
+    mappingMissingItem: 'Choose the column for: {fields}. If the spreadsheet has no item number, tick “number items by row order”.',
+    mappingDuplicate: 'The same column is set for “{a}” and “{b}”. Choose a different column for each field.',
+    keepFile: 'Keep the spreadsheet as an internal file of the package (sellers only, never buyers)',
     check: 'Check',
     summary: '{valid} valid rows of {total}. {invalid} rows with errors. {children} sub-items.',
     unknownUnits: 'Units not recognized (kept as written):',
@@ -211,6 +241,16 @@ export default {
     commit: 'Import {n} items',
     done: '{n} items imported.',
     sampleLines: 'Preview of the imported items',
+    stor: {
+      thisPackage: 'Spreadsheet {code}: belongs to this package ({name}).',
+      otherPackage: 'Spreadsheet {code} is registered in another package: {packages}. Check you opened the right package.',
+      confirmOther: 'Import into this package anyway',
+      pending: 'Spreadsheet {code} is marked as pending validation: it should not be imported yet.',
+      confirmPending: 'I know it is pending and want to import it anyway',
+      notLinked: 'Spreadsheet {code} is not linked to any package yet.',
+      addToPackage: 'Link code {code} to this package on import',
+      noCode: 'The file name does not start with a STOR code. Check that the spreadsheet belongs to this package.'
+    },
     codes: {
       item_no_missing: 'Item number missing',
       item_no_duplicate: 'Item number repeated',
@@ -243,6 +283,7 @@ export default {
     created: 'Created',
     createdBy: 'by {name}',
     revoke: 'Revoke',
+    revokeTitle: 'Revoke link',
     revokeConfirm: 'Revoke the link “{label}”? The buyer loses access immediately.',
     logs: 'Access log',
     noLogs: 'No access yet.',
@@ -276,6 +317,90 @@ export default {
     newPassword: 'New password',
     changed: 'Password changed.'
   },
+  // Seller area help (HelpView.vue). No braces, at signs or vertical bars: they are vue-i18n syntax.
+  help: {
+    menu: 'Help',
+    title: 'Help: loading spreadsheets',
+    intro: 'How to download the package spreadsheets from STOR and import them into MineRecycle, one spreadsheet per package.',
+    contents: 'On this page',
+    export: {
+      title: '1. Download the spreadsheet from STOR',
+      intro:
+        "The sales lists are kept in STOR Global, the client's document and materials system. Each package has its own spreadsheet, made by hand and with its own layout; there is no single master list.",
+      whereLabels: { site: 'Address', project: 'Project', folder: 'Packages folder' },
+      where: {
+        site: 'stor.storglobal.com/storweb',
+        project: 'ANM - Araguaia Nickel Project',
+        folder: 'Suprimentos/Supply › Projeto Araguaia - ANM › Assets Sales › Packages'
+      },
+      steps: {
+        s1: 'Open Documento › Gestão de Documentos.',
+        s2: 'In the folder tree, select Assets Sales.',
+        s3: 'Type the document code in the search box and click the magnifier. Search only works with a folder selected and also looks in subfolders.',
+        s4: 'Tick the document row and click Download.',
+        s5: 'Save the file on your computer. The file name already starts with the document code.'
+      },
+      careTitle: 'Take care in STOR',
+      care: {
+        c1: 'Use Download only. Do not use Novo, Importar, Salvar or Enviar.',
+        c2: 'On a document detail screen, always leave through Cancelar.',
+        c3: 'Spreadsheets with prices or values are confidential: keep them on your computer only and do not forward them by email or chat.'
+      }
+    },
+    prepare: {
+      title: '2. Check the spreadsheet before uploading',
+      intro: 'Open the file in Excel and check the points below. If something needs changing, work on a copy.',
+      items: {
+        i1: 'Format: .xlsx or .xls. If it comes as .xlsm, save a copy as .xlsx.',
+        i2: 'If the file has several sheets, you pick the right sheet during the import.',
+        i3: 'The item number is required. If the spreadsheet has no such column, tick “number items by row order” (1, 2, 3…). On re-import, keep the row order so photos stay with the right item.',
+        i4: 'If the unit only appears in the column title (for example, Quantity (meters)), insert a unit column with m, kg etc.',
+        i5: 'Hidden rows, or rows hidden by a filter, are imported like any other. Delete the ones not for sale in the copy.',
+        i6: 'Total or subtotal rows at the end of the sheet show up as errors: delete them or skip them during the review.'
+      }
+    },
+    upload: {
+      title: '3. Import into MineRecycle',
+      steps: {
+        s1: 'In Packages, open the package. If it does not exist yet, create it with New package: the public name in English (what buyers see), the STOR folder written exactly the same (e.g. 1-6 Refractories), the package numbers in the strategy spreadsheet, the type and every location. Keep it as a draft while you check.',
+        s2: 'On the Items tab, click Import spreadsheet, choose the file and click Read file. The system checks the STOR code in the file name and warns if the spreadsheet belongs to another package.',
+        s3: 'Check the sheet and the header row (the row with the column titles). The preview highlights the chosen row; change the number if it is wrong.',
+        s4: 'For each field, choose the matching column. The system suggests columns by their title: check them. Price, value or total columns stay as "not used".',
+        s5: 'Click Check. Nothing is saved yet: see how many rows are valid, the errors and warnings per spreadsheet row and a preview of the items.',
+        s6: 'If there are errors, fix the spreadsheet and upload it again, or tick the option to skip the rows with errors.',
+        s7: "Click Import. The package's current items are replaced by the spreadsheet's.",
+        s8: 'Check the items on the Items tab and, when everything is right, change the package status.'
+      },
+      goToPackages: 'Go to Packages'
+    },
+    fields: {
+      title: 'Import fields',
+      colField: 'Field',
+      colRequired: 'Required',
+      colNotes: 'Notes',
+      yes: 'yes',
+      no: 'no',
+      notes: {
+        itemNo: 'Text, such as 1, 1.2 or 10A. Cannot repeat within the package. 1.2 becomes a sub-item of 1.',
+        description: 'Up to 4,000 characters.',
+        quantity: 'Accepts decimals, with comma or point (12,5 or 12.5). An empty cell only gives a warning.',
+        unit: 'Standardized: UN, pç and PEÇ become PC; MT becomes M; kg becomes KG. Unknown units are kept and flagged during the review.',
+        storCode: 'Item code in STOR.',
+        tag: 'Equipment tag.',
+        warehouseLocation: 'Location in the warehouse.'
+      },
+      discarded: 'Columns not used (supplier, weight, price, value etc.) are not saved in the items.'
+    },
+    after: {
+      title: '4. After the import',
+      items: {
+        i1: "Importing again replaces all the package's items: it does not add up or duplicate. Photos linked to an item stay linked if the item number is kept.",
+        i2: 'There is no undo button. To fix a mistake, import the right spreadsheet again or edit the items one by one.',
+        i3: 'With the keep-spreadsheet option ticked, the original file stays under Photos and files as Internal: only logged-in sellers see it, never buyers with a link or the public.',
+        i4: 'Packages without a spreadsheet in STOR are entered by hand, item by item, on the Items tab.'
+      }
+    }
+  },
   errors: {
     generic: 'Something went wrong. Please try again.',
     network: 'Could not reach the server.',
@@ -288,13 +413,15 @@ export default {
     LINK_EXPIRED: 'This access link has expired. Please contact the seller for a new one.',
     LINK_REVOKED: 'This access link has been revoked. Please contact the seller.',
     NUMBER_TAKEN: 'A package with this number already exists.',
+    STOR_FOLDER_TAKEN: 'Another package already uses this STOR folder.',
+    IMPORT_DOCUMENT_PENDING: 'This spreadsheet is pending validation. Confirm to import it anyway.',
     ITEM_NO_TAKEN: 'This item number already exists in the package.',
     EMAIL_TAKEN: 'A user with this email already exists.',
     PAYLOAD_TOO_LARGE: 'File too large.',
     IMPORT_FILE_TYPE: 'Upload an Excel file (.xlsx or .xls).',
     IMPORT_UNREADABLE: 'The spreadsheet could not be read.',
     IMPORT_NOT_FOUND: 'This import has expired. Please upload the file again.',
-    IMPORT_MAPPING_INVALID: 'Choose a different column for each required field.',
+    IMPORT_MAPPING_INVALID: 'Check the columns: a required field has no column, or the same column is used for two fields.',
     IMPORT_HAS_ERRORS: 'The spreadsheet has rows with errors. Fix them or choose to skip them.',
     IMPORT_EMPTY: 'There are no valid rows to import.'
   },

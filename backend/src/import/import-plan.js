@@ -7,11 +7,13 @@ const { MAPPABLE_FIELDS, REQUIRED_FIELDS, isEmpty, MAX_ROWS } = require("./sprea
 const LIMITS = { itemNo: 40, description: 4000, storCode: 64, tag: 64, warehouseLocation: 128 };
 
 // Valida o mapeamento de colunas vindo da tela. -> lista de problemas (vazia = ok).
-function validateMapping(mapping, columnCount) {
+// numberRows: a planilha não tem coluna de nº do item; ele é gerado pela ordem das linhas (a coluna é ignorada).
+function validateMapping(mapping, columnCount, { numberRows = false } = {}) {
   const problems = [];
   if (!mapping || typeof mapping !== "object") return [{ field: "mapping", code: "required" }];
   const seen = new Map();
   for (const field of MAPPABLE_FIELDS) {
+    if (numberRows && field === "itemNo") continue;
     const col = mapping[field];
     if (col === null || col === undefined || col === "") {
       if (REQUIRED_FIELDS.includes(field)) problems.push({ field, code: "required" });
@@ -48,8 +50,11 @@ function parentItemNoOf(itemNo, existing) {
 
 // Monta as linhas a gravar a partir da matriz da planilha, sem tocar no banco.
 // rows: matriz (sheetRows), headerRowIndex: índice do cabeçalho em rows, firstRowNumber: linha do Excel de rows[0].
+// numberRows: nº do item = posição da linha entre as linhas com dados (1, 2, 3...). Numa reimportação, os anexos são
+// religados pelo nº do item; se a ordem das linhas mudar, o anexo acompanha o número, não o conteúdo.
 // -> { lines, errors, warnings, stats }
-function buildImportPlan(rows, { headerRowIndex, firstRowNumber = 1, mapping, inferHierarchy = true }) {
+function buildImportPlan(rows, { headerRowIndex, firstRowNumber = 1, mapping: chosen, inferHierarchy = true, numberRows = false }) {
+  const mapping = numberRows ? { ...chosen, itemNo: null } : chosen;
   const lines = [];
   const errors = [];
   const warnings = [];
@@ -75,7 +80,7 @@ function buildImportPlan(rows, { headerRowIndex, firstRowNumber = 1, mapping, in
     }
 
     const rowErrors = [];
-    const itemNo = cellText(at(row, "itemNo"));
+    const itemNo = numberRows ? String(dataRows) : cellText(at(row, "itemNo"));
     const description = cellText(at(row, "description"));
 
     if (!itemNo) rowErrors.push({ row: excelRow, field: "itemNo", code: "item_no_missing" });
@@ -125,7 +130,7 @@ function buildImportPlan(rows, { headerRowIndex, firstRowNumber = 1, mapping, in
     byItemNo.set(itemNo, line);
   }
 
-  if (inferHierarchy) {
+  if (inferHierarchy && !numberRows) {
     for (const line of lines) line.parentItemNo = parentItemNoOf(line.itemNo, byItemNo);
   }
 

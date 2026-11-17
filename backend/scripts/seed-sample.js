@@ -55,7 +55,7 @@ async function importSpreadsheet(file, number) {
     number,
     name: `Sample bulk package ${number}`,
     type: "bulk",
-    location: "uberaba",
+    locations: ["uberaba"],
     status: "draft",
     description: "Loaded from local sample data (development only)."
   });
@@ -84,7 +84,7 @@ async function importPdfPhotos(dir, number) {
     number,
     name: `Sample equipment package ${number}`,
     type: "equipment",
-    location: "conceicao_do_araguaia",
+    locations: ["conceicao_do_araguaia"],
     status: "draft",
     description: "Photos extracted from local sample data (development only)."
   });

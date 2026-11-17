@@ -8,7 +8,8 @@ rodar; este arquivo resume as regras e convenções a seguir antes de mexer no c
 MineRecycle: plataforma **temporária** (cerca de 6 meses a partir de 2026-11) que conecta vendedores e compradores dos
 ativos de um projeto de mineração paralisado. São ~25 pacotes de venda, ~10 vendedores, site em inglês (português
 como opção) e **sem preço público**. Dois tipos de pacote: a granel (`bulk`, vendido em bloco) e equipamento
-(`equipment`, por equipamento ou conjunto). Locais: Conceição do Araguaia, Uberaba e Niquelândia.
+(`equipment`, por equipamento ou conjunto). Locais principais: Conceição do Araguaia, Uberaba e Niquelândia; um pacote
+pode ter vários locais (ver decisão de 2026-11-16).
 
 Por ser temporário e pequeno, prefira o simples: nada de fila, cache distribuído, microsserviço ou camada nova
 sem necessidade concreta.
@@ -19,8 +20,13 @@ sem necessidade concreta.
   `.dockerignore` e **nunca** vai para commit, imagem Docker ou log. Só é lido localmente por
   `backend/scripts/seed-sample.js`, que imprime apenas contagens. Em teste, exemplo ou documentação, use **dados
   fictícios**.
-- **No servidor, dados reais entram só pelas telas** (importação de planilha e envio de arquivos da área do vendedor),
-  nunca por repositório, imagem ou pasta copiada.
+- **No servidor, itens e arquivos reais entram só pelas telas** (importação de planilha e envio de arquivos da área do
+  vendedor), nunca por repositório, imagem ou pasta copiada.
+- **Cadastro dos pacotes (decisão de 2026-11-16):** nome público, pasta no STOR, números, tipo, locais e códigos STOR
+  entram por **migration de dados versionada e idempotente**, que identifica o pacote pela pasta no STOR e não
+  sobrescreve o que o vendedor editou. Estrutura sempre por migration. Nada de editar registro à mão no banco, nem no
+  local. Sem preço, valor ou comprador nos scripts. O que ainda não foi publicado fica listado em
+  `docs/carga-de-dados.md`, seção "Pendente de publicação", atualizada a cada ajuste.
 - **O seed fictício (`npm run seed:demo`) não é seeder do sequelize** e nunca roda no deploy. Seeders
   (`database/seeders/`) guardam só dado estrutural (admin inicial, configuração padrão), porque o deploy roda
   `db:seed`.
@@ -39,13 +45,18 @@ sem necessidade concreta.
 |---|---|
 | Repositório | Público no GitHub (mantém gratuito o runner ARM do build, como no FinMind). Por isso, nada confidencial no código. |
 | Domínio | `minerecycle.weslab.com.br`, pelo Nginx Proxy Manager da `servidor02`, frontend em `127.0.0.1:8085` (8084 é a porta do ambiente local). |
-| Prévia | Site inteiro protegido por Basic Auth, ligada por `SITE_PASSWORD` no nginx do frontend (vazio = aberto). |
+| Prévia | Basic Auth no nginx do frontend, por `SITE_PASSWORD` (vazio = aberto). Usada só no início; desligada em 2026-11-16 a pedido do usuário. |
 | Vitrine | O admin escolhe na tela Settings quais situações aparecem (padrão: só `active`). |
 | Reimportação | Substitui todos os itens do pacote; anexos ligados a itens são religados pelo nº do item. |
 | Vendedores | Uma equipe só: todos editam todos os pacotes, cada um com login próprio. Papéis `seller` e `admin`. |
 | Idioma | Inglês padrão, português opcional, bandeirinha na barra superior; a escolha fica no navegador. O conteúdo cadastrado (nomes, descrições, itens) não é traduzido. |
 | Publicação | Começa já com dados reais, entrados pelas telas, atrás da senha da prévia. |
 | Backup | Banco: coberto pelo `backup.sh` do `servidor02-infra` (todos os databases). Arquivos: `scripts/backup-files.sh`, tar diário local (7 diários + 4 semanais), cópia externa opcional. Em aberto: o usuário vai confirmar o snapshot semanal da Oracle e se o bucket de backup está em uso. |
+
+| Planilha da importação (2026-11-16) | A planilha original guardada na importação só pode ser vista por vendedor logado, nunca pelo comprador com link: visibilidade de anexo `internal` (além de `public` e `restricted`). |
+
+| Pacotes e locais (2026-11-16) | Nome do pacote (`name`) = **nome público** em inglês. A pasta do STOR fica em `stor_folder`, grafia original, só para vendedores; é a chave estável dos scripts de dados. Números do pacote (`stor_numbers`) = IDs da planilha de estratégia de vendas, não do nome da pasta (o hífen é "e": "1-6" = [1, 6]); não são chave. Vitrine, lista do vendedor e link do comprador ordenam pelo menor número e depois pelo nome; o comprador não vê número nenhum (o nº do catálogo só fica na URL). Um pacote tem uma lista de locais (`locations`), só com fonte em documento; "a confirmar" pode ficar junto de outros. Uma planilha por pacote. Superbid, 32-Project e 32-BULK Sale não viram pacote. Detalhes em `docs/carga-de-dados.md`. |
+| Documentos STOR (2026-11-16) | O pacote guarda os códigos (7 dígitos) das suas planilhas no STOR (`stor_documents`), visíveis só para vendedores. A importação lê o código no nome do arquivo e confirma, avisa (outro pacote, exige confirmação) ou oferece ligar o código ao pacote. Códigos em `stor_documents_pending` estão pendentes de validação: a importação deles exige confirmação. |
 
 Decisão nova do usuário: registre aqui, com a data.
 
@@ -81,7 +92,7 @@ Decisão nova do usuário: registre aqui, com a data.
   (`parseLocaleNumber`).
 - **Banco:** migrations em `backend/database/migrations/`; nunca altere uma migration já aplicada, crie outra. As
   colunas são `snake_case` (`underscored: true`). Valores de domínio também viram `CHECK` no banco (tipo, local,
-  situação, tipo e visibilidade de anexo, proposta sempre restrita). A tabela de usuários é `app_user` (`user` é
+  situação, tipo e visibilidade de anexo, proposta nunca pública). A tabela de usuários é `app_user` (`user` é
   palavra reservada no Postgres).
 - **Chave de item:** pacote + nº do item (`item_no`, texto: "1", "1.2", "10A"). O código STOR pode se repetir.
   Kit = item pai (`parent_line_id`); "1.2" é filho de "1" na importação.
@@ -122,7 +133,7 @@ cd frontend && npm run lint && npm test && npm run build
 
 - `.github/workflows/ci.yml`: lint, testes unitários, testes de integração (Postgres de serviço) e build do frontend,
   em todo push e PR.
-- **Publicação (etapa 3): ainda não feita, aguardando o usuário.** O plano segue o FinMind:
+- **Publicado em 2026-11-16** em https://minerecycle.weslab.com.br. A senha da prévia foi desligada no mesmo dia (`SITE_PASSWORD` vazio no `.env` do servidor): o catálogo é público, e o NPM força HTTPS. Push na `main` publica sozinho (variável `DEPLOY_ENABLED=true`). Como está montado:
   - `deploy.yml` com build arm64 no runner `ubuntu-24.04-arm`, imagens `ghcr.io/<owner>/minerecycle-backend` e
     `minerecycle-frontend`, e SSH na `servidor02` rodando `scripts/deploy.sh` (pull, up, migrate, seed).
   - App em `/opt/apps/minerecycle/app`, projeto Compose `minerecycle`.
@@ -137,4 +148,4 @@ cd frontend && npm run lint && npm test && npm run build
 - Etapa 1 (plano) e etapa 2 (versão local) concluídas em 2026-11-16: vitrine, área do vendedor, importação de
   planilha, link do comprador, Settings, usuários, i18n, seeds, testes, README e backup de arquivos.
 - `_sample-data/` ainda vazia: `seed:sample` pronto, mas não validado com os arquivos reais do cliente.
-- Próximo passo: etapa 3 (publicação), só com aprovação do usuário.
+- Etapa 3 (publicação) concluída em 2026-11-16. Catálogo público desde 2026-11-16; dados reais entram pelas telas.
