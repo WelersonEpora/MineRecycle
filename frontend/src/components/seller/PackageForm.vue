@@ -22,19 +22,19 @@
       </select>
     </div>
     <div class="col-6">
+      <label class="form-label small" for="mr-pkg-category">{{ t('seller.fields.category') }}</label>
+      <select id="mr-pkg-category" v-model="model.category" class="form-select">
+        <option v-for="c in CATEGORIES" :key="c" :value="c">{{ f.categoryLabel(c) }}</option>
+      </select>
+      <div class="form-text">{{ t('seller.fields.categoryHint') }}</div>
+    </div>
+    <div class="col-6">
       <label class="form-label small" for="mr-pkg-origin">{{ t('seller.fields.origin') }} <span class="text-danger">*</span></label>
       <select id="mr-pkg-origin" v-model="model.originId" class="form-select" required>
         <option value="" disabled>{{ t('seller.fields.originChoose') }}</option>
         <option v-for="o in originChoices" :key="o.id" :value="o.id">{{ o.name }} ({{ o.code }}){{ o.active ? '' : ` · ${t('origins.inactive')}` }}</option>
       </select>
       <div class="form-text">{{ t('seller.fields.originHint') }}</div>
-    </div>
-    <div class="col-6">
-      <label class="form-label small" for="mr-pkg-category">{{ t('seller.fields.category') }}</label>
-      <select id="mr-pkg-category" v-model="model.category" class="form-select">
-        <option v-for="c in CATEGORIES" :key="c" :value="c">{{ f.categoryLabel(c) }}</option>
-      </select>
-      <div class="form-text">{{ t('seller.fields.categoryHint') }}</div>
     </div>
     <fieldset class="col-6">
       <legend class="form-label small mb-1">{{ t('seller.fields.location') }}</legend>
