@@ -50,12 +50,39 @@
       </li>
     </ul>
 
-    <section v-if="tab === 'details'" class="mr-card p-3" style="max-width: 860px">
-      <PackageForm v-model="form" />
-      <div class="d-flex align-items-center gap-2 mt-3">
-        <button class="btn btn-accent btn-sm" :disabled="busy" @click="saveDetails">{{ busy ? t('common.saving') : t('common.save') }}</button>
-        <span v-if="savedFlash" class="small text-success">{{ t('seller.saved') }}</span>
-      </div>
+    <!-- Detalhes: só leitura; a edição abre num modal (Cancelar/Salvar), como em Itens e em Novo pacote. -->
+    <section v-if="tab === 'details'" class="mr-card p-3 d-flex flex-column-reverse flex-sm-row align-items-sm-start gap-2" style="max-width: 860px">
+      <dl class="mr-details flex-grow-1">
+        <dt>{{ t('seller.fields.name') }}</dt>
+        <dd>{{ pkg.name }}</dd>
+        <dt>{{ t('seller.fields.storFolder') }}</dt>
+        <dd class="mr-mono">{{ pkg.storFolder || '—' }}</dd>
+        <dt>{{ t('seller.fields.storNumbers') }}</dt>
+        <dd class="mr-mono">{{ pkg.storNumbers?.length ? pkg.storNumbers.join(', ') : '—' }}</dd>
+        <dt>{{ t('seller.fields.type') }}</dt>
+        <dd>{{ f.typeLabel(pkg.type) }}</dd>
+        <dt>{{ t('seller.fields.category') }}</dt>
+        <dd>{{ f.categoryLabel(pkg.category) }}</dd>
+        <dt>{{ t('seller.fields.origin') }}</dt>
+        <dd>{{ pkg.origin ? `${pkg.origin.name} (${pkg.origin.code})` : '—' }}</dd>
+        <dt>{{ t('seller.fields.location') }}</dt>
+        <dd>
+          <span v-for="l in pkg.locations" :key="l" class="badge rounded-pill text-bg-light border me-1">{{ f.locationLabel(l) }}</span>
+          <span v-if="!pkg.locations?.length">—</span>
+        </dd>
+        <dt>{{ t('seller.fields.storDocuments') }}</dt>
+        <dd class="mr-mono">
+          <span v-for="(d, i) in pkg.storDocuments" :key="d"
+            >{{ i ? ', ' : '' }}{{ d }}<span v-if="pkg.storDocumentsPending?.includes(d)" class="badge text-bg-warning ms-1">{{ t('seller.pendingShort') }}</span></span
+          >
+          <span v-if="!pkg.storDocuments?.length">—</span>
+        </dd>
+        <dt>{{ t('seller.fields.description') }}</dt>
+        <dd style="white-space: pre-line">{{ pkg.description || '—' }}</dd>
+        <dt>{{ t('seller.fields.number') }}</dt>
+        <dd>{{ pkg.number }}</dd>
+      </dl>
+      <button class="btn btn-accent btn-sm align-self-end align-self-sm-start text-nowrap" @click="openEdit"><i class="bi bi-pencil"></i> {{ t('common.edit') }}</button>
     </section>
 
     <section v-else-if="tab === 'lines'">
@@ -76,6 +103,16 @@
     <section v-else-if="tab === 'links'">
       <AccessLinksPanel :package-id="pkg.id" :package-status="pkg.status" />
     </section>
+
+    <!-- Edição dos detalhes. Persistente: clique fora e Esc não fecham, para não perder o que foi digitado. -->
+    <ModalDialog v-model:show="editing" :title="t('seller.editDetails')" size="lg" persistent scrollable>
+      <PackageForm v-model="form" />
+      <div v-if="editError" class="alert alert-danger py-2 small mt-3">{{ editError }}</div>
+      <template #footer>
+        <button class="btn btn-outline-secondary btn-sm" :disabled="busy" @click="editing = false">{{ t('common.cancel') }}</button>
+        <button class="btn btn-accent btn-sm" :disabled="busy" @click="saveDetails">{{ busy ? t('common.saving') : t('common.save') }}</button>
+      </template>
+    </ModalDialog>
   </template>
 </template>
 
@@ -83,9 +120,10 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFormat, STATUSES } from '../../composables/useFormat.js'
-import { confirmDialog } from '../../composables/useDialog.js'
+import { confirmDialog, notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 import StatusBadge from '../../components/StatusBadge.vue'
+import ModalDialog from '../../components/ModalDialog.vue'
 import LinesTable from '../../components/LinesTable.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
 import LineFormModal from '../../components/seller/LineFormModal.vue'
@@ -103,7 +141,8 @@ const form = ref({})
 const attachments = ref([])
 const error = ref('')
 const busy = ref(false)
-const savedFlash = ref(false)
+const editing = ref(false)
+const editError = ref('')
 const menuOpen = ref(false)
 const importing = ref(false)
 const linesTable = ref(null)
@@ -126,22 +165,30 @@ function setTab(key) {
 async function load() {
   try {
     pkg.value = await api.sellerPackage(route.params.id)
-    form.value = { number: pkg.value.number, name: pkg.value.name, type: pkg.value.type, category: pkg.value.category || 'other', originId: pkg.value.originId || '', locations: [...(pkg.value.locations || [])], storDocuments: [...(pkg.value.storDocuments || [])], storDocumentsPending: [...(pkg.value.storDocumentsPending || [])], storFolder: pkg.value.storFolder || '', storNumbers: [...(pkg.value.storNumbers || [])], description: pkg.value.description || '' }
     attachments.value = await api.attachments(route.params.id)
   } catch (err) {
     error.value = f.errorMessage(err)
   }
 }
 
+// Cada abertura parte do que está gravado: Cancelar descarta de fato.
+function openEdit() {
+  const p = pkg.value
+  form.value = { number: p.number, name: p.name, type: p.type, category: p.category || 'other', originId: p.originId || '', locations: [...(p.locations || [])], storDocuments: [...(p.storDocuments || [])], storDocumentsPending: [...(p.storDocumentsPending || [])], storFolder: p.storFolder || '', storNumbers: [...(p.storNumbers || [])], description: p.description || '' }
+  editError.value = ''
+  editing.value = true
+}
+
+// Erro mantém o modal aberto, com o que foi digitado.
 async function saveDetails() {
   busy.value = true
-  error.value = ''
+  editError.value = ''
   try {
     pkg.value = await api.updatePackage(pkg.value.id, form.value)
-    savedFlash.value = true
-    setTimeout(() => (savedFlash.value = false), 2000)
+    editing.value = false
+    notify(t('seller.saved'))
   } catch (err) {
-    error.value = f.errorMessage(err)
+    editError.value = f.errorMessage(err)
   } finally {
     busy.value = false
   }

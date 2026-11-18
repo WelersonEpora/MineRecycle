@@ -1,7 +1,8 @@
 export default {
   app: {
     name: 'MineRecycle',
-    tagline: 'Ativos de mineração à venda'
+    tagline: 'Ativos de mineração à venda',
+    assetSaleOf: 'Venda de ativos da'
   },
   nav: {
     catalog: 'Catálogo',
@@ -178,6 +179,7 @@ export default {
       description: 'Descrição'
     },
     saved: 'Salvo.',
+    editDetails: 'Editar dados do pacote',
     statusActions: {
       title: 'Mudar situação',
       active: 'Ativar',

@@ -21,7 +21,7 @@
     <div v-if="error" class="alert alert-danger">{{ f.errorMessage(error) }}</div>
     <p v-else-if="loading && !result" class="text-secondary">{{ t('common.loading') }}</p>
     <p v-else-if="!result?.items.length" class="text-secondary">{{ t('catalog.empty') }}</p>
-    <div v-else class="row g-3" :class="{ 'mr-loading': loading }">
+    <div v-else class="row g-3 mr-card-grid" :class="{ 'mr-loading': loading }">
       <div v-for="p in result.items" :key="p.id" class="col-12 col-sm-6 col-lg-4 col-xl-3">
         <PackageCard :pkg="p" />
       </div>

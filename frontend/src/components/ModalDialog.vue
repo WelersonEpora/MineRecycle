@@ -1,12 +1,12 @@
 <template>
   <Teleport to="body">
     <div v-if="show" class="mr-modal-backdrop" @mousedown.self="dismiss">
-      <div class="mr-modal" :class="sizeClass" role="dialog" aria-modal="true">
+      <div class="mr-modal" :class="[sizeClass, { 'mr-modal-scrollable': scrollable }]" role="dialog" aria-modal="true">
         <div class="d-flex align-items-center border-bottom px-3 py-2">
           <h2 class="h6 m-0 flex-grow-1">{{ title }}</h2>
           <button type="button" class="btn-close" :aria-label="t('common.close')" @click="close"></button>
         </div>
-        <div class="p-3">
+        <div class="mr-modal-body p-3">
           <slot />
         </div>
         <div v-if="$slots.footer" class="border-top px-3 py-2 d-flex justify-content-end gap-2 flex-wrap">
@@ -25,7 +25,9 @@ const props = defineProps({
   show: { type: Boolean, default: false },
   title: { type: String, default: '' },
   size: { type: String, default: '' },
-  persistent: { type: Boolean, default: false }
+  persistent: { type: Boolean, default: false },
+  // Formulário comprido: o corpo rola dentro do modal e os botões do rodapé ficam sempre visíveis.
+  scrollable: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:show', 'close'])
 const { t } = useI18n()

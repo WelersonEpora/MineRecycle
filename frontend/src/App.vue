@@ -3,8 +3,14 @@
   <main class="container-xl py-4">
     <RouterView />
   </main>
-  <footer class="container-xl pb-4 pt-2 small text-secondary">
-    MineRecycle · {{ t('app.tagline') }}
+  <footer class="mr-footer small text-secondary">
+    <div class="container-xl mr-footer-inner">
+      <span class="d-none d-sm-inline">MineRecycle · {{ t('app.tagline') }}</span>
+      <span class="mr-footer-owner">
+        {{ t('app.assetSaleOf') }}
+        <img src="/brand/horizonte-minerals.svg" alt="Horizonte Minerals" width="172" height="27" />
+      </span>
+    </div>
   </footer>
   <AppDialogs />
 </template>
