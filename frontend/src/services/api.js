@@ -35,6 +35,9 @@ export const api = {
   sellerPackage: (id) => data(http.get(`/seller/packages/${id}`)),
   createPackage: (body) => data(http.post('/seller/packages', body)),
   updatePackage: (id, body) => data(http.patch(`/seller/packages/${id}`, body)),
+  // Planilha (.xlsx): endereço para link direto; o navegador baixa o arquivo com o cookie de vendedor.
+  packagesExportUrl: (params) => `/api/v1/seller/packages/export?${new URLSearchParams(params)}`,
+  packageExportUrl: (id, params) => `/api/v1/seller/packages/${id}/export?${new URLSearchParams(params)}`,
   setStatus: (id, status) => data(http.put(`/seller/packages/${id}/status`, { status })),
   deletePackage: (id) => http.delete(`/seller/packages/${id}`),
 

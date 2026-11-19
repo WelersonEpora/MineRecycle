@@ -148,6 +148,8 @@ export default {
     account: 'My account',
     newPackage: 'New package',
     storShort: 'Doc.',
+    exportPackages: 'Export packages',
+    exportPackage: 'Export package',
     pendingShort: 'pending',
     lineCount: 'Items',
     attachmentCount: 'Files',
@@ -196,7 +198,7 @@ export default {
     deletePackageConfirm: 'Package “{name}” will be deleted with all its items, photos and files. This cannot be undone.',
     addLine: 'Add item',
     editLine: 'Edit item',
-    importSpreadsheet: 'Import spreadsheet',
+    importSpreadsheet: 'Import items',
     deleteLineTitle: 'Delete item',
     deleteLineConfirm: 'Delete item {itemNo}?',
     unitHint: 'Normalized automatically (UN, pç → PC; MT → M…)'
@@ -237,7 +239,7 @@ export default {
     uploaded: '{n} file uploaded. | {n} files uploaded.'
   },
   import: {
-    title: 'Import spreadsheet',
+    title: 'Import items',
     step1: '1. File',
     step2: '2. Columns',
     step3: '3. Review',
@@ -426,7 +428,7 @@ export default {
           c: 'One spreadsheet per package. Importing again replaces the items.',
           d: 'A spreadsheet pending validation asks for confirmation. A package without a spreadsheet (Steel Structure): items by hand.'
         },
-        where: 'Packages → Items tab → Import spreadsheet'
+        where: 'Packages → Items tab → Import items'
       },
       files: {
         title: 'Photos and files',
@@ -690,7 +692,8 @@ export default {
         items: {
           a: 'One spreadsheet per package: importing again replaces all items. When a folder has one spreadsheet per location, it becomes one package per location, like the Conceição do Araguaia and Uberaba refractories.',
           b: 'The initial package register came from the STOR survey. What is edited here is kept: system updates do not overwrite seller changes.',
-          c: 'Why the catalog is made of packages, not of project items: see Why it is not 60 thousand items.'
+          c: 'Why the catalog is made of packages, not of project items: see Why it is not 60 thousand items.',
+          d: 'Export packages (on the list) and Export package (on the package page) create an Excel file with a Packages sheet and an Items sheet. The Items sheet can be edited and brought back with Import items. The list exports what is filtered on screen.'
         }
       },
       numbers: {
@@ -859,7 +862,7 @@ export default {
       title: '3. Import into MineRecycle',
       steps: {
         s1: 'In Packages, open the package. If it does not exist yet, create it with New package: the public name in English (what buyers see), the STOR folder written exactly the same (e.g. 1-6 Refractories), the package numbers in the strategy spreadsheet, the type and every location. Keep it as a draft while you check.',
-        s2: 'On the Items tab, click Import spreadsheet, choose the file and click Read file. The system checks the STOR code in the file name and warns if the spreadsheet belongs to another package.',
+        s2: 'On the Items tab, click Import items, choose the file and click Read file. The system checks the STOR code in the file name and warns if the spreadsheet belongs to another package.',
         s3: 'Check the sheet and the header row (the row with the column titles). The preview highlights the chosen row; change the number if it is wrong.',
         s4: 'For each field, choose the matching column. The system suggests columns by their title: check them. The ? next to each field explains what goes in it. Price or value columns (including total value) stay as "not used".',
         s5: 'Click Check. Nothing is saved yet: see how many rows are valid, the errors and warnings per spreadsheet row and a preview of the items.',
@@ -914,6 +917,9 @@ export default {
     LINK_REVOKED: 'This access link has been revoked. Please contact the seller.',
     NUMBER_TAKEN: 'A package with this ID already exists.',
     NUMBER_LOCKED: 'The package ID cannot be changed.',
+    PACKAGE_IMPORT_STALE: 'The packages changed after the check. Check the file again.',
+    PACKAGE_IMPORT_HAS_ERRORS: 'The file has problems that prevent the import.',
+    PACKAGE_IMPORT_CONFIRM: 'Confirm all warnings before importing.',
     STOR_FOLDER_TAKEN: 'Another package already uses this STOR folder.',
     IMPORT_DOCUMENT_PENDING: 'This spreadsheet is pending validation. Confirm to import it anyway.',
     ITEM_NO_TAKEN: 'This item number already exists in the package.',

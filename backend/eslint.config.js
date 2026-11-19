@@ -28,16 +28,16 @@ module.exports = [
       "no-undef": "error"
     }
   },
-  // Regras puras (importação e política de acesso): sem banco, rede nem disco, para serem testadas isoladas.
+  // Regras puras (importação, exportação e política de acesso): sem banco, rede nem disco, para serem testadas isoladas.
   {
-    files: ["src/domain/**/*.js", "src/import/**/*.js"],
+    files: ["src/domain/**/*.js", "src/import/**/*.js", "src/export/**/*.js"],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector:
             "CallExpression[callee.name='require'][arguments.0.value=/(models|services|storage|config|sequelize)/]",
-          message: "Domain and import modules are pure: no database, storage or config access."
+          message: "Domain, import and export modules are pure: no database, storage or config access."
         }
       ]
     }

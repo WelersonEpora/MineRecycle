@@ -305,7 +305,7 @@ Arquivos envolvidos:
 | Camada | Arquivo | Papel |
 |---|---|---|
 | Tela | [`frontend/src/components/seller/ImportWizard.vue`](../frontend/src/components/seller/ImportWizard.vue) | Assistente em 3 passos |
-| Tela | [`frontend/src/views/seller/PackageEditView.vue`](../frontend/src/views/seller/PackageEditView.vue) | Botão "Importar planilha" no pacote |
+| Tela | [`frontend/src/views/seller/PackageEditView.vue`](../frontend/src/views/seller/PackageEditView.vue) | Botão "Importar itens" no pacote |
 | Rotas | [`backend/src/routes/seller.routes.js`](../backend/src/routes/seller.routes.js) | `POST /api/v1/seller/packages/:id/imports` e `.../imports/:importId/{layout,preview,commit}`, `DELETE .../imports/:importId` (exigem vendedor logado) |
 | Caso de uso | [`backend/src/services/import.service.js`](../backend/src/services/import.service.js) | Guarda o arquivo, monta o relatório, grava |
 | Regras puras | [`backend/src/import/spreadsheet.js`](../backend/src/import/spreadsheet.js) | Leitura (SheetJS), detecção do cabeçalho, sugestão de mapeamento |
@@ -317,7 +317,7 @@ Arquivos envolvidos:
 
 Pré-requisito: o pacote já existe (área do vendedor > Pacotes > novo pacote, com tipo, local e situação).
 
-1. **Abrir o pacote** na área do vendedor e clicar em **Importar planilha**. Abre o assistente.
+1. **Abrir o pacote** na área do vendedor e clicar em **Importar itens** (aba Itens). Abre o assistente.
 2. **Passo 1 – Arquivo.** Escolher o `.xlsx` ou `.xls` e clicar em **Ler arquivo**. O servidor confere a extensão
    (`IMPORT_EXTENSIONS`), lê a pasta de trabalho, guarda o arquivo temporariamente e devolve as abas, a linha de
    cabeçalho detectada, uma prévia e um mapeamento sugerido (`import.service.js`, `start`). Limite: 50 MB

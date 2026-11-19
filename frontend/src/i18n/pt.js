@@ -148,6 +148,8 @@ export default {
     account: 'Minha conta',
     newPackage: 'Novo pacote',
     storShort: 'Doc.',
+    exportPackages: 'Exportar pacotes',
+    exportPackage: 'Exportar pacote',
     pendingShort: 'pendente',
     lineCount: 'Itens',
     attachmentCount: 'Arquivos',
@@ -196,7 +198,7 @@ export default {
     deletePackageConfirm: 'O pacote “{name}” será excluído com todos os itens, fotos e arquivos. Não dá para desfazer.',
     addLine: 'Adicionar item',
     editLine: 'Editar item',
-    importSpreadsheet: 'Importar planilha',
+    importSpreadsheet: 'Importar itens',
     deleteLineTitle: 'Excluir item',
     deleteLineConfirm: 'Excluir o item {itemNo}?',
     unitHint: 'Normalizada automaticamente (UN, pç → PC; MT → M…)'
@@ -237,7 +239,7 @@ export default {
     uploaded: '{n} arquivo enviado. | {n} arquivos enviados.'
   },
   import: {
-    title: 'Importar planilha',
+    title: 'Importar itens',
     step1: '1. Arquivo',
     step2: '2. Colunas',
     step3: '3. Conferência',
@@ -426,7 +428,7 @@ export default {
           c: 'Uma planilha por pacote. Importar de novo substitui os itens.',
           d: 'Planilha pendente de validação pede confirmação. Pacote sem planilha (Steel Structure): itens à mão.'
         },
-        where: 'Pacotes → aba Itens → Importar planilha'
+        where: 'Pacotes → aba Itens → Importar itens'
       },
       files: {
         title: 'Fotos e arquivos',
@@ -690,7 +692,8 @@ export default {
         items: {
           a: 'Uma planilha por pacote: importar de novo substitui todos os itens. Quando uma pasta tem uma planilha por local, ela vira um pacote por local, como os refratários de Conceição do Araguaia e de Uberaba.',
           b: 'O cadastro inicial dos pacotes veio do levantamento no STOR. O que for editado aqui é mantido: as atualizações do sistema não sobrescrevem o que o vendedor ajustou.',
-          c: 'Por que o catálogo é de pacotes, e não dos itens do projeto: ver Por que não são 60 mil itens.'
+          c: 'Por que o catálogo é de pacotes, e não dos itens do projeto: ver Por que não são 60 mil itens.',
+          d: 'Exportar pacotes (na lista) e Exportar pacote (na página do pacote) geram um Excel com a aba Pacotes e a aba Itens. A aba Itens pode ser editada e trazida de volta com Importar itens. A lista exporta o que está filtrado na tela.'
         }
       },
       numbers: {
@@ -859,7 +862,7 @@ export default {
       title: '3. Importar no MineRecycle',
       steps: {
         s1: 'Em Pacotes, abra o pacote. Se ele ainda não existir, crie com Novo pacote: o nome público em inglês (o que o comprador vê), a pasta no STOR escrita exatamente igual (ex.: 1-6 Refractories), os números do pacote na planilha de estratégia, o tipo e todos os locais. Deixe-o em rascunho enquanto confere.',
-        s2: 'Na aba Itens, clique em Importar planilha, escolha o arquivo e clique em Ler arquivo. O sistema confere o código do STOR no nome do arquivo e avisa se a planilha for de outro pacote.',
+        s2: 'Na aba Itens, clique em Importar itens, escolha o arquivo e clique em Ler arquivo. O sistema confere o código do STOR no nome do arquivo e avisa se a planilha for de outro pacote.',
         s3: 'Confira a aba e a linha do cabeçalho (a linha com os títulos das colunas). A prévia destaca a linha escolhida; troque o número se estiver errado.',
         s4: 'Para cada campo, escolha a coluna correspondente. O sistema sugere colunas pelo título: confira. O ? ao lado de cada campo explica o que vai nele. Colunas de preço ou valor (inclusive valor total) ficam em "não usar".',
         s5: 'Clique em Conferir. Nada é gravado ainda: veja quantas linhas são válidas, os erros e avisos por linha da planilha e a prévia dos itens.',
@@ -914,6 +917,9 @@ export default {
     LINK_REVOKED: 'Este link de acesso foi revogado. Fale com o vendedor.',
     NUMBER_TAKEN: 'Já existe um pacote com este ID.',
     NUMBER_LOCKED: 'O ID do pacote não pode ser alterado.',
+    PACKAGE_IMPORT_STALE: 'Os pacotes mudaram depois da verificação. Verifique o arquivo de novo.',
+    PACKAGE_IMPORT_HAS_ERRORS: 'O arquivo tem problemas que impedem a importação.',
+    PACKAGE_IMPORT_CONFIRM: 'Confirme todos os avisos antes de importar.',
     STOR_FOLDER_TAKEN: 'Outro pacote já usa esta pasta do STOR.',
     IMPORT_DOCUMENT_PENDING: 'Esta planilha está pendente de validação. Confirme para importar mesmo assim.',
     ITEM_NO_TAKEN: 'Este nº de item já existe no pacote.',

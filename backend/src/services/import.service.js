@@ -59,7 +59,7 @@ function shortCell(value) {
 
 // Resolve aba e linha do cabeçalho (número da linha no Excel) escolhidos, ou os detectados.
 function resolveLayout(workbook, options = {}) {
-  const sheetName = workbook.SheetNames.includes(options.sheet) ? options.sheet : workbook.SheetNames[0];
+  const sheetName = workbook.SheetNames.includes(options.sheet) ? options.sheet : sheet.defaultSheet(workbook.SheetNames);
   const { rows, firstRowNumber, truncated } = sheet.sheetRows(workbook, sheetName);
   let headerIndex;
   if (Number.isInteger(options.headerRow) && options.headerRow >= firstRowNumber && options.headerRow - firstRowNumber < rows.length) {

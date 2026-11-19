@@ -25,6 +25,9 @@
         <RouterLink class="btn btn-sm btn-outline-secondary" :to="{ name: 'package', params: { number: pkg.number } }" target="_blank">
           <i class="bi bi-box-arrow-up-right"></i> {{ t('seller.viewPublic') }}
         </RouterLink>
+        <a class="btn btn-sm btn-outline-secondary" :href="api.packageExportUrl(pkg.id, { lang: locale })" download>
+          <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.exportPackage') }}
+        </a>
         <div class="dropdown" @focusout="closeMenuLater">
           <button class="btn btn-sm btn-accent dropdown-toggle" @click="menuOpen = !menuOpen">{{ t('seller.statusActions.title') }}</button>
           <ul class="dropdown-menu dropdown-menu-end" :class="{ show: menuOpen }">
@@ -119,6 +122,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useFormat, STATUSES } from '../../composables/useFormat.js'
 import { confirmDialog, notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
@@ -133,6 +137,7 @@ import AccessLinksPanel from '../../components/seller/AccessLinksPanel.vue'
 
 const f = useFormat()
 const t = f.t
+const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 

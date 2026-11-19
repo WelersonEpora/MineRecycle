@@ -8,6 +8,8 @@ const packageService = require("../services/package.service");
 const lineService = require("../services/line.service");
 const attachmentService = require("../services/attachment.service");
 const importService = require("../services/import.service");
+const exportService = require("../services/export.service");
+const packageImportService = require("../services/package-import.service");
 const accessLinkService = require("../services/access-link.service");
 const originService = require("../services/origin.service");
 const inquiryService = require("../services/inquiry.service");
@@ -24,6 +26,26 @@ const userId = (req) => req.viewer.seller.id;
 // ---------- Pacotes ----------
 router.get("/packages", async (req, res) => res.json(await packageService.listForSeller(req.query)));
 router.post("/packages", async (req, res) => res.status(201).json(await packageService.create(req.body || {}, userId(req))));
+// Planilha (.xlsx). "/packages/export" vem antes de "/packages/:id" para "export" não ser lido como id.
+const sendSheet = (res, { buffer, fileName }) => {
+  res.attachment(fileName);
+  res.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.set("Cache-Control", "no-store");
+  res.send(buffer);
+};
+router.get("/packages/export", async (req, res) => sendSheet(res, await exportService.exportList(req.query)));
+router.get("/packages/:id/export", async (req, res) => sendSheet(res, await exportService.exportOne(req.params.id, req.query)));
+// Importação de pacotes pela planilha do sistema (packageId no corpo = "Importar pacote", só o pacote aberto).
+router.post("/package-imports", upload.single("file"), async (req, res) =>
+  res.status(201).json(await packageImportService.start(req.file, req.body || {}))
+);
+router.post("/package-imports/:importId/commit", async (req, res) =>
+  res.json(await packageImportService.commit(req.params.importId, req.body || {}, userId(req)))
+);
+router.delete("/package-imports/:importId", async (req, res) => {
+  await packageImportService.cancel(req.params.importId);
+  res.status(204).end();
+});
 router.get("/packages/:id", async (req, res) => res.json(await packageService.getForSeller(req.params.id)));
 router.patch("/packages/:id", async (req, res) => res.json(await packageService.update(req.params.id, req.body || {}, userId(req))));
 router.put("/packages/:id/status", async (req, res) =>

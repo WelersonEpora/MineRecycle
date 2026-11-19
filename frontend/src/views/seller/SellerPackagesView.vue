@@ -26,7 +26,10 @@
       <input v-model="filters.q" type="search" class="form-control form-control-sm" />
     </div>
     <button v-if="activeCount" type="button" class="btn btn-link btn-sm mr-filter-reset ms-0 mb-1" @click="reset">{{ t('filters.clear') }}</button>
-    <button class="btn btn-accent btn-sm ms-auto" @click="openCreate"><i class="bi bi-plus-lg"></i> {{ t('seller.newPackage') }}</button>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" :href="exportUrl" download>
+      <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.exportPackages') }}
+    </a>
+    <button class="btn btn-accent btn-sm" @click="openCreate"><i class="bi bi-plus-lg"></i> {{ t('seller.newPackage') }}</button>
   </div>
   <div class="mb-3">
     <ChipGroup
@@ -103,6 +106,7 @@
 <script setup>
 import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useFormat, TYPES, LOCATIONS, STATUSES } from '../../composables/useFormat.js'
 import { EMPTY_SELLER_FILTERS, sellerFiltersFromQuery, sellerFiltersToQuery, applyStatus } from '../../composables/sellerPackageFilters.js'
 import { api } from '../../services/api.js'
@@ -113,6 +117,7 @@ import PackageForm from '../../components/seller/PackageForm.vue'
 
 const f = useFormat()
 const t = f.t
+const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const listRoute = route.name
@@ -137,6 +142,8 @@ const statusView = computed(() => applyStatus(items.value, filters.status, STATU
 const shown = computed(() => statusView.value.items)
 const statusOptions = computed(() => statusView.value.facet.options.map((o) => ({ ...o, label: f.statusLabel(o.value) })))
 const activeCount = computed(() => Object.keys(sellerFiltersToQuery(filters)).length)
+// Exporta o que a tela mostra: todos os filtros (inclusive a situação), no idioma da tela.
+const exportUrl = computed(() => api.packagesExportUrl({ ...sellerFiltersToQuery(filters), lang: locale.value }))
 
 async function load() {
   const mine = ++seq

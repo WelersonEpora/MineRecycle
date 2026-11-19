@@ -1,6 +1,8 @@
 "use strict";
 
 const XLSX = require("xlsx");
+const { IMPORT_COLUMNS } = require("../export/columns");
+const { SHEETS } = require("../export/labels");
 
 const MAX_ROWS = 20000;
 const HEADER_SCAN_ROWS = 30;
@@ -15,24 +17,18 @@ function normalizeHeader(value) {
 
 // Sinônimos por campo, comparados com o cabeçalho normalizado (sem acento, sem espaço, sem pontuação).
 // `prefix`: casa também quando o cabeçalho começa com o termo ("Descrição dos Materiais").
-const FIELD_SYNONYMS = {
-  itemNo: { exact: ["item", "itens", "n", "no", "nr", "num", "numero", "nitem", "itemno", "seq", "pos", "posicao"] },
-  description: {
-    exact: ["descricao", "description", "material", "materiais", "desc", "especificacao", "discriminacao"],
-    prefix: ["descricao", "description", "especificacao"]
-  },
-  quantity: { exact: ["qtde", "qtd", "qt", "quantidade", "quant", "qty", "quantity"], prefix: ["qtde", "quantidade"] },
-  unit: { exact: ["um", "unidade", "und", "unid", "un", "unit", "uom", "unidmedida", "unidadedemedida"] },
-  storCode: { exact: ["stor", "codigostor", "codstor", "storcode", "codigo", "cod", "code"], prefix: ["stor", "codigostor"] },
-  tag: { exact: ["tag", "tags"] },
-  warehouseLocation: {
-    exact: ["localizacao", "local", "endereco", "almoxarifado", "location", "loc", "localizacaoalmoxarifado"],
-    prefix: ["localizacao", "endereco"]
-  }
-};
+// Vêm do registro de colunas (export/columns.js), o mesmo que monta a planilha exportada: o que sai, volta.
+const FIELD_SYNONYMS = Object.fromEntries(IMPORT_COLUMNS.map((c) => [c.key, { exact: c.import.exact, prefix: c.import.prefix }]));
 
 const MAPPABLE_FIELDS = Object.keys(FIELD_SYNONYMS);
-const REQUIRED_FIELDS = ["itemNo", "description", "quantity", "unit"];
+const REQUIRED_FIELDS = IMPORT_COLUMNS.filter((c) => c.import.required).map((c) => c.key);
+
+// Aba aberta por padrão: a de itens da planilha exportada pelo sistema ("Items" ou "Itens", que vem depois de
+// "Pacotes"); em qualquer outro arquivo, a primeira.
+function defaultSheet(sheetNames) {
+  const itemSheets = Object.values(SHEETS).map((s) => s.lines);
+  return sheetNames.find((n) => itemSheets.includes(n)) ?? sheetNames[0];
+}
 
 function readWorkbook(buffer) {
   try {
@@ -100,6 +96,7 @@ function suggestMapping(headerRow) {
 }
 
 module.exports = {
+  defaultSheet,
   readWorkbook,
   sheetRows,
   detectHeaderRow,
