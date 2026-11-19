@@ -1,17 +1,14 @@
 <template>
   <div>
-    <div class="d-flex mb-3">
-      <button class="btn btn-accent btn-sm ms-auto" :disabled="packageId && !packageShareable" @click="openCreate">
-        <i class="bi bi-link-45deg"></i> {{ packageId ? t('links.newForPackage') : t('links.new') }}
-      </button>
-    </div>
-    <p v-if="packageId && !packageShareable" class="small text-secondary text-end">{{ t('links.noEligible') }}</p>
     <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>
-
-    <p v-if="!loading && !links.length" class="text-secondary">{{ t('links.empty') }}</p>
-    <div v-else class="table-responsive mr-card">
-      <table class="table table-sm align-middle mb-0">
-        <thead class="table-light small">
+    <DataTableCard :paginated="false" :loading="loading" :empty="!links.length" :empty-text="t('links.empty')" refreshable @refresh="load">
+      <template #filters>
+        <span v-if="packageId && !packageShareable" class="small text-secondary">{{ t('links.noEligible') }}</span>
+        <button class="btn btn-accent btn-sm ms-auto" :disabled="packageId && !packageShareable" @click="openCreate">
+          <i class="bi bi-link-45deg"></i> {{ packageId ? t('links.newForPackage') : t('links.new') }}
+        </button>
+      </template>
+      <template #head>
           <tr>
             <th>{{ t('links.label') }}</th>
             <th>{{ t('links.packages') }}</th>
@@ -21,8 +18,7 @@
             <th>{{ t('links.lastAccess') }}</th>
             <th></th>
           </tr>
-        </thead>
-        <tbody>
+      </template>
           <tr v-for="l in links" :key="l.id">
             <td>
               <div class="fw-medium">{{ l.label }}</div>
@@ -31,7 +27,7 @@
               </div>
             </td>
             <td class="small">
-              <span v-for="p in l.packages" :key="p.id" class="badge text-bg-light border me-1" :title="p.storFolder || ''">{{ p.name }}</span>
+              <span v-for="p in l.packages" :key="p.id" class="badge text-bg-light border me-1">{{ p.name }}</span>
             </td>
             <td class="small text-nowrap">{{ f.dateTime(l.expiresAt) }}</td>
             <td>
@@ -47,9 +43,7 @@
               <button v-if="l.state === 'valid'" class="btn btn-sm btn-link text-danger" :title="t('links.revoke')" @click="revoke(l)"><i class="bi bi-x-octagon"></i></button>
             </td>
           </tr>
-        </tbody>
-      </table>
-    </div>
+    </DataTableCard>
 
     <!-- Criar / editar -->
     <ModalDialog v-model:show="form.show" :title="form.id ? t('links.edit') : t('links.new')" size="lg">
@@ -134,6 +128,7 @@ import { useFormat } from '../../composables/useFormat.js'
 import { confirmDialog } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 import { dateInputValue, endOfDayIso } from '../../utils/format.js'
+import DataTableCard from '../table/DataTableCard.vue'
 import ModalDialog from '../ModalDialog.vue'
 import StatusBadge from '../StatusBadge.vue'
 

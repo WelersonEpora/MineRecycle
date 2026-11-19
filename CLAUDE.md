@@ -18,8 +18,8 @@ sem necessidade concreta.
 
 - **Dados do cliente são confidenciais.** `_sample-data/` (planilhas e PDFs reais) está no `.gitignore` e nos
   `.dockerignore` e **nunca** vai para commit, imagem Docker ou log. Só é lido localmente por
-  `backend/scripts/seed-sample.js`, que imprime apenas contagens. Em teste, exemplo ou documentação, use **dados
-  fictícios**.
+  `backend/scripts/import-lots.js` (`npm run import:lots`), que imprime apenas contagens. Em teste, exemplo ou
+  documentação, use **dados fictícios**.
 - **No servidor, itens e arquivos reais entram só pelas telas** (importação de planilha e envio de arquivos da área do
   vendedor), nunca por repositório, imagem ou pasta copiada.
 - **Cadastro dos pacotes (decisão de 2026-11-16):** nome público, pasta no STOR, números, tipo, locais e códigos STOR
@@ -27,9 +27,12 @@ sem necessidade concreta.
   sobrescreve o que o vendedor editou. Estrutura sempre por migration. Nada de editar registro à mão no banco, nem no
   local. Sem preço, valor ou comprador nos scripts. O que ainda não foi publicado fica listado em
   `docs/carga-de-dados.md`, seção "Pendente de publicação", atualizada a cada ajuste.
-- **O seed fictício (`npm run seed:demo`) não é seeder do sequelize** e nunca roda no deploy. Seeders
-  (`database/seeders/`) guardam só dado estrutural (admin inicial, configuração padrão), porque o deploy roda
-  `db:seed`.
+- **Seeders (`database/seeders/`) guardam só dado estrutural** (admin inicial, configuração padrão), porque o deploy
+  roda `db:seed`. Não há seed fictício (saiu em 2026-11-19): localmente, os lotes vêm da planilha real por
+  `npm run import:lots`.
+- **Banco (decisão de 2026-11-19):** o MineRecycle nunca sobe Postgres próprio. No servidor, o compartilhado do
+  `servidor02-infra` (rede `db`); no local, o de `C:\Source\infra` (porta 5432, rede `db`), com usuário `minerecycle`
+  e os databases `minerecycle` e `minerecycle_test` (senha em `C:\Source\infra\apps.env`).
 - **Nada de push, deploy ou alteração no servidor sem pedido explícito do usuário.** Antes de mexer no servidor, mostre
   exatamente o que vai mudar.
 - **`C:\Source\FinMind` e `C:\Source\servidor02-infra` são só referência (leitura).** O MineRecycle usa a mesma stack,
@@ -134,20 +137,21 @@ Decisão nova do usuário: registre aqui, com a data.
 
 Veja o README. Resumo:
 
-```bash
-docker compose -f docker/compose.dev.yml up -d --build          # tudo em Docker: http://localhost:8084
-docker compose -f docker/compose.dev.yml exec backend npm run seed:demo
-```
+Banco: o Postgres de `C:\Source\infra` (`docker compose up -d` lá). Backend e frontend em `npm run dev` (Vite em 5173,
+proxy de `/api` para a porta 3000); o `.env` da raiz precisa de `NODE_ENV=development` e `POSTGRES_PORT=5432`. O
+`npm run dev` não roda migrations (`npm run db:migrate`).
 
-Ou só o Postgres no Docker, com backend e frontend em `npm run dev` (Vite em 5173, proxy de `/api` para a porta 3000);
-o `.env` precisa de `NODE_ENV=development`.
+```bash
+cd backend && npm run import:lots -- "../_sample-data/<planilha>.xlsm"   # lotes da planilha real, só no local
+docker compose -f docker/compose.dev.yml up -d --build                   # opcional: tudo em Docker, :8084
+```
 
 ## Testes, lint e build
 
 ```bash
 cd backend && npm run lint && npm test         # unitários (regras puras, sem banco)
-cd backend && POSTGRES_HOST=localhost POSTGRES_PORT=5434 POSTGRES_USER=minerecycle POSTGRES_PASSWORD=minerecycle \
-  npm run test:integration                     # Postgres real, database minerecycle_test
+cd backend && npm run test:integration        # Postgres real (infra), database minerecycle_test, usuário do .env
+cd backend && npm run test:integration -- lot  # só os arquivos que começam com "lot"
 cd frontend && npm run lint && npm test && npm run build
 ```
 
@@ -174,5 +178,8 @@ cd frontend && npm run lint && npm test && npm run build
 
 - Etapa 1 (plano) e etapa 2 (versão local) concluídas em 2026-11-16: catálogo, área do vendedor, importação de
   planilha, link do comprador, Settings, usuários, i18n, seeds, testes, README e backup de arquivos.
-- `_sample-data/` ainda vazia: `seed:sample` pronto, mas não validado com os arquivos reais do cliente.
+- 2026-11-19: mudança de rota para lotes (aba "Matriz de lotes"). Feito: modelo, migrations, regras puras, services e
+  rotas; banco local no Postgres do infra, com a planilha real importada (1.089 lotes, 85 pacotes automáticos).
+  Pendente: telas do vendedor e públicas, testes de integração das rotas, exportação, limpeza dos arquivos órfãos e
+  registro das decisões dos lotes nesta página (substituindo as de STOR, tipo e locais).
 - Etapa 3 (publicação) concluída em 2026-11-16. Catálogo público desde 2026-11-16; dados reais entram pelas telas.

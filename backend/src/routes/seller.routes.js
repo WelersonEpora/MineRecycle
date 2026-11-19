@@ -5,11 +5,9 @@ const multer = require("multer");
 const env = require("../config/env");
 const { requireSeller, requireAdmin } = require("../shared/middlewares");
 const packageService = require("../services/package.service");
-const lineService = require("../services/line.service");
+const lotService = require("../services/lot.service");
+const lotImportService = require("../services/lot-import.service");
 const attachmentService = require("../services/attachment.service");
-const importService = require("../services/import.service");
-const exportService = require("../services/export.service");
-const packageImportService = require("../services/package-import.service");
 const accessLinkService = require("../services/access-link.service");
 const originService = require("../services/origin.service");
 const inquiryService = require("../services/inquiry.service");
@@ -23,70 +21,52 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: env
 router.use(requireSeller);
 const userId = (req) => req.viewer.seller.id;
 
+// ---------- Lotes (decisão de 2026-11-19) ----------
+// "/lots/ids" e "/lots/facets" vêm antes de "/lots/:id" para não serem lidos como id.
+router.get("/lots", async (req, res) => res.json(await lotService.list(req.query)));
+router.get("/lots/ids", async (req, res) => res.json(await lotService.listIds(req.query)));
+router.get("/lots/facets", async (_req, res) => res.json(await lotService.facets()));
+router.get("/lots/:id", async (req, res) => res.json(await lotService.get(req.params.id)));
+router.patch("/lots/:id", async (req, res) => res.json(await lotService.update(req.params.id, req.body || {}, userId(req))));
+// Pacote de um lote só, com o nome do lote.
+router.post("/lots/:id/package", async (req, res) => res.status(201).json(await packageService.createFromLot(req.params.id, userId(req))));
+router.get("/lots/:id/attachments", async (req, res) => res.json(await attachmentService.list({ lotId: req.params.id })));
+router.post("/lots/:id/attachments", upload.array("files", 30), async (req, res) =>
+  res.status(201).json(await attachmentService.upload({ lotId: req.params.id }, req.files, req.body || {}, userId(req)))
+);
+
+// ---------- Importação de lotes ----------
+router.post("/lot-imports", upload.single("file"), async (req, res) => res.status(201).json(await lotImportService.start(req.file)));
+router.post("/lot-imports/:importId/preview", async (req, res) => res.json(await lotImportService.preview(req.params.importId, req.body || {})));
+router.post("/lot-imports/:importId/commit", async (req, res) =>
+  res.json(await lotImportService.commit(req.params.importId, req.body || {}, userId(req)))
+);
+router.delete("/lot-imports/:importId", async (req, res) => {
+  await lotImportService.cancel(req.params.importId);
+  res.status(204).end();
+});
+
 // ---------- Pacotes ----------
 router.get("/packages", async (req, res) => res.json(await packageService.listForSeller(req.query)));
 router.post("/packages", async (req, res) => res.status(201).json(await packageService.create(req.body || {}, userId(req))));
-// Planilha (.xlsx). "/packages/export" vem antes de "/packages/:id" para "export" não ser lido como id.
-const sendSheet = (res, { buffer, fileName }) => {
-  res.attachment(fileName);
-  res.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.set("Cache-Control", "no-store");
-  res.send(buffer);
-};
-router.get("/packages/export", async (req, res) => sendSheet(res, await exportService.exportList(req.query)));
-router.get("/packages/:id/export", async (req, res) => sendSheet(res, await exportService.exportOne(req.params.id, req.query)));
-// Importação de pacotes pela planilha do sistema (packageId no corpo = "Importar pacote", só o pacote aberto).
-router.post("/package-imports", upload.single("file"), async (req, res) =>
-  res.status(201).json(await packageImportService.start(req.file, req.body || {}))
-);
-router.post("/package-imports/:importId/commit", async (req, res) =>
-  res.json(await packageImportService.commit(req.params.importId, req.body || {}, userId(req)))
-);
-router.delete("/package-imports/:importId", async (req, res) => {
-  await packageImportService.cancel(req.params.importId);
-  res.status(204).end();
-});
 router.get("/packages/:id", async (req, res) => res.json(await packageService.getForSeller(req.params.id)));
 router.patch("/packages/:id", async (req, res) => res.json(await packageService.update(req.params.id, req.body || {}, userId(req))));
-router.put("/packages/:id/status", async (req, res) =>
-  res.json(await packageService.setStatus(req.params.id, req.body?.status, userId(req)))
-);
+// Situação. Para "vendido": { status, confirm } (confirm quando há lotes já vendidos em outro lugar).
+router.put("/packages/:id/status", async (req, res) => res.json(await packageService.setStatus(req.params.id, req.body || {}, userId(req))));
 router.delete("/packages/:id", async (req, res) => {
   await packageService.remove(req.params.id);
   res.status(204).end();
 });
-
-// ---------- Linhas ----------
-router.get("/packages/:id/lines", async (req, res) => res.json(await lineService.listLines(req.params.id, req.query)));
-router.post("/packages/:id/lines", async (req, res) => res.status(201).json(await lineService.create(req.params.id, req.body || {})));
-router.patch("/lines/:lineId", async (req, res) => res.json(await lineService.update(req.params.lineId, req.body || {})));
-router.delete("/lines/:lineId", async (req, res) => {
-  await lineService.remove(req.params.lineId);
-  res.status(204).end();
-});
-
-// ---------- Importação de planilha ----------
-router.post("/packages/:id/imports", upload.single("file"), async (req, res) =>
-  res.status(201).json(await importService.start(req.params.id, req.file))
-);
-router.post("/packages/:id/imports/:importId/layout", async (req, res) =>
-  res.json(await importService.describeExisting(req.params.importId, req.body || {}))
-);
-router.post("/packages/:id/imports/:importId/preview", async (req, res) =>
-  res.json(await importService.preview(req.params.id, req.params.importId, req.body || {}))
-);
-router.post("/packages/:id/imports/:importId/commit", async (req, res) =>
-  res.json(await importService.commit(req.params.id, req.params.importId, req.body || {}, userId(req)))
-);
-router.delete("/packages/:id/imports/:importId", async (req, res) => {
-  await importService.cancel(req.params.importId);
-  res.status(204).end();
-});
+// Lotes do pacote (só pacote manual muda de lotes).
+router.get("/packages/:id/lots", async (req, res) => res.json(await packageService.listLotsForSeller(req.params.id, req.query)));
+router.post("/packages/:id/lots", async (req, res) => res.json(await packageService.addLots(req.params.id, req.body || {})));
+router.post("/packages/:id/lots/remove", async (req, res) => res.json(await packageService.removeLots(req.params.id, req.body || {})));
+router.put("/packages/:id/lots/order", async (req, res) => res.json(await packageService.reorderLots(req.params.id, req.body || {})));
 
 // ---------- Anexos ----------
-router.get("/packages/:id/attachments", async (req, res) => res.json(await attachmentService.list(req.params.id)));
+router.get("/packages/:id/attachments", async (req, res) => res.json(await attachmentService.list({ packageId: req.params.id })));
 router.post("/packages/:id/attachments", upload.array("files", 30), async (req, res) =>
-  res.status(201).json(await attachmentService.upload(req.params.id, req.files, req.body || {}, userId(req)))
+  res.status(201).json(await attachmentService.upload({ packageId: req.params.id }, req.files, req.body || {}, userId(req)))
 );
 router.patch("/attachments/:attachmentId", async (req, res) =>
   res.json(await attachmentService.update(req.params.attachmentId, req.body || {}))

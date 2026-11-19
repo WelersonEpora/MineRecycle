@@ -1,11 +1,10 @@
 <template>
-  <div class="d-flex mb-3">
-    <button class="btn btn-accent btn-sm ms-auto" @click="openForm(null)"><i class="bi bi-person-plus"></i> {{ t('users.newUser') }}</button>
-  </div>
   <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>
-  <div class="table-responsive mr-card">
-    <table class="table table-sm align-middle mb-0">
-      <thead class="table-light small">
+  <DataTableCard :paginated="false" :empty="!users.length" :empty-text="t('common.none')">
+    <template #filters>
+      <button class="btn btn-accent btn-sm ms-auto" @click="openForm(null)"><i class="bi bi-person-plus"></i> {{ t('users.newUser') }}</button>
+    </template>
+    <template #head>
         <tr>
           <th>{{ t('users.name') }}</th>
           <th>{{ t('users.email') }}</th>
@@ -14,8 +13,7 @@
           <th>{{ t('users.lastLogin') }}</th>
           <th></th>
         </tr>
-      </thead>
-      <tbody>
+    </template>
         <tr v-for="u in users" :key="u.id" :class="{ 'text-secondary': !u.active }">
           <td>{{ u.name }}</td>
           <td>{{ u.email }}</td>
@@ -29,9 +27,7 @@
             </button>
           </td>
         </tr>
-      </tbody>
-    </table>
-  </div>
+  </DataTableCard>
 
   <ModalDialog v-model:show="form.show" :title="form.id ? form.name : t('users.newUser')">
     <div class="row g-3">
@@ -74,6 +70,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useFormat } from '../../composables/useFormat.js'
 import { api } from '../../services/api.js'
+import DataTableCard from '../../components/table/DataTableCard.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import { confirmDialog, notify } from '../../composables/useDialog.js'
 import { useSession } from '../../stores/session.js'

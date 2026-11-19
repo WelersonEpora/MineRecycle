@@ -3,9 +3,9 @@ import assert from 'node:assert/strict'
 import { sellerFiltersFromQuery, sellerFiltersToQuery, applyStatus } from './sellerPackageFilters.js'
 
 test('seller filters round-trip through the URL query', () => {
-  const f = sellerFiltersFromQuery({ status: 'draft', type: 'bulk', originId: 'abc', location: 'uberaba', q: ' kiln ' })
-  assert.deepEqual(f, { status: 'draft', type: 'bulk', originId: 'abc', location: 'uberaba', q: ' kiln ' })
-  assert.deepEqual(sellerFiltersToQuery(f), { status: 'draft', type: 'bulk', originId: 'abc', location: 'uberaba', q: 'kiln' })
+  const f = sellerFiltersFromQuery({ status: 'draft', level: 'family', originId: 'abc', site: 'Site A', q: ' kiln ' })
+  assert.deepEqual(f, { status: 'draft', level: 'family', originId: 'abc', site: 'Site A', q: ' kiln ' })
+  assert.deepEqual(sellerFiltersToQuery(f), { status: 'draft', level: 'family', originId: 'abc', site: 'Site A', q: 'kiln' })
   assert.deepEqual(sellerFiltersToQuery(sellerFiltersFromQuery({})), {})
   assert.equal(sellerFiltersFromQuery({ q: ['a', 'b'] }).q, 'a')
 })

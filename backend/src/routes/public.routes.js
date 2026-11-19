@@ -46,8 +46,12 @@ router.get("/catalog/packages/:number", async (req, res) => {
   res.json(await packageService.getForViewer(req.params.number, req.viewer, req));
 });
 
-router.get("/catalog/packages/:number/lines", async (req, res) => {
-  res.json(await packageService.listLinesForViewer(req.params.number, req.viewer, req.query));
+router.get("/catalog/packages/:number/lots", async (req, res) => {
+  res.json(await packageService.listLotsForViewer(req.params.number, req.viewer, req.query));
+});
+
+router.get("/catalog/packages/:number/lots/:lotId", async (req, res) => {
+  res.json(await packageService.getLotForViewer(req.params.number, req.params.lotId, req.viewer));
 });
 
 // ---------- Contato e pedido de informação ----------

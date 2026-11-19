@@ -1,102 +1,90 @@
 <template>
-  <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
-    <div>
-      <label class="form-label small mb-1">{{ t('catalog.type') }}</label>
-      <select v-model="filters.type" class="form-select form-select-sm">
-        <option value="">{{ t('common.all') }}</option>
-        <option v-for="ty in TYPES" :key="ty" :value="ty">{{ f.typeLabel(ty) }}</option>
-      </select>
-    </div>
-    <div>
-      <label class="form-label small mb-1">{{ t('seller.fields.origin') }}</label>
-      <select v-model="filters.originId" class="form-select form-select-sm">
-        <option value="">{{ t('common.all') }}</option>
-        <option v-for="o in origins" :key="o.id" :value="o.id">{{ o.name }}</option>
-      </select>
-    </div>
-    <div>
-      <label class="form-label small mb-1">{{ t('catalog.location') }}</label>
-      <select v-model="filters.location" class="form-select form-select-sm">
-        <option value="">{{ t('common.all') }}</option>
-        <option v-for="l in LOCATIONS" :key="l" :value="l">{{ f.locationLabel(l) }}</option>
-      </select>
-    </div>
-    <div>
-      <label class="form-label small mb-1">{{ t('common.search') }}</label>
-      <input v-model="filters.q" type="search" class="form-control form-control-sm" />
-    </div>
-    <button v-if="activeCount" type="button" class="btn btn-link btn-sm mr-filter-reset ms-0 mb-1" @click="reset">{{ t('filters.clear') }}</button>
-    <a class="btn btn-outline-secondary btn-sm ms-auto" :href="exportUrl" download>
-      <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.exportPackages') }}
-    </a>
-    <button class="btn btn-outline-secondary btn-sm" @click="importingPackages = true">
-      <i class="bi bi-upload"></i> {{ t('seller.importPackages') }}
-    </button>
-    <button class="btn btn-accent btn-sm" @click="openCreate"><i class="bi bi-plus-lg"></i> {{ t('seller.newPackage') }}</button>
-  </div>
-  <div class="mb-3">
-    <ChipGroup
-      id="seller-status"
-      :label="t('catalog.status')"
-      :model-value="filters.status"
-      :all-label="t('common.all')"
-      :all-count="statusView.facet.all"
-      :options="statusOptions"
-      @update:model-value="filters.status = $event"
-    />
-  </div>
-
   <div v-if="error" class="alert alert-danger">{{ error }}</div>
-  <div class="table-responsive mr-card">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light small">
-        <tr>
-          <th class="text-nowrap text-center">{{ t('seller.fields.number') }}</th>
-          <th></th>
-          <th>{{ t('seller.fields.name') }}</th>
-          <th class="text-nowrap">{{ t('seller.fields.storNumbersShort') }}</th>
-          <th>{{ t('seller.fields.type') }}</th>
-          <th>{{ t('seller.fields.origin') }}</th>
-          <th>{{ t('seller.fields.location') }}</th>
-          <th>{{ t('catalog.status') }}</th>
-          <th class="mr-num">{{ t('seller.lineCount') }}</th>
-          <th class="mr-num">{{ t('seller.attachmentCount') }}</th>
-          <th>{{ t('seller.updated') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="!loading && !shown.length">
-          <td colspan="11" class="text-secondary">{{ t('seller.noPackages') }}</td>
-        </tr>
-        <tr v-for="p in shown" :key="p.id" role="button" @click="open(p)">
-          <td class="mr-number text-nowrap text-center">{{ p.number }}</td>
-          <td style="width: 64px">
-            <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
-          </td>
-          <td>
-            <div class="fw-medium">{{ p.name }}</div>
-            <div v-if="p.storFolder" class="small text-secondary"><i class="bi bi-folder2"></i> <span class="mr-mono">{{ p.storFolder }}</span></div>
-            <div v-if="p.storDocuments?.length" class="small text-secondary mr-mono">
-              <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.storShort') }}
-              <span v-for="(d, i) in p.storDocuments" :key="d"
-                >{{ i ? ' · ' : '' }}{{ d }}<span v-if="p.storDocumentsPending?.includes(d)" class="badge text-bg-warning ms-1">{{ t('seller.pendingShort') }}</span></span
-              >
-            </div>
-          </td>
-          <td class="mr-mono small text-secondary text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
-          <td class="small">{{ f.typeLabel(p.type) }}</td>
-          <td class="small" :title="p.origin?.name">{{ p.origin?.code }}</td>
-          <td class="small">{{ f.locationsLabel(p.locations) }}</td>
-          <td><StatusBadge :status="p.status" /></td>
-          <td class="mr-num">{{ p.lineCount }}</td>
-          <td class="mr-num">{{ p.attachmentCount }}</td>
-          <td class="small text-secondary text-nowrap">{{ f.date(p.updatedAt) }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <PackageImportModal v-model:show="importingPackages" @imported="load" />
+  <DataTableCard
+    v-model:page="page"
+    v-model:page-size="pageSize"
+    :total="sorted.length"
+    :loading="loading"
+    :empty="!pageItems.length"
+    :empty-text="t('seller.noPackages')"
+    clickable
+    refreshable
+    @refresh="load"
+  >
+    <template #filters>
+      <div>
+        <label class="form-label">{{ t('seller.level') }}</label>
+        <select v-model="filters.level" class="form-select form-select-sm">
+          <option value="">{{ t('common.all') }}</option>
+          <option v-for="l in SOURCES" :key="l" :value="l">{{ f.sourceLabel(l) }}</option>
+        </select>
+      </div>
+      <div v-if="origins.length">
+        <label class="form-label">{{ t('seller.fields.origin') }}</label>
+        <select v-model="filters.originId" class="form-select form-select-sm">
+          <option value="">{{ t('common.all') }}</option>
+          <option v-for="o in origins" :key="o.id" :value="o.id">{{ o.name }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">{{ t('seller.site') }}</label>
+        <select v-model="filters.site" class="form-select form-select-sm">
+          <option value="">{{ t('common.all') }}</option>
+          <option v-for="s in sites" :key="s" :value="s">{{ s }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">{{ t('common.search') }}</label>
+        <input v-model="filters.q" type="search" class="form-control form-control-sm" />
+      </div>
+      <button v-if="activeCount" type="button" class="btn btn-link btn-sm mb-1" @click="reset">{{ t('filters.clear') }}</button>
+      <button class="btn btn-accent btn-sm ms-auto" @click="openCreate"><i class="bi bi-plus-lg"></i> {{ t('seller.newPackage') }}</button>
+      <div class="w-100">
+        <ChipGroup
+          id="seller-status"
+          :label="t('catalog.status')"
+          :model-value="filters.status"
+          :all-label="t('common.all')"
+          :all-count="statusView.facet.all"
+          :options="statusOptions"
+          @update:model-value="filters.status = $event"
+        />
+      </div>
+    </template>
+    <template #head>
+      <tr>
+        <SortHeader v-model="sort" field="number" :label="t('seller.fields.number')" />
+        <th></th>
+        <SortHeader v-model="sort" field="name" :label="t('seller.fields.name')" />
+        <SortHeader v-model="sort" field="source" :label="t('seller.level')" />
+        <th>{{ t('seller.site') }}</th>
+        <SortHeader v-model="sort" field="status" :label="t('catalog.status')" />
+        <SortHeader v-model="sort" field="lotCount" :label="t('seller.lotCount')" first-order="desc" />
+        <SortHeader v-model="sort" field="attachmentCount" :label="t('seller.attachmentCount')" first-order="desc" />
+        <SortHeader v-model="sort" field="updatedAt" :label="t('seller.updated')" first-order="desc" />
+      </tr>
+    </template>
+    <tr v-for="p in pageItems" :key="p.id" @click="open(p)">
+      <td class="mr-number text-nowrap">{{ p.number }}</td>
+      <td style="width: 64px">
+        <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
+      </td>
+      <td>
+        <div class="fw-medium">{{ p.name }}</div>
+        <div v-if="p.source !== 'manual' && p.sourceValue !== p.name" class="small text-secondary">{{ p.sourceValue }}</div>
+        <div v-if="p.origin" class="small text-secondary" :title="p.origin.name">{{ p.origin.code }}</div>
+      </td>
+      <td class="small text-nowrap">{{ f.sourceLabel(p.source) }}</td>
+      <td class="small">{{ (p.sites || []).join(' · ') }}</td>
+      <td><StatusBadge :status="p.status" /></td>
+      <td class="text-nowrap">
+        {{ p.lotCount }}
+        <div v-if="p.soldCount" class="small text-secondary">{{ t('seller.soldOf', { sold: p.soldCount, total: p.lotCount }) }}</div>
+      </td>
+      <td>{{ p.attachmentCount || '' }}</td>
+      <td class="small text-secondary text-nowrap">{{ f.date(p.updatedAt) }}</td>
+    </tr>
+  </DataTableCard>
 
   <ModalDialog v-model:show="creating" :title="t('seller.newPackage')" size="lg" persistent scrollable>
     <PackageForm v-model="draft" />
@@ -112,18 +100,19 @@
 import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useFormat, TYPES, LOCATIONS, STATUSES } from '../../composables/useFormat.js'
+import { useFormat, SOURCES, STATUSES } from '../../composables/useFormat.js'
 import { EMPTY_SELLER_FILTERS, sellerFiltersFromQuery, sellerFiltersToQuery, applyStatus } from '../../composables/sellerPackageFilters.js'
 import { api } from '../../services/api.js'
 import StatusBadge from '../../components/StatusBadge.vue'
 import ChipGroup from '../../components/ChipGroup.vue'
+import DataTableCard from '../../components/table/DataTableCard.vue'
+import SortHeader from '../../components/table/SortHeader.vue'
+import { PAGE_SIZES, slicePage, sortItems } from '../../utils/pagination.js'
 import ModalDialog from '../../components/ModalDialog.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
-import PackageImportModal from '../../components/seller/PackageImportModal.vue'
 
 const f = useFormat()
 const t = f.t
-const { locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const listRoute = route.name
@@ -133,11 +122,16 @@ api
   .origins()
   .then((list) => (origins.value = list))
   .catch(() => {})
+// Sites dos lotes (como estão na planilha), para o filtro.
+const sites = ref([])
+api
+  .lotFacets()
+  .then((x) => (sites.value = x.site.map((s) => s.value).filter(Boolean)))
+  .catch(() => {})
 const items = ref([])
 const loading = ref(true)
 const error = ref('')
 const creating = ref(false)
-const importingPackages = ref(false)
 const createError = ref('')
 const busy = ref(false)
 const draft = ref({})
@@ -147,10 +141,16 @@ let seq = 0
 // A situação é filtrada na tela (ver applyStatus); os outros filtros vão para a API.
 const statusView = computed(() => applyStatus(items.value, filters.status, STATUSES))
 const shown = computed(() => statusView.value.items)
+// Ordenação e paginação em memória (são poucas dezenas de pacotes). Padrão: nome.
+const { locale } = useI18n()
+const sort = ref({ field: 'name', order: 'asc' })
+const page = ref(1)
+const pageSize = ref(PAGE_SIZES[1])
+const sorted = computed(() => sortItems(shown.value, sort.value, locale.value))
+const pageItems = computed(() => slicePage(sorted.value, page.value, pageSize.value))
+watch([() => filters.status, sort], () => (page.value = 1))
 const statusOptions = computed(() => statusView.value.facet.options.map((o) => ({ ...o, label: f.statusLabel(o.value) })))
 const activeCount = computed(() => Object.keys(sellerFiltersToQuery(filters)).length)
-// Exporta o que a tela mostra: todos os filtros (inclusive a situação), no idioma da tela.
-const exportUrl = computed(() => api.packagesExportUrl({ ...sellerFiltersToQuery(filters), lang: locale.value }))
 
 async function load() {
   const mine = ++seq
@@ -172,7 +172,7 @@ function reset() {
 
 function openCreate() {
   const next = items.value.reduce((m, p) => Math.max(m, p.number), 0) + 1
-  draft.value = { number: next, name: '', storFolder: '', storNumbers: [], type: 'bulk', category: 'other', originId: '', locations: [], storDocuments: [], storDocumentsPending: [], description: '' }
+  draft.value = { number: next, name: '', category: 'other', originId: '', description: '' }
   createError.value = ''
   creating.value = true
 }
@@ -214,6 +214,7 @@ watch(
 )
 watch(filters, () => {
   if (route.name !== listRoute) return
+  page.value = 1
   router.replace({ query: sellerFiltersToQuery(filters) })
   const key = JSON.stringify(serverKey())
   if (key === lastServer) return

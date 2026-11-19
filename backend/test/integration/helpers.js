@@ -26,7 +26,7 @@ async function startServer() {
 async function resetDatabase() {
   const { sequelize } = require("../../src/models");
   await sequelize.query(
-    "TRUNCATE inquiry, access_log, access_link_package, access_link, attachment, package_line, package, origin, setting, app_user RESTART IDENTITY CASCADE"
+    "TRUNCATE inquiry, access_log, access_link_package, access_link, attachment, lot_sale, package_lot, lot, package, origin, setting, app_user RESTART IDENTITY CASCADE"
   );
   // Origens iniciais, como a migration de dados 20261117110100 cria.
   await sequelize.query(
@@ -38,17 +38,6 @@ async function resetDatabase() {
 async function originId(code = "ANM") {
   const { Origin } = require("../../src/models");
   return (await Origin.findOne({ where: { code } })).id;
-}
-
-// Migrations de dados antigas inserem pacote sem origem (a coluna ainda não existia). Para testá-las no esquema
-// atual: libera a coluna e, no fim, preenche com ANM e volta a exigir.
-async function legacyPackageSchema() {
-  const { sequelize } = require("../../src/models");
-  await sequelize.query(`ALTER TABLE package ALTER COLUMN origin_id DROP NOT NULL`);
-  return async () => {
-    await sequelize.query(`UPDATE package SET origin_id = (SELECT id FROM origin WHERE code = 'ANM') WHERE origin_id IS NULL`);
-    await sequelize.query(`ALTER TABLE package ALTER COLUMN origin_id SET NOT NULL`);
-  };
 }
 
 async function createSeller({ email = "seller@example.test", password = "correct-horse-battery", role = "seller" } = {}) {
@@ -113,4 +102,4 @@ async function cleanup() {
   if (storageDir) fs.rmSync(storageDir, { recursive: true, force: true });
 }
 
-module.exports = { ENABLED, startServer, resetDatabase, createSeller, client, loggedInSeller, fileForm, cleanup, originId, legacyPackageSchema };
+module.exports = { ENABLED, startServer, resetDatabase, createSeller, client, loggedInSeller, fileForm, cleanup, originId };

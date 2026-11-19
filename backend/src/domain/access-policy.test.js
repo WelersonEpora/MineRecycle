@@ -2,7 +2,16 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { linkState, canSendInquiry, packageAccess, canReadAttachment, attachmentVisibleTo, effectiveVisibility } = require("./access-policy");
+const {
+  linkState,
+  canSendInquiry,
+  packageAccess,
+  bestPackageAccess,
+  lotVisibleTo,
+  canReadAttachment,
+  attachmentVisibleTo,
+  effectiveVisibility
+} = require("./access-policy");
 
 const NOW = new Date("2026-11-16T12:00:00Z");
 const FUTURE = new Date("2026-12-16T12:00:00Z");
@@ -109,12 +118,59 @@ test("attachment must belong to the package", () => {
   );
 });
 
+const open = { total: 2, sold: 1, available: 1, nothingAvailable: false };
+const closed = { total: 2, sold: 2, available: 0, nothingAvailable: true };
+
 test("inquiry: visitors and buyers ask, sellers do not, and never about a sold package", () => {
-  assert.equal(canSendInquiry(pkg("active"), "public"), true);
-  assert.equal(canSendInquiry(pkg("under_negotiation"), "public"), true);
-  assert.equal(canSendInquiry(pkg("under_negotiation"), "buyer"), true);
-  assert.equal(canSendInquiry(pkg("sold"), "buyer"), false);
-  assert.equal(canSendInquiry(pkg("active"), "seller"), false);
-  assert.equal(canSendInquiry(pkg("active"), null), false);
-  assert.equal(canSendInquiry(null, "public"), false);
+  assert.equal(canSendInquiry(pkg("active"), "public", open), true);
+  assert.equal(canSendInquiry(pkg("under_negotiation"), "public", open), true);
+  assert.equal(canSendInquiry(pkg("under_negotiation"), "buyer", open), true);
+  assert.equal(canSendInquiry(pkg("sold"), "buyer", open), false);
+  assert.equal(canSendInquiry(pkg("active"), "seller", open), false);
+  assert.equal(canSendInquiry(pkg("active"), null, open), false);
+  assert.equal(canSendInquiry(null, "public", open), false);
+});
+
+test("inquiry: never about a package with no lot available (all sold elsewhere)", () => {
+  assert.equal(canSendInquiry(pkg("active"), "public", closed), false);
+  assert.equal(canSendInquiry(pkg("active"), "public", undefined), false);
+});
+
+const lot = (over = {}) => ({ id: "lot1", status: "available", withdrawnAt: null, ...over });
+const lotAtt = (over = {}) => att({ packageId: null, lotId: "lot1", ...over });
+
+test("best access among the packages that contain a lot", () => {
+  assert.equal(bestPackageAccess([pkg("draft"), pkg("active", "p2")], anon, NOW), "public");
+  assert.equal(bestPackageAccess([pkg("sold", "p1"), pkg("active", "p2")], buyer(), NOW), "buyer");
+  // Rascunho no escopo do link não conta: vale o outro pacote, público.
+  assert.equal(bestPackageAccess([pkg("draft", "p1"), pkg("active", "p2")], buyer(), NOW), "public");
+  assert.equal(bestPackageAccess([pkg("draft")], anon, NOW), null);
+  assert.equal(bestPackageAccess([], seller, NOW), "seller");
+});
+
+test("lots: seller sees all; buyer and public only offered lots (sold included)", () => {
+  assert.equal(lotVisibleTo(lot({ status: "unavailable" }), "seller"), true);
+  assert.equal(lotVisibleTo(lot({ status: "sold" }), "public"), true);
+  assert.equal(lotVisibleTo(lot({ status: "unavailable" }), "buyer"), false);
+  assert.equal(lotVisibleTo(lot({ withdrawnAt: PAST }), "public"), false);
+  assert.equal(lotVisibleTo(lot(), null), false);
+});
+
+test("lot attachment follows the lot into every package", () => {
+  const read = (over) => canReadAttachment({ attachment: lotAtt(), lot: lot(), variant: "thumb", viewer: anon, now: NOW, ...over });
+  // Visível porque um dos pacotes do lote é público, mesmo que o outro seja rascunho.
+  assert.equal(read({ lotPackages: [pkg("draft", "p9"), pkg("active", "p2")] }), true);
+  assert.equal(read({ lotPackages: [pkg("draft")] }), false);
+  assert.equal(read({ lotPackages: [] }), false);
+  // Lote fora da venda some do público, com os anexos.
+  assert.equal(read({ lot: lot({ status: "unavailable" }), lotPackages: [pkg("active")] }), false);
+  assert.equal(read({ lot: lot({ status: "unavailable" }), lotPackages: [], viewer: seller }), true);
+  // Restrito: o comprador vê pelo pacote do link.
+  const restricted = lotAtt({ kind: "datasheet", visibility: "restricted" });
+  assert.equal(canReadAttachment({ attachment: restricted, lot: lot(), lotPackages: [pkg("active")], viewer: anon, now: NOW }), false);
+  assert.equal(canReadAttachment({ attachment: restricted, lot: lot(), lotPackages: [pkg("sold")], viewer: buyer(), now: NOW }), true);
+  // O anexo precisa ser deste lote.
+  assert.equal(canReadAttachment({ attachment: lotAtt({ lotId: "other" }), lot: lot(), lotPackages: [pkg("active")], viewer: seller, now: NOW }), false);
+  // Original de foto: nunca para o público, também no lote.
+  assert.equal(read({ lotPackages: [pkg("active")], variant: "original" }), false);
 });

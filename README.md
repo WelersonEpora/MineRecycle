@@ -46,86 +46,78 @@ backend/
   src/services/      casos de uso (pacotes, linhas, anexos, importação, links, usuários)
   src/routes/        API pública (/api/v1/...) e do vendedor (/api/v1/seller/...)
   database/          migration inicial e seeders estruturais (admin, configuração padrão)
-  scripts/           seed-demo (fictício), seed-sample (amostra local), testes de integração
+  scripts/           import-lots (planilha local), testes de integração
   test/integration/  importação, link do comprador e visibilidade de anexos, contra Postgres real
 frontend/
   src/views/         catálogo, pacote, acesso do comprador, login, área do vendedor
   src/components/    tabela de itens, galeria, assistente de importação, painéis de anexos e links
   src/i18n/          en.js e pt.js
-docker/compose.dev.yml   ambiente local completo
+docker/compose.dev.yml   backend e frontend em Docker, com o Postgres do infra
 scripts/backup-files.sh  backup diário da pasta de arquivos (para o servidor)
 ```
 
 ## Rodando localmente
 
-Pré-requisito: Docker Desktop. Não precisa de `.env`.
+O banco é o **Postgres compartilhado da máquina** (`C:\Source\infra`, container `postgres` na porta 5432, rede
+`db`), no mesmo modelo do servidor (`servidor02-infra`): um usuário e um database por app. O MineRecycle não sobe
+banco próprio, nem local nem no servidor.
+
+Uma vez só, no Postgres do infra: o usuário `minerecycle` (senha em `C:\Source\infra\apps.env`,
+`POSTGRES_MINERECYCLE_PASSWORD`) e os databases `minerecycle` e `minerecycle_test`, com `REVOKE CONNECT ... FROM
+PUBLIC`, como os outros apps.
 
 ```bash
-docker compose -f docker/compose.dev.yml up -d --build
-docker compose -f docker/compose.dev.yml exec backend npm run seed:demo
-```
-
-- Site: http://localhost:8084
-- Área do vendedor: http://localhost:8084/login, com `admin@minerecycle.local` / `admin-dev-password` (só no ambiente local)
-- O `seed:demo` imprime um link de comprador de demonstração (pacotes 103, 201 e 202, válido por 30 dias).
-- Postgres local: `127.0.0.1:5434` (usuário e senha `minerecycle`). As portas não colidem com o FinMind local.
-
-Para recarregar os dados fictícios do zero: `npm run seed:demo -- --reset` (recusado com `NODE_ENV=production`).
-
-Para testar a senha da fase de prévia: `SITE_PASSWORD=algumasenha docker compose -f docker/compose.dev.yml up -d frontend`
-(usuário `preview`). Sem a variável, o site fica aberto.
-
-Para parar: `docker compose -f docker/compose.dev.yml down`. Acrescente `-v` para apagar também banco e arquivos.
-
-### Backend e frontend com `npm run dev` (recarga automática)
-
-O Postgres continua no compose; backend e frontend rodam na máquina.
-
-```bash
-docker compose -f docker/compose.dev.yml up -d postgres
-cp .env.example .env    # e ajuste: NODE_ENV=development, POSTGRES_PORT=5434, JWT_SECRET, ADMIN_*,
-                        # PUBLIC_BASE_URL=http://localhost:5173, LOG_PRETTY=true
+cd C:\Source\infra && docker compose up -d     # bancos compartilhados
+cp .env.example .env    # e ajuste: NODE_ENV=development, POSTGRES_PORT=5432, POSTGRES_PASSWORD (do apps.env),
+                        # JWT_SECRET, ADMIN_*, PUBLIC_BASE_URL=http://localhost:5173, LOG_PRETTY=true
 cd backend && npm install && npm run db:migrate && npm run db:seed && npm run dev   # porta 3000
 cd frontend && npm install && npm run dev                                           # http://localhost:5173
 ```
 
-O Vite repassa `/api` para `localhost:3000` (mesma origem, como o nginx em produção). Banco e arquivos são os mesmos
-nos dois modos: o compose de desenvolvimento monta `backend/storage` (fora do git) no contêiner, a mesma pasta que o
-`npm run dev` usa. Em produção os arquivos ficam num volume Docker.
+O Vite repassa `/api` para `localhost:3000` (mesma origem, como o nginx em produção). O `npm run dev` não roda
+migrations: depois de um pull com migration nova, `npm run db:migrate`.
 
-### Dados de amostra do cliente (confidenciais)
-
-A pasta `_sample-data/` guarda planilhas e PDFs reais do cliente. Ela está no `.gitignore` e no `.dockerignore` e
-**nunca** vai para commit, imagem Docker ou log. Uso só local:
+### Tudo em Docker (opcional)
 
 ```bash
-docker compose -f docker/compose.dev.yml --profile sample run --rm sample-seed
+docker compose -f docker/compose.dev.yml up -d --build     # http://localhost:8084
 ```
 
-- Cada `.xlsx` vira um pacote a granel (rascunho), pela mesma rotina da importação de planilha.
-- Cada PDF tem as imagens extraídas (`pdfimages`, num contêiner descartável). As imagens grandes, sem repetição, viram as fotos (restritas) de um pacote de equipamento em rascunho.
-- Os pacotes da amostra usam os números 901 em diante e são recriados a cada execução. O script imprime só contagens.
+Backend e frontend em contêiner, ligados ao mesmo Postgres do infra (rede `db`) e lendo o mesmo `.env` da raiz. Banco
+e arquivos são os mesmos nos dois modos: o compose monta `backend/storage` (fora do git), a pasta que o `npm run dev`
+usa. Em produção os arquivos ficam num volume Docker.
 
-No servidor, dados reais entram **só pelas telas** da área do vendedor (importação de planilha e envio de fotos).
+Para testar a senha da fase de prévia: `SITE_PASSWORD=algumasenha docker compose -f docker/compose.dev.yml up -d frontend`
+(usuário `preview`). Sem a variável, o site fica aberto.
+
+### Lotes da planilha do cliente (confidencial)
+
+A pasta `_sample-data/` guarda a planilha real do cliente. Ela está no `.gitignore` e no `.dockerignore` e **nunca**
+vai para commit, imagem Docker ou log. Para carregar os lotes no banco local, pelo mesmo importador da tela:
+
+```bash
+cd backend && npm run import:lots -- "../_sample-data/<planilha>.xlsm"
+```
+
+Lê a aba "Matriz de lotes", cria ou atualiza os lotes e os pacotes automáticos, e imprime só contagens. Rodar de novo
+com o mesmo arquivo não muda nada. No servidor, os lotes entram **só pela tela** de importação.
 
 ## Testes
 
 ```bash
-cd backend && npm test                 # regras puras (importação, unidades, quantidades, política de acesso, storage)
+cd backend && npm test                 # regras puras (lotes, importação, venda, política de acesso, storage)
 cd frontend && npm test                # formatação e idioma
 ```
 
-Testes de integração (Postgres real, database `minerecycle_test`, criado pelo compose de desenvolvimento):
+Testes de integração (Postgres real, database `minerecycle_test` no Postgres do infra, com o usuário e a senha do
+`.env`; o script recusa database cujo nome não tenha "test"):
 
 ```bash
-cd backend
-POSTGRES_HOST=localhost POSTGRES_PORT=5434 POSTGRES_USER=minerecycle POSTGRES_PASSWORD=minerecycle npm run test:integration
+cd backend && npm run test:integration            # todos
+cd backend && npm run test:integration -- lot     # só os arquivos que começam com "lot"
 ```
 
-Cobrem a importação (cabeçalho detectado, erros por linha do Excel, recusa com erros, substituição dos itens,
-religação dos anexos pelo nº do item, kits), o link do comprador (hash, escopo, expiração, revogação, registro de
-acessos) e a visibilidade dos anexos (público, comprador, vendedor, proposta, original das fotos, configuração da
-catálogo, vendedor desativado). O CI (`.github/workflows/ci.yml`) roda lint, testes unitários, testes de integração e
+O CI (`.github/workflows/ci.yml`) roda lint, testes unitários, testes de integração (com um Postgres de serviço) e
 build do frontend.
 
 ## Backup

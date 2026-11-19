@@ -1,53 +1,35 @@
-# Ambiente local completo: Postgres, backend e frontend. Funciona sem .env (valores de desenvolvimento abaixo).
+# Ambiente local em Docker: backend e frontend. O banco é o Postgres compartilhado da máquina (C:\Source\infra,
+# container "postgres" na rede "db"), como no servidor, que usa o do servidor02-infra: o MineRecycle não sobe banco
+# próprio. O usuário e os databases (minerecycle e minerecycle_test) são criados uma vez no infra (ver README).
+#   cd C:\Source\infra && docker compose up -d
 #   docker compose -f docker/compose.dev.yml up -d --build
-# Site: http://localhost:8084. Portas só em 127.0.0.1; nenhuma colide com o FinMind local (5432, 5051).
+# Site: http://localhost:8084. Senha do banco, segredos e admin vêm do .env da raiz (o mesmo do npm run dev); aqui só
+# muda o que é diferente dentro do container.
 name: minerecycle-dev
 
-x-backend-env: &backend-env
-  NODE_ENV: development
-  POSTGRES_HOST: postgres
-  POSTGRES_PORT: "5432"
-  POSTGRES_DATABASE: minerecycle
-  POSTGRES_USER: minerecycle
-  POSTGRES_PASSWORD: minerecycle
-  JWT_SECRET: ${JWT_SECRET:-dev-only-secret-not-for-production}
-  ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@minerecycle.local}
-  ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin-dev-password}
-  COOKIE_SECURE: "false"
-  PUBLIC_BASE_URL: http://localhost:${DEV_FRONTEND_PORT:-8084}
-  STORAGE_DIR: storage/files
-
 services:
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: minerecycle
-      POSTGRES_USER: minerecycle
-      POSTGRES_PASSWORD: minerecycle
-    ports:
-      - "127.0.0.1:${DEV_POSTGRES_PORT:-5434}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U minerecycle -d minerecycle"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   backend:
     build: ../backend
     restart: unless-stopped
-    environment: *backend-env
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      COOKIE_SECURE: "false"
+      PUBLIC_BASE_URL: http://localhost:${DEV_FRONTEND_PORT:-8084}
+      STORAGE_DIR: storage/files
+      # A imagem não tem as dependências de desenvolvimento (pino-pretty), que o .env do npm run dev pode ligar.
+      LOG_PRETTY: "false"
     # Migrations e seeders estruturais (admin, configuração padrão) a cada subida, como o deploy faz.
     command: sh -c "npm run db:migrate && npm run db:seed && node src/server.js"
     volumes:
       # Mesma pasta do "npm run dev" (backend/storage, fora do git): os dois modos veem os mesmos arquivos.
       - ../backend/storage:/app/storage
-    depends_on:
-      postgres:
-        condition: service_healthy
+    networks:
+      - default
+      - db
 
   frontend:
     build: ../frontend
@@ -61,49 +43,6 @@ services:
     depends_on:
       - backend
 
-  # ---- Carga dos dados de amostra do cliente (só local; ver README) ----
-  # docker compose -f docker/compose.dev.yml --profile sample run --rm sample-seed
-  pdf-extract:
-    profiles: ["sample"]
-    image: alpine:3.20
-    command:
-      - sh
-      - -c
-      - |
-        set -e
-        apk add --no-cache poppler-utils >/dev/null
-        rm -rf /extract/*
-        i=0
-        for f in /sample/*.pdf /sample/*.PDF; do
-          [ -f "$$f" ] || continue
-          i=$$((i+1))
-          mkdir -p "/extract/pdf-$$i"
-          pdfimages -j -png "$$f" "/extract/pdf-$$i/img"
-        done
-        echo "PDFs processed: $$i"
-    volumes:
-      - ../_sample-data:/sample:ro
-      - sample_extract:/extract
-
-  sample-seed:
-    profiles: ["sample"]
-    build: ../backend
-    environment:
-      <<: *backend-env
-      SAMPLE_DATA_DIR: /sample-data
-      SAMPLE_EXTRACT_DIR: /sample-extract
-    command: node scripts/seed-sample.js
-    volumes:
-      - ../_sample-data:/sample-data:ro
-      - sample_extract:/sample-extract:ro
-      # Mesma pasta do "npm run dev" (backend/storage, fora do git): os dois modos veem os mesmos arquivos.
-      - ../backend/storage:/app/storage
-    depends_on:
-      postgres:
-        condition: service_healthy
-      pdf-extract:
-        condition: service_completed_successfully
-
-volumes:
-  postgres_data:
-  sample_extract:
+networks:
+  db:
+    external: true

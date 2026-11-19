@@ -29,9 +29,12 @@ const migrate = run([require.resolve("sequelize-cli/lib/sequelize"), "db:migrate
 if (migrate.status !== 0) process.exit(migrate.status || 1);
 
 const dir = path.join(root, "test", "integration");
+// Sem argumentos, todos os arquivos; com argumentos, só os indicados (ex.: npm run test:integration -- lot-schema).
+const only = process.argv.slice(2);
 const files = fs
   .readdirSync(dir)
   .filter((f) => f.endsWith(".test.js"))
+  .filter((f) => only.length === 0 || only.some((o) => f.startsWith(o)))
   .map((f) => path.join("test", "integration", f));
 
 // Um arquivo por vez: todos usam o mesmo database.

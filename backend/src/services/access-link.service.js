@@ -10,7 +10,7 @@ const { BUYER_HIDDEN_STATUSES } = require("../domain/constants");
 const env = require("../config/env");
 const accessLog = require("./access-log.service");
 const { packageDto } = require("./dto");
-const { CARD_STATS, cardExtra } = require("./package-card-stats");
+const { CARD_STATS, cardExtra } = require("./package-lots");
 
 const MAX_DAYS = 365;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -56,14 +56,14 @@ function linkDto(link, stats = {}) {
     state: linkState(link),
     createdAt: link.createdAt,
     createdBy: link.creator ? { id: link.creator.id, name: link.creator.name } : null,
-    packages: (link.packages || []).map((p) => ({ id: p.id, number: p.number, name: p.name, storFolder: p.storFolder || null, status: p.status })),
+    packages: (link.packages || []).map((p) => ({ id: p.id, number: p.number, name: p.name, source: p.source, status: p.status })),
     accessCount: stats.accessCount ?? 0,
     lastAccessAt: stats.lastAccessAt ?? null
   };
 }
 
 const LINK_INCLUDE = [
-  { association: "packages", attributes: ["id", "number", "name", "storFolder", "status"], through: { attributes: [] } },
+  { association: "packages", attributes: ["id", "number", "name", "source", "status"], through: { attributes: [] } },
   { association: "creator", attributes: ["id", "name"] }
 ];
 
@@ -185,7 +185,7 @@ async function redeem(token, req) {
   return { cookie: signSession({ typ: "buyer", sub: link.id }, maxAgeMs / 1000), maxAgeMs };
 }
 
-// Pacotes do link com os filtros do catálogo (busca, tipo, origem, local). O comprador vê tudo o que o link cobre,
+// Pacotes do link com os filtros do catálogo (busca, nível, origem, site). O comprador vê tudo o que o link cobre,
 // menos rascunho e inativo; vendidos aparecem (podem ser dele). Sem a caixa de negociação.
 async function buyerPackages(viewerLink, query) {
   const packageService = require("./package.service");
@@ -196,8 +196,11 @@ async function buyerSession(viewerLink) {
   const packages = await Package.findAll({
     where: { id: viewerLink.packageIds, status: { [Op.notIn]: BUYER_HIDDEN_STATUSES } },
     attributes: { include: CARD_STATS },
-    // Mesma ordem do catálogo (números do pacote na planilha de estratégia, depois nome).
-    order: [sequelize.literal(`(SELECT min(n) FROM unnest("Package"."stor_numbers") AS n) ASC NULLS LAST`), ["name", "ASC"], ["number", "ASC"]]
+    // Mesma ordem do catálogo (nome, depois o ID).
+    order: [
+      ["name", "ASC"],
+      ["number", "ASC"]
+    ]
   });
   const covers = await Attachment.findAll({
     where: { packageId: packages.map((p) => p.id), kind: "photo", thumbKey: { [Op.ne]: null } },

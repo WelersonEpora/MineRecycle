@@ -594,3 +594,185 @@ body {
     margin-bottom: 0.6rem;
   }
 }
+
+/* ---- Tabela no padrão "tabela-card" do FinMind (componente DataTableCard) ----
+   Cartão arredondado com os filtros numa faixa no topo, barra de paginação em cima (atualizar à esquerda,
+   "Página X de Y" e números ao centro, "Por página" à direita) e de novo embaixo; linha clicável com seta no fim. */
+.mr-table-card {
+  background: var(--mr-card);
+  border: 1px solid var(--mr-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.mr-table-card__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #f8f6f2;
+  border-bottom: 1px solid var(--mr-border);
+}
+.mr-table-card__filters .form-label {
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+.mr-table-card__bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--mr-border);
+}
+.mr-table-card__bar--bottom {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  border-bottom: 0;
+  border-top: 1px solid var(--mr-border);
+}
+.mr-table-card__start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mr-table-card__end {
+  display: flex;
+  justify-content: flex-end;
+}
+@media (max-width: 767.98px) {
+  .mr-table-card__bar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .mr-table-card__start,
+  .mr-table-card__end {
+    justify-content: center;
+  }
+}
+.mr-table-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--mr-border);
+  border-radius: 8px;
+  background: var(--mr-card);
+  color: var(--mr-ink);
+}
+.mr-table-refresh:hover:not(:disabled) {
+  background: #f8f6f2;
+}
+.mr-table-per-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--mr-muted);
+  white-space: nowrap;
+}
+.mr-table-per-page .form-select {
+  width: auto;
+  font-size: 0.78rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+.mr-pager {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+.mr-pager__report {
+  font-size: 0.72rem;
+  color: var(--mr-muted);
+}
+.mr-pager__links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.mr-pager__btn {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mr-muted);
+  font-size: 0.9rem;
+}
+.mr-pager__btn:hover:not(:disabled) {
+  background: #f1ede6;
+  color: var(--mr-ink);
+}
+.mr-pager__btn:disabled {
+  opacity: 0.35;
+}
+.mr-pager__num.is-active {
+  background: #fbefd9;
+  color: var(--mr-accent-text);
+  font-weight: 600;
+}
+.mr-table > thead > tr > th {
+  background: var(--mr-card);
+  color: var(--mr-ink);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--mr-border);
+  white-space: nowrap;
+}
+.mr-table > tbody > tr > td {
+  padding: 0.65rem 1rem;
+}
+.mr-table.table-sm > thead > tr > th,
+.mr-table.table-sm > tbody > tr > td {
+  padding: 0.5rem 0.75rem;
+}
+.mr-table > tbody > tr:last-child > td {
+  border-bottom: 0;
+}
+.mr-th-sorted {
+  background: #fbf3e6 !important;
+}
+.mr-th-sort {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.mr-th-sort .bi {
+  font-size: 0.85em;
+  color: var(--mr-muted);
+}
+.mr-th-sorted .mr-th-sort,
+.mr-th-sorted .mr-th-sort .bi {
+  color: var(--mr-accent-text);
+}
+.mr-table--clickable > tbody > tr:not(.mr-table__empty) {
+  cursor: pointer;
+}
+.mr-table--clickable > tbody > tr:not(.mr-table__empty):hover > td {
+  background: #faf8f4;
+}
+.mr-table--clickable > tbody > tr:not(.mr-table__empty) > td:last-child {
+  position: relative;
+  padding-inline-end: 2rem;
+}
+.mr-table--clickable > tbody > tr:not(.mr-table__empty) > td:last-child::after {
+  content: '\F285';
+  font-family: 'bootstrap-icons';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: var(--mr-muted);
+}

@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 
 // Usuário administrador inicial, a partir de ADMIN_EMAIL/ADMIN_PASSWORD. Sem senha padrão: falha se faltarem.
 // O sequelize-cli registra o seeder como executado, então ele roda uma vez por banco (mesmo padrão do FinMind).
-// Dados estruturais apenas: os dados fictícios ficam em `npm run seed:demo`, que nunca roda no deploy.
+// Dados estruturais apenas: lotes e pacotes entram pela importação de lotes (tela ou, só no local, `npm run import:lots`).
 module.exports = {
   async up(queryInterface) {
     const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();

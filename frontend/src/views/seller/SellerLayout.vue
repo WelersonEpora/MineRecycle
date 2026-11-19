@@ -2,6 +2,7 @@
   <div>
     <ul class="nav mr-subnav border-bottom mb-4">
       <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-packages' }" active-class="" :class="{ 'router-link-active': inPackages }">{{ t('seller.packages') }}</RouterLink></li>
+      <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-lots' }" active-class="" :class="{ 'router-link-active': inLots }">{{ t('lots.menu') }}</RouterLink></li>
       <li class="nav-item">
         <RouterLink class="nav-link" :to="{ name: 'seller-inquiries' }">
           {{ t('inquiries.menu') }}<span v-if="newInquiries" class="badge rounded-pill text-bg-danger ms-1" :title="t('inquiries.newBadge', newInquiries)">{{ newInquiries }}</span>
@@ -31,6 +32,7 @@ const isAdmin = computed(() => session.state.user?.role === 'admin')
 // /seller é prefixo de todas as abas: o destaque automático do RouterLink ficaria sempre ligado em Pacotes.
 const inHelp = computed(() => route.path.startsWith('/seller/help'))
 const inPackages = computed(() => route.name === 'seller-packages' || route.name === 'seller-package')
+const inLots = computed(() => route.name === 'seller-lots' || route.name === 'seller-lot')
 
 // Pedidos novos (ninguém assumiu ainda): contador na aba, atualizado a cada troca de tela e quando a tela de pedidos
 // muda algo (inject "refreshInquiryCount").

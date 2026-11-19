@@ -32,9 +32,8 @@
     <p v-if="!isAdmin" class="small text-secondary"><i class="bi bi-lock"></i> {{ t('origins.adminOnly') }}</p>
     <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>
 
-    <div class="table-responsive">
-      <table class="table table-sm align-middle mb-0">
-        <thead class="table-light small">
+    <DataTableCard :paginated="false" :empty="!origins.length" :empty-text="t('common.none')">
+      <template #head>
           <tr>
             <th>{{ t('origins.name') }}</th>
             <th>{{ t('origins.code') }}</th>
@@ -42,8 +41,7 @@
             <th class="mr-num">{{ t('origins.packages') }}</th>
             <th v-if="isAdmin"></th>
           </tr>
-        </thead>
-        <tbody>
+      </template>
           <tr v-for="o in origins" :key="o.id" :class="{ 'text-secondary': !o.active }">
             <td>{{ o.name }}</td>
             <td class="mr-mono">{{ o.code }}</td>
@@ -53,9 +51,7 @@
               <button class="btn btn-sm btn-link" :title="t('common.edit')" @click="openForm(o)"><i class="bi bi-pencil"></i></button>
             </td>
           </tr>
-        </tbody>
-      </table>
-    </div>
+    </DataTableCard>
   </section>
 
   <ModalDialog v-model:show="form.show" size="sm" :title="form.id ? t('origins.edit') : t('origins.new')">
@@ -91,6 +87,7 @@ import { useFormat } from '../../composables/useFormat.js'
 import { useSession } from '../../stores/session.js'
 import { notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
+import DataTableCard from '../../components/table/DataTableCard.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 
 // Configuração: contato comercial (e-mail e WhatsApp da equipe) e cadastro de origens dos pacotes (de onde vieram os ativos). Todos veem; só admin inclui e edita.

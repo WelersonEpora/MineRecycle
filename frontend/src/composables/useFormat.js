@@ -21,6 +21,9 @@ export function useFormat() {
     locationLabel: (v) => t(`enums.location.${v}`),
     locationsLabel: (list) => (list || []).map((v) => t(`enums.location.${v}`)).join(' · '),
     statusLabel: (v) => t(`enums.status.${v}`),
+    // Nível do pacote: montado pelo vendedor ou criado pela importação de lotes (2026-11-19).
+    sourceLabel: (v) => t(`enums.source.${v || 'manual'}`),
+    lotStatusLabel: (v) => t(`enums.lotStatus.${v}`),
     kindLabel: (v) => t(`enums.kind.${v}`)
   }
 }
@@ -28,6 +31,8 @@ export function useFormat() {
 export const TYPES = ['bulk', 'equipment']
 export const CATEGORIES = ['refractories', 'electrical', 'piping', 'process_equipment', 'office', 'other']
 export const LOCATIONS = ['conceicao_do_araguaia', 'uberaba', 'niquelandia', 'belo_horizonte', 'at_supplier', 'to_be_confirmed']
+export const SOURCES = ['linked_system', 'family', 'subfamily', 'manual']
+export const LOT_STATUSES = ['available', 'sold', 'unavailable']
 export const STATUSES = ['draft', 'active', 'under_negotiation', 'sold', 'inactive']
 export const KINDS = ['photo', 'datasheet', 'drawing', 'list', 'proposal']
 export const UNITS = ['PC', 'M', 'M2', 'M3', 'KG', 'T', 'L', 'SET', 'KIT', 'ROLL', 'BOX', 'PAIR', 'LOT', 'GAL', 'BAG', 'CAN', 'SHEET', 'BAR', 'TUBE']

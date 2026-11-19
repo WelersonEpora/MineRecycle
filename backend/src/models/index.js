@@ -39,15 +39,12 @@ const Package = sequelize.define(
     id,
     number: { type: DataTypes.INTEGER, allowNull: false, unique: true },
     name: { type: DataTypes.STRING(200), allowNull: false },
-    type: { type: DataTypes.STRING(16), allowNull: false },
     category: { type: DataTypes.STRING(24), allowNull: false, defaultValue: "other" },
-    originId: { type: DataTypes.UUID, allowNull: false },
+    originId: { type: DataTypes.UUID },
     description: { type: DataTypes.TEXT },
-    locations: { type: DataTypes.ARRAY(DataTypes.STRING(40)), allowNull: false },
-    storDocuments: { type: DataTypes.ARRAY(DataTypes.STRING(16)), allowNull: false, defaultValue: [] },
-    storDocumentsPending: { type: DataTypes.ARRAY(DataTypes.STRING(16)), allowNull: false, defaultValue: [] },
-    storFolder: { type: DataTypes.STRING(200) },
-    storNumbers: { type: DataTypes.ARRAY(DataTypes.INTEGER), allowNull: false, defaultValue: [] },
+    // Pacote automático (nível de agrupamento da planilha + valor da coluna) ou montado pelo vendedor ("manual").
+    source: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "manual" },
+    sourceValue: { type: DataTypes.STRING(200) },
     status: { type: DataTypes.STRING(24), allowNull: false, defaultValue: "draft" },
     createdBy: { type: DataTypes.UUID },
     updatedBy: { type: DataTypes.UUID }
@@ -55,31 +52,57 @@ const Package = sequelize.define(
   { tableName: "package" }
 );
 
-const PackageLine = sequelize.define(
-  "PackageLine",
+// Lote: a menor unidade de venda, vinda da aba "Matriz de lotes". Campos da planilha + descrição do vendedor.
+const Lot = sequelize.define(
+  "Lot",
   {
     id,
-    packageId: { type: DataTypes.UUID, allowNull: false },
-    parentLineId: { type: DataTypes.UUID },
-    itemNo: { type: DataTypes.STRING(40), allowNull: false },
-    description: { type: DataTypes.TEXT, allowNull: false },
-    quantity: { type: DataTypes.DECIMAL(14, 4) },
-    unit: { type: DataTypes.STRING(16) },
-    unitRaw: { type: DataTypes.STRING(32) },
-    storCode: { type: DataTypes.STRING(64) },
-    tag: { type: DataTypes.STRING(64) },
-    warehouseLocation: { type: DataTypes.STRING(128) },
-    sortOrder: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
+    lotNumber: { type: DataTypes.STRING(40), allowNull: false, unique: true },
+    siteName: { type: DataTypes.STRING(120) },
+    title: { type: DataTypes.TEXT, allowNull: false },
+    masterSupplier: { type: DataTypes.STRING(200) },
+    linkedSystem: { type: DataTypes.STRING(200) },
+    commercialFamily: { type: DataTypes.STRING(200) },
+    subfamily: { type: DataTypes.STRING(200) },
+    description: { type: DataTypes.TEXT },
+    sheetStatus: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "available" },
+    soldBySheet: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    status: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "available" },
+    withdrawnAt: { type: DataTypes.DATE },
+    importedAt: { type: DataTypes.DATE },
+    updatedBy: { type: DataTypes.UUID }
   },
-  { tableName: "package_line" }
+  { tableName: "lot" }
+);
+
+const PackageLot = sequelize.define(
+  "PackageLot",
+  {
+    packageId: { type: DataTypes.UUID, primaryKey: true },
+    lotId: { type: DataTypes.UUID, primaryKey: true },
+    position: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
+  },
+  { tableName: "package_lot", updatedAt: false }
+);
+
+// Pacote vendido que contém o lote (o lote fica vendido em todos os pacotes de que participa).
+const LotSale = sequelize.define(
+  "LotSale",
+  {
+    lotId: { type: DataTypes.UUID, primaryKey: true },
+    packageId: { type: DataTypes.UUID, primaryKey: true },
+    createdBy: { type: DataTypes.UUID }
+  },
+  { tableName: "lot_sale", updatedAt: false }
 );
 
 const Attachment = sequelize.define(
   "Attachment",
   {
     id,
-    packageId: { type: DataTypes.UUID, allowNull: false },
-    lineId: { type: DataTypes.UUID },
+    // Do pacote ou do lote, nunca dos dois (CHECK no banco).
+    packageId: { type: DataTypes.UUID },
+    lotId: { type: DataTypes.UUID },
     kind: { type: DataTypes.STRING(16), allowNull: false },
     visibility: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "restricted" },
     title: { type: DataTypes.STRING(200) },
@@ -173,12 +196,20 @@ const Inquiry = sequelize.define(
 
 Package.belongsTo(Origin, { foreignKey: "originId", as: "origin" });
 Origin.hasMany(Package, { foreignKey: "originId", as: "packages" });
-Package.hasMany(PackageLine, { foreignKey: "packageId", as: "lines" });
-PackageLine.belongsTo(Package, { foreignKey: "packageId", as: "package" });
-PackageLine.belongsTo(PackageLine, { foreignKey: "parentLineId", as: "parent" });
+Package.belongsToMany(Lot, { through: PackageLot, foreignKey: "packageId", otherKey: "lotId", as: "lots" });
+Lot.belongsToMany(Package, { through: PackageLot, foreignKey: "lotId", otherKey: "packageId", as: "packages" });
+Package.hasMany(PackageLot, { foreignKey: "packageId", as: "packageLots" });
+Lot.hasMany(PackageLot, { foreignKey: "lotId", as: "packageLots" });
+PackageLot.belongsTo(Lot, { foreignKey: "lotId", as: "lot" });
+PackageLot.belongsTo(Package, { foreignKey: "packageId", as: "package" });
+Lot.hasMany(LotSale, { foreignKey: "lotId", as: "sales" });
+Package.hasMany(LotSale, { foreignKey: "packageId", as: "lotSales" });
+LotSale.belongsTo(Lot, { foreignKey: "lotId", as: "lot" });
+LotSale.belongsTo(Package, { foreignKey: "packageId", as: "package" });
 Package.hasMany(Attachment, { foreignKey: "packageId", as: "attachments" });
+Lot.hasMany(Attachment, { foreignKey: "lotId", as: "attachments" });
 Attachment.belongsTo(Package, { foreignKey: "packageId", as: "package" });
-Attachment.belongsTo(PackageLine, { foreignKey: "lineId", as: "line" });
+Attachment.belongsTo(Lot, { foreignKey: "lotId", as: "lot" });
 AccessLink.belongsToMany(Package, { through: AccessLinkPackage, foreignKey: "accessLinkId", otherKey: "packageId", as: "packages" });
 Package.belongsToMany(AccessLink, { through: AccessLinkPackage, foreignKey: "packageId", otherKey: "accessLinkId", as: "accessLinks" });
 AccessLog.belongsTo(AccessLink, { foreignKey: "accessLinkId", as: "link" });
@@ -189,4 +220,4 @@ Inquiry.belongsTo(User, { foreignKey: "assignedTo", as: "assignee" });
 Inquiry.belongsTo(User, { foreignKey: "updatedBy", as: "updater" });
 Inquiry.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
 
-module.exports = { sequelize, User, Origin, Package, PackageLine, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting, Inquiry };
+module.exports = { sequelize, User, Origin, Package, Lot, PackageLot, LotSale, Attachment, AccessLink, AccessLinkPackage, AccessLog, Setting, Inquiry };

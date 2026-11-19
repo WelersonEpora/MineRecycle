@@ -4,6 +4,7 @@ import axios from 'axios'
 const http = axios.create({ baseURL: '/api/v1', timeout: 60000, withCredentials: true })
 
 const data = (p) => p.then((r) => r.data)
+const ownerPath = (owner) => (owner.lotId ? `/seller/lots/${owner.lotId}/attachments` : `/seller/packages/${owner.packageId}/attachments`)
 
 export const api = {
   // Sessão
@@ -14,7 +15,8 @@ export const api = {
   // Catálogo e comprador
   catalog: (params) => data(http.get('/catalog/packages', { params })),
   packageDetail: (number) => data(http.get(`/catalog/packages/${number}`)),
-  packageLines: (number, params) => data(http.get(`/catalog/packages/${number}/lines`, { params })),
+  packageLots: (number, params) => data(http.get(`/catalog/packages/${number}/lots`, { params })),
+  packageLot: (number, lotId) => data(http.get(`/catalog/packages/${number}/lots/${lotId}`)),
   redeem: (token) => http.post('/access/redeem', { token }),
   buyerSession: () => data(http.get('/access/session')),
   buyerPackages: (params) => data(http.get('/access/packages', { params })),
@@ -35,46 +37,40 @@ export const api = {
   sellerPackage: (id) => data(http.get(`/seller/packages/${id}`)),
   createPackage: (body) => data(http.post('/seller/packages', body)),
   updatePackage: (id, body) => data(http.patch(`/seller/packages/${id}`, body)),
-  // Planilha (.xlsx): endereço para link direto; o navegador baixa o arquivo com o cookie de vendedor.
-  packagesExportUrl: (params) => `/api/v1/seller/packages/export?${new URLSearchParams(params)}`,
-  packageExportUrl: (id, params) => `/api/v1/seller/packages/${id}/export?${new URLSearchParams(params)}`,
-  setStatus: (id, status) => data(http.put(`/seller/packages/${id}/status`, { status })),
+  // Situação. confirm: vender mesmo com lotes já vendidos em outro pacote (erro PACKAGE_SALE_CONFIRM).
+  setStatus: (id, status, confirm = false) => data(http.put(`/seller/packages/${id}/status`, { status, confirm })),
   deletePackage: (id) => http.delete(`/seller/packages/${id}`),
+  packageSellerLots: (id, params) => data(http.get(`/seller/packages/${id}/lots`, { params })),
+  addPackageLots: (id, lotIds) => data(http.post(`/seller/packages/${id}/lots`, { lotIds })),
+  removePackageLots: (id, lotIds) => data(http.post(`/seller/packages/${id}/lots/remove`, { lotIds })),
 
-  // Linhas
-  sellerLines: (id, params) => data(http.get(`/seller/packages/${id}/lines`, { params })),
-  createLine: (id, body) => data(http.post(`/seller/packages/${id}/lines`, body)),
-  updateLine: (lineId, body) => data(http.patch(`/seller/lines/${lineId}`, body)),
-  deleteLine: (lineId) => http.delete(`/seller/lines/${lineId}`),
+  // Vendedor: lotes
+  lots: (params) => data(http.get('/seller/lots', { params })),
+  lotIds: (params) => data(http.get('/seller/lots/ids', { params })),
+  lotFacets: () => data(http.get('/seller/lots/facets')),
+  lot: (id) => data(http.get(`/seller/lots/${id}`)),
+  updateLot: (id, body) => data(http.patch(`/seller/lots/${id}`, body)),
+  packageFromLot: (id) => data(http.post(`/seller/lots/${id}/package`)),
 
-  // Importação
-  startImport: (id, file) => {
+  // Importação de lotes (planilha da Horizonte, aba "Matriz de lotes")
+  startLotImport: (file) => {
     const form = new FormData()
     form.append('file', file)
-    return data(http.post(`/seller/packages/${id}/imports`, form, { timeout: 180000 }))
+    return data(http.post('/seller/lot-imports', form, { timeout: 180000 }))
   },
-  importLayout: (id, importId, body) => data(http.post(`/seller/packages/${id}/imports/${importId}/layout`, body)),
-  importPreview: (id, importId, body) => data(http.post(`/seller/packages/${id}/imports/${importId}/preview`, body, { timeout: 180000 })),
-  importCommit: (id, importId, body) => data(http.post(`/seller/packages/${id}/imports/${importId}/commit`, body, { timeout: 180000 })),
-  cancelImport: (id, importId) => http.delete(`/seller/packages/${id}/imports/${importId}`),
-  // Importação de pacotes (planilha do sistema). packageId: só o pacote aberto ("Importar pacote").
-  startPackageImport: (file, packageId) => {
-    const form = new FormData()
-    if (packageId) form.append('packageId', packageId)
-    form.append('file', file)
-    return data(http.post('/seller/package-imports', form, { timeout: 180000 }))
-  },
-  commitPackageImport: (importId, body) => data(http.post(`/seller/package-imports/${importId}/commit`, body, { timeout: 180000 })),
-  cancelPackageImport: (importId) => http.delete(`/seller/package-imports/${importId}`),
+  lotImportPreview: (importId, body) => data(http.post(`/seller/lot-imports/${importId}/preview`, body, { timeout: 180000 })),
+  lotImportCommit: (importId, body) => data(http.post(`/seller/lot-imports/${importId}/commit`, body, { timeout: 180000 })),
+  cancelLotImport: (importId) => http.delete(`/seller/lot-imports/${importId}`),
 
   // Anexos
-  attachments: (id) => data(http.get(`/seller/packages/${id}/attachments`)),
-  uploadAttachments: (id, files, fields, onProgress) => {
+  // owner: { packageId } ou { lotId }.
+  attachments: (owner) => data(http.get(ownerPath(owner))),
+  uploadAttachments: (owner, files, fields, onProgress) => {
     const form = new FormData()
     for (const [k, v] of Object.entries(fields)) if (v !== null && v !== undefined && v !== '') form.append(k, v)
     for (const f of files) form.append('files', f)
     return data(
-      http.post(`/seller/packages/${id}/attachments`, form, {
+      http.post(ownerPath(owner), form, {
         timeout: 600000,
         onUploadProgress: (e) => onProgress?.(e.total ? Math.round((e.loaded / e.total) * 100) : 0)
       })

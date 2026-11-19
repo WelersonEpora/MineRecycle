@@ -7,12 +7,13 @@ function packageDto(p, extra = {}) {
     id: p.id,
     number: p.number,
     name: p.name,
-    type: p.type,
     category: p.category,
+    // De onde veio: "manual" (montado pelo vendedor) ou o nível de agrupamento da planilha de lotes.
+    source: p.source,
+    sourceValue: p.sourceValue,
     originId: p.originId,
     origin: p.origin ? { id: p.origin.id, name: p.origin.name, code: p.origin.code } : null,
     description: p.description,
-    locations: p.locations,
     status: p.status,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
@@ -20,20 +21,28 @@ function packageDto(p, extra = {}) {
   };
 }
 
-function lineDto(l) {
-  return {
+// Lote. `seller`: campos que só a área do vendedor recebe (retirada, origem da venda, importação).
+function lotDto(l, { seller = false, extra = {} } = {}) {
+  const out = {
     id: l.id,
-    itemNo: l.itemNo,
-    parentLineId: l.parentLineId,
+    lotNumber: l.lotNumber,
+    siteName: l.siteName,
+    title: l.title,
+    masterSupplier: l.masterSupplier,
+    linkedSystem: l.linkedSystem,
+    commercialFamily: l.commercialFamily,
+    subfamily: l.subfamily,
     description: l.description,
-    quantity: l.quantity === null || l.quantity === undefined ? null : String(Number(l.quantity)),
-    unit: l.unit,
-    unitRaw: l.unitRaw,
-    storCode: l.storCode,
-    tag: l.tag,
-    warehouseLocation: l.warehouseLocation,
-    sortOrder: l.sortOrder
+    status: l.status
   };
+  if (seller) {
+    out.sheetStatus = l.sheetStatus;
+    out.soldBySheet = l.soldBySheet;
+    out.withdrawnAt = l.withdrawnAt;
+    out.importedAt = l.importedAt;
+    out.updatedAt = l.updatedAt;
+  }
+  return { ...out, ...extra };
 }
 
 // `full`: vendedor ou comprador (vê original e nome do arquivo). Público: só as versões redimensionadas das fotos.
@@ -48,7 +57,8 @@ function attachmentDto(a, { full }) {
     originalName: full || !isPhoto ? a.originalName : null,
     mimeType: full || !isPhoto ? a.mimeType : "image/webp",
     sizeBytes: full || !isPhoto ? Number(a.sizeBytes) : null,
-    lineId: a.lineId,
+    packageId: a.packageId,
+    lotId: a.lotId,
     sortOrder: a.sortOrder,
     width: a.width,
     height: a.height,
@@ -59,4 +69,4 @@ function attachmentDto(a, { full }) {
   };
 }
 
-module.exports = { packageDto, lineDto, attachmentDto };
+module.exports = { packageDto, lotDto, attachmentDto };

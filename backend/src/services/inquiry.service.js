@@ -38,7 +38,8 @@ async function create(number, body, viewer) {
   const pkg = Number.isInteger(n) && n > 0 ? await Package.findOne({ where: { number: n } }) : null;
   const access = packageAccess(pkg, viewer);
   if (!access) throw new NotFoundError("Package not found.");
-  if (!canSendInquiry(pkg, access)) {
+  const { summaryOf } = require("./package-lots");
+  if (!canSendInquiry(pkg, access, await summaryOf(pkg.id))) {
     throw new ValidationError("This package does not take requests.", null, "INQUIRY_NOT_ALLOWED");
   }
   const data = parseCreate(body || {});

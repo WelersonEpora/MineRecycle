@@ -37,13 +37,6 @@
             <option value="internal">{{ t('enums.visibility.internal') }}</option>
           </select>
         </div>
-        <div class="col-md-6">
-          <label class="form-label small" for="mr-up-line">{{ t('attachments.line') }}</label>
-          <select id="mr-up-line" v-model="lineId" class="form-select form-select-sm">
-            <option value="">{{ t('attachments.packageLevel') }}</option>
-            <option v-for="l in lines" :key="l.id" :value="l.id">{{ l.itemNo }} — {{ l.description.slice(0, 60) }}</option>
-          </select>
-        </div>
         <div class="col-12">
           <label class="form-label small" for="mr-up-title">{{ t('attachments.titleSingleOnly') }}</label>
           <input id="mr-up-title" v-model="title" class="form-control form-control-sm" maxlength="200" :disabled="files.length > 1" />
@@ -122,10 +115,6 @@
             <a :href="p.url" target="_blank" rel="noopener"><img :src="p.thumbUrl" class="mr-cover" alt="" loading="lazy" /></a>
             <div class="p-2 small d-flex flex-column gap-1 flex-grow-1">
               <input :value="p.title" class="form-control form-control-sm" :placeholder="t('attachments.title')" @change="patch(p, { title: $event.target.value })" />
-              <select :value="p.lineId || ''" class="form-select form-select-sm" @change="patch(p, { lineId: $event.target.value || null })">
-                <option value="">{{ t('attachments.packageLevel') }}</option>
-                <option v-for="l in lines" :key="l.id" :value="l.id">{{ l.itemNo }}</option>
-              </select>
               <div class="d-flex align-items-center gap-1 mt-auto">
                 <VisibilityToggle :att="p" @toggle="toggleVisibility(p)" />
                 <button class="btn btn-sm btn-link px-1 ms-auto" :title="t('attachments.moveUp')" :disabled="i === 0" @click="move(photos, i, -1)"><i class="bi bi-arrow-left"></i></button>
@@ -146,7 +135,6 @@
             <tr>
               <th>{{ t('attachments.title') }}</th>
               <th>{{ t('attachments.kind') }}</th>
-              <th>{{ t('attachments.line') }}</th>
               <th>{{ t('attachments.visibility') }}</th>
               <th class="mr-num">{{ t('attachments.size') }}</th>
               <th></th>
@@ -161,12 +149,6 @@
               <td>
                 <select :value="d.kind" class="form-select form-select-sm" @change="patch(d, { kind: $event.target.value })">
                   <option v-for="k in KINDS.filter((x) => x !== 'photo')" :key="k" :value="k">{{ f.kindLabel(k) }}</option>
-                </select>
-              </td>
-              <td>
-                <select :value="d.lineId || ''" class="form-select form-select-sm" @change="patch(d, { lineId: $event.target.value || null })">
-                  <option value="">{{ t('attachments.packageLevel') }}</option>
-                  <option v-for="l in lines" :key="l.id" :value="l.id">{{ l.itemNo }}</option>
                 </select>
               </td>
               <td><VisibilityToggle :att="d" @toggle="toggleVisibility(d)" /></td>
@@ -190,16 +172,15 @@ import { api } from '../../services/api.js'
 import ModalDialog from '../ModalDialog.vue'
 import { MAX_FILES, isImageFile, isTextField, mergeFiles, pastedFileName } from '../../utils/pending-files.js'
 
-const props = defineProps({ packageId: { type: String, required: true } })
+// Dono dos anexos: { packageId } ou { lotId }. O anexo do lote aparece em todos os pacotes que contêm o lote.
+const props = defineProps({ owner: { type: Object, required: true } })
 const emit = defineEmits(['changed'])
 const f = useFormat()
 const t = f.t
 
 const items = ref([])
-const lines = ref([])
 const kind = ref('photo')
 const visibility = ref('public')
-const lineId = ref('')
 const title = ref('')
 // Arquivos escolhidos e ainda não enviados: { key, file, preview } (preview = URL local da miniatura, só imagem).
 const files = ref([])
@@ -251,7 +232,6 @@ function openUpload(initial = []) {
   clearFiles()
   kind.value = 'photo'
   visibility.value = 'public'
-  lineId.value = ''
   title.value = ''
   uploadError.value = ''
   dragDepth.value = 0
@@ -320,8 +300,7 @@ watch(kind, (k) => {
 })
 
 async function load() {
-  items.value = await api.attachments(props.packageId)
-  lines.value = (await api.sellerLines(props.packageId, { pageSize: 500 })).items
+  items.value = await api.attachments(props.owner)
 }
 
 function changed() {
@@ -336,9 +315,9 @@ async function upload() {
   const n = files.value.length
   try {
     await api.uploadAttachments(
-      props.packageId,
+      props.owner,
       files.value.map((p) => p.file),
-      { kind: kind.value, visibility: kind.value === 'proposal' && visibility.value === 'public' ? 'restricted' : visibility.value, lineId: lineId.value, title: n === 1 ? title.value : '' },
+      { kind: kind.value, visibility: kind.value === 'proposal' && visibility.value === 'public' ? 'restricted' : visibility.value, title: n === 1 ? title.value : '' },
       (p) => (progress.value = p)
     )
     clearFiles()

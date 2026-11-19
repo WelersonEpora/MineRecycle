@@ -17,12 +17,16 @@ function createStorage(config = env.storage) {
 
 const storage = createStorage();
 
+// Anexos guardados sob o dono: pacote (packages/<id>) ou lote (lots/<id>, desde 2026-11-19).
+const ownerPrefix = (owner) => (owner.lotId ? `lots/${owner.lotId}` : `packages/${owner.packageId}`);
+
 const keys = {
-  attachmentPrefix: (packageId, attachmentId) => `packages/${packageId}/${attachmentId}`,
-  attachmentOriginal: (packageId, attachmentId, ext) => `packages/${packageId}/${attachmentId}/original${ext}`,
-  attachmentWeb: (packageId, attachmentId) => `packages/${packageId}/${attachmentId}/web.webp`,
-  attachmentThumb: (packageId, attachmentId) => `packages/${packageId}/${attachmentId}/thumb.webp`,
+  attachmentPrefix: (owner, attachmentId) => `${ownerPrefix(owner)}/${attachmentId}`,
+  attachmentOriginal: (owner, attachmentId, ext) => `${ownerPrefix(owner)}/${attachmentId}/original${ext}`,
+  attachmentWeb: (owner, attachmentId) => `${ownerPrefix(owner)}/${attachmentId}/web.webp`,
+  attachmentThumb: (owner, attachmentId) => `${ownerPrefix(owner)}/${attachmentId}/thumb.webp`,
   packagePrefix: (packageId) => `packages/${packageId}`,
+  lotPrefix: (lotId) => `lots/${lotId}`,
   importFile: (importId) => `imports/${importId}.xlsx`
 };
 
