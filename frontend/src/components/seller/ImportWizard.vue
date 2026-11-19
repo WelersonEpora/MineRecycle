@@ -14,6 +14,10 @@
 
     <!-- 2. Colunas -->
     <div v-else-if="step === 2 && layout">
+      <!-- Planilha exportada pelo sistema: o caminho certo é Importar pacote (dados do pacote e itens). -->
+      <div v-if="layout.sheets.some((s) => SYSTEM_SHEETS.includes(s))" class="alert alert-info py-2 small">
+        <i class="bi bi-info-circle"></i> {{ t('import.systemFile') }}
+      </div>
       <!-- Conferência do código STOR do nome do arquivo com os pacotes -->
       <template v-if="stor">
         <div v-if="stor.inThisPackage && stor.pending" class="alert alert-warning py-2 small">
@@ -193,6 +197,8 @@ const props = defineProps({
   packageName: { type: String, default: '' }
 })
 const emit = defineEmits(['update:show', 'imported'])
+// Nomes da aba de pacotes da planilha exportada pelo sistema (backend/src/export/labels.js).
+const SYSTEM_SHEETS = ['Pacotes', 'Packages']
 const f = useFormat()
 const t = f.t
 

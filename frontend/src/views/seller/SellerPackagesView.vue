@@ -29,6 +29,9 @@
     <a class="btn btn-outline-secondary btn-sm ms-auto" :href="exportUrl" download>
       <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.exportPackages') }}
     </a>
+    <button class="btn btn-outline-secondary btn-sm" @click="importingPackages = true">
+      <i class="bi bi-upload"></i> {{ t('seller.importPackages') }}
+    </button>
     <button class="btn btn-accent btn-sm" @click="openCreate"><i class="bi bi-plus-lg"></i> {{ t('seller.newPackage') }}</button>
   </div>
   <div class="mb-3">
@@ -48,10 +51,10 @@
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light small">
         <tr>
+          <th class="text-nowrap text-center">{{ t('seller.fields.number') }}</th>
           <th></th>
-          <th class="text-nowrap">{{ t('seller.fields.number') }}</th>
-          <th class="text-nowrap">{{ t('seller.fields.storNumbersShort') }}</th>
           <th>{{ t('seller.fields.name') }}</th>
+          <th class="text-nowrap">{{ t('seller.fields.storNumbersShort') }}</th>
           <th>{{ t('seller.fields.type') }}</th>
           <th>{{ t('seller.fields.origin') }}</th>
           <th>{{ t('seller.fields.location') }}</th>
@@ -66,11 +69,10 @@
           <td colspan="11" class="text-secondary">{{ t('seller.noPackages') }}</td>
         </tr>
         <tr v-for="p in shown" :key="p.id" role="button" @click="open(p)">
+          <td class="mr-number text-nowrap text-center">{{ p.number }}</td>
           <td style="width: 64px">
             <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
           </td>
-          <td class="mr-number text-nowrap">{{ p.number }}</td>
-          <td class="mr-mono small text-secondary text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
           <td>
             <div class="fw-medium">{{ p.name }}</div>
             <div v-if="p.storFolder" class="small text-secondary"><i class="bi bi-folder2"></i> <span class="mr-mono">{{ p.storFolder }}</span></div>
@@ -81,6 +83,7 @@
               >
             </div>
           </td>
+          <td class="mr-mono small text-secondary text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
           <td class="small">{{ f.typeLabel(p.type) }}</td>
           <td class="small" :title="p.origin?.name">{{ p.origin?.code }}</td>
           <td class="small">{{ f.locationsLabel(p.locations) }}</td>
@@ -92,6 +95,8 @@
       </tbody>
     </table>
   </div>
+
+  <PackageImportModal v-model:show="importingPackages" @imported="load" />
 
   <ModalDialog v-model:show="creating" :title="t('seller.newPackage')" size="lg" persistent scrollable>
     <PackageForm v-model="draft" />
@@ -114,6 +119,7 @@ import StatusBadge from '../../components/StatusBadge.vue'
 import ChipGroup from '../../components/ChipGroup.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
+import PackageImportModal from '../../components/seller/PackageImportModal.vue'
 
 const f = useFormat()
 const t = f.t
@@ -131,6 +137,7 @@ const items = ref([])
 const loading = ref(true)
 const error = ref('')
 const creating = ref(false)
+const importingPackages = ref(false)
 const createError = ref('')
 const busy = ref(false)
 const draft = ref({})

@@ -57,6 +57,15 @@ export const api = {
   importPreview: (id, importId, body) => data(http.post(`/seller/packages/${id}/imports/${importId}/preview`, body, { timeout: 180000 })),
   importCommit: (id, importId, body) => data(http.post(`/seller/packages/${id}/imports/${importId}/commit`, body, { timeout: 180000 })),
   cancelImport: (id, importId) => http.delete(`/seller/packages/${id}/imports/${importId}`),
+  // Importação de pacotes (planilha do sistema). packageId: só o pacote aberto ("Importar pacote").
+  startPackageImport: (file, packageId) => {
+    const form = new FormData()
+    if (packageId) form.append('packageId', packageId)
+    form.append('file', file)
+    return data(http.post('/seller/package-imports', form, { timeout: 180000 }))
+  },
+  commitPackageImport: (importId, body) => data(http.post(`/seller/package-imports/${importId}/commit`, body, { timeout: 180000 })),
+  cancelPackageImport: (importId) => http.delete(`/seller/package-imports/${importId}`),
 
   // Anexos
   attachments: (id) => data(http.get(`/seller/packages/${id}/attachments`)),

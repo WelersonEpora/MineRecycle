@@ -28,6 +28,9 @@
         <a class="btn btn-sm btn-outline-secondary" :href="api.packageExportUrl(pkg.id, { lang: locale })" download>
           <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.exportPackage') }}
         </a>
+        <button class="btn btn-sm btn-outline-secondary" @click="importingPackage = true">
+          <i class="bi bi-upload"></i> {{ t('seller.importPackage') }}
+        </button>
         <div class="dropdown" @focusout="closeMenuLater">
           <button class="btn btn-sm btn-accent dropdown-toggle" @click="menuOpen = !menuOpen">{{ t('seller.statusActions.title') }}</button>
           <ul class="dropdown-menu dropdown-menu-end" :class="{ show: menuOpen }">
@@ -108,6 +111,8 @@
     </section>
 
     <!-- Edição dos detalhes. Persistente: clique fora e Esc não fecham, para não perder o que foi digitado. -->
+    <!-- Fora das abas: o botão fica no cabeçalho. -->
+    <PackageImportModal v-model:show="importingPackage" :package-id="pkg.id" :package-number="pkg.number" @imported="afterLinesChanged" />
     <ModalDialog v-model:show="editing" :title="t('seller.editDetails')" size="lg" persistent scrollable>
       <PackageForm v-model="form" number-locked />
       <div v-if="editError" class="alert alert-danger py-2 small mt-3">{{ editError }}</div>
@@ -132,6 +137,7 @@ import LinesTable from '../../components/LinesTable.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
 import LineFormModal from '../../components/seller/LineFormModal.vue'
 import ImportWizard from '../../components/seller/ImportWizard.vue'
+import PackageImportModal from '../../components/seller/PackageImportModal.vue'
 import AttachmentsPanel from '../../components/seller/AttachmentsPanel.vue'
 import AccessLinksPanel from '../../components/seller/AccessLinksPanel.vue'
 
@@ -150,6 +156,7 @@ const editing = ref(false)
 const editError = ref('')
 const menuOpen = ref(false)
 const importing = ref(false)
+const importingPackage = ref(false)
 const linesTable = ref(null)
 const lineModal = reactive({ show: false, line: null })
 const tab = ref(route.query.tab || 'details')
