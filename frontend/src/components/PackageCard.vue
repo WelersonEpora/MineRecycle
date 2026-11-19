@@ -15,6 +15,7 @@
         <div class="d-flex align-items-center gap-2 mb-1 small">
           <span class="badge rounded-pill text-bg-light border">{{ f.typeLabel(pkg.type) }}</span>
           <StatusBadge v-if="pkg.status !== 'active'" :status="pkg.status" />
+          <span class="text-secondary mr-mono ms-auto" :title="t('catalog.packageId')">#{{ pkg.number }}</span>
         </div>
         <h3 class="h6 mb-2">{{ pkg.name }}</h3>
         <div class="mt-auto small text-secondary d-flex justify-content-between">

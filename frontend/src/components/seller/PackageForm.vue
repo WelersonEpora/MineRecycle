@@ -54,8 +54,8 @@
       <textarea id="mr-pkg-desc" v-model="model.description" rows="5" class="form-control"></textarea>
     </div>
     <div class="col-4 col-md-3">
-      <label class="form-label small" for="mr-pkg-number">{{ t('seller.fields.number') }}<HelpTip :text="t('seller.fields.numberHint')" :label="t('seller.fields.help', { field: t('seller.fields.number') })" /></label>
-      <input id="mr-pkg-number" v-model.number="model.number" type="number" min="1" class="form-control" />
+      <label class="form-label small" for="mr-pkg-number">{{ t('seller.fields.number') }}<HelpTip :text="t(numberLocked ? 'seller.fields.numberLockedHint' : 'seller.fields.numberHint')" :label="t('seller.fields.help', { field: t('seller.fields.number') })" /></label>
+      <input id="mr-pkg-number" v-model.number="model.number" type="number" min="1" class="form-control mr-mono" :readonly="numberLocked" :class="{ 'bg-body-tertiary': numberLocked }" />
     </div>
   </div>
 </template>
@@ -67,6 +67,8 @@ import HelpTip from '../HelpTip.vue'
 import { useFormat, TYPES, LOCATIONS, CATEGORIES } from '../../composables/useFormat.js'
 
 const model = defineModel({ type: Object, required: true })
+// Na edição o ID (nº do catálogo) é só leitura: fixo depois de criado (endereço público e chave estável do pacote).
+defineProps({ numberLocked: { type: Boolean, default: false } })
 const f = useFormat()
 const t = f.t
 

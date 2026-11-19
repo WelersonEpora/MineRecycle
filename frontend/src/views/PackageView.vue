@@ -19,6 +19,7 @@
           <span class="badge rounded-pill text-bg-light border"><i class="bi bi-geo-alt"></i> {{ f.locationsLabel(pkg.locations) }}</span>
           <StatusBadge :status="pkg.status" />
           <span class="text-secondary">{{ t('catalog.lines', pkg.lineCount) }}</span>
+          <span class="text-secondary mr-mono" :title="t('catalog.packageId')">#{{ pkg.number }}</span>
         </div>
       </div>
       <RouterLink

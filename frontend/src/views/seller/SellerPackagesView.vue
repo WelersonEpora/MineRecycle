@@ -46,6 +46,7 @@
       <thead class="table-light small">
         <tr>
           <th></th>
+          <th class="text-nowrap">{{ t('seller.fields.number') }}</th>
           <th class="text-nowrap">{{ t('seller.fields.storNumbersShort') }}</th>
           <th>{{ t('seller.fields.name') }}</th>
           <th>{{ t('seller.fields.type') }}</th>
@@ -59,12 +60,13 @@
       </thead>
       <tbody>
         <tr v-if="!loading && !shown.length">
-          <td colspan="10" class="text-secondary">{{ t('seller.noPackages') }}</td>
+          <td colspan="11" class="text-secondary">{{ t('seller.noPackages') }}</td>
         </tr>
         <tr v-for="p in shown" :key="p.id" role="button" @click="open(p)">
           <td style="width: 64px">
             <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
           </td>
+          <td class="mr-mono small text-nowrap">{{ p.number }}</td>
           <td class="mr-number text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
           <td>
             <div class="fw-medium">{{ p.name }}</div>

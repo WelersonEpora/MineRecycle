@@ -152,7 +152,7 @@ function parseLocations(value) {
 // Números do pacote na planilha de estratégia (1 a 999), sem repetição, em ordem. Lista ou texto ("1, 6" ou "7-8-11").
 function parseStorNumbers(value) {
   if (value === null || value === undefined || value === "") return [];
-  const list = Array.isArray(value) ? value : String(value).split(/[s,;-]+/).filter(Boolean);
+  const list = Array.isArray(value) ? value : String(value).split(/[\s,;-]+/).filter(Boolean);
   const nums = list.map((v) => (typeof v === "string" && v.trim() !== "" ? Number(v) : v));
   if (nums.length > 30 || nums.some((n) => !Number.isInteger(n) || n < 1 || n > 999)) {
     throw new ValidationError("Package numbers are whole numbers from 1 to 999.", { field: "storNumbers", code: "invalid" });
@@ -284,7 +284,13 @@ async function update(id, body, userId) {
   if (body.originId !== undefined) data.originId = await originService.resolveForPackage(body.originId, pkg.originId);
   reconcilePending(data, pkg);
   if (data.storFolder !== undefined) await assertStorFolderFree(data.storFolder, pkg.id);
-  if (data.number !== undefined) await assertNumberFree(data.number, pkg.id);
+  // O ID (nº do catálogo) é fixo depois de criado: é o endereço da página pública e a chave estável do pacote para
+  // planilhas (exportação e reimportação).
+  // Reenviar o mesmo número (o formulário manda tudo) é aceito.
+  if (data.number !== undefined && data.number !== pkg.number) {
+    throw new ValidationError("The package ID cannot be changed.", { field: "number" }, "NUMBER_LOCKED");
+  }
+  delete data.number;
   await pkg.update({ ...data, updatedBy: userId });
   return getForSeller(pkg.id);
 }

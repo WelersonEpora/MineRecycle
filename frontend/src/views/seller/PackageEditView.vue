@@ -7,7 +7,7 @@
     </nav>
     <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
       <div class="flex-grow-1">
-        <div class="mr-number small">{{ f.typeLabel(pkg.type) }} · {{ f.locationsLabel(pkg.locations) }}</div>
+        <div class="mr-number small">{{ t('seller.fields.number') }} <span class="mr-mono">{{ pkg.number }}</span> · {{ f.typeLabel(pkg.type) }} · {{ f.locationsLabel(pkg.locations) }}</div>
         <h1 class="h4 mb-1">{{ pkg.name }}</h1>
         <div v-if="pkg.storFolder || pkg.storNumbers?.length" class="small text-secondary mb-1">
           <i class="bi bi-folder2"></i> <span class="mr-mono">{{ pkg.storFolder }}</span>
@@ -106,7 +106,7 @@
 
     <!-- Edição dos detalhes. Persistente: clique fora e Esc não fecham, para não perder o que foi digitado. -->
     <ModalDialog v-model:show="editing" :title="t('seller.editDetails')" size="lg" persistent scrollable>
-      <PackageForm v-model="form" />
+      <PackageForm v-model="form" number-locked />
       <div v-if="editError" class="alert alert-danger py-2 small mt-3">{{ editError }}</div>
       <template #footer>
         <button class="btn btn-outline-secondary btn-sm" :disabled="busy" @click="editing = false">{{ t('common.cancel') }}</button>

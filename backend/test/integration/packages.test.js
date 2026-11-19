@@ -30,6 +30,18 @@ test("package number and locations", { skip }, async (t) => {
     assert.deepEqual(next.data.locations, ["conceicao_do_araguaia", "uberaba", "at_supplier"]);
   });
 
+  await t.test("number (ID) is fixed after creation", async () => {
+    const pkg = await create({ name: "Locked", type: "bulk", locations: ["uberaba"] });
+    const id = pkg.data.id;
+    const same = await seller.patch(`/api/v1/seller/packages/${id}`, { json: { number: pkg.data.number, name: "Locked 2" } });
+    assert.equal(same.status, 200);
+    assert.equal(same.data.name, "Locked 2");
+    const other = await seller.patch(`/api/v1/seller/packages/${id}`, { json: { number: pkg.data.number + 500 } });
+    assert.equal(other.status, 400);
+    assert.equal(other.data.error.code, "NUMBER_LOCKED");
+    assert.equal((await seller.get(`/api/v1/seller/packages/${id}`)).data.number, pkg.data.number);
+  });
+
   await t.test("locations are validated", async () => {
     assert.equal((await create({ name: "None", type: "bulk", locations: [] })).status, 400);
     assert.equal((await create({ name: "Bad", type: "bulk", locations: ["mars"] })).status, 400);

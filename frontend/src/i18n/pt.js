@@ -90,6 +90,7 @@ export default {
     status: 'Situação',
     empty: 'Nenhum pacote com esses filtros.',
     lines: 'nenhum item | 1 item | {n} itens',
+    packageId: 'ID do pacote',
     viewPackage: 'Ver pacote',
     highlight: { weight: 'peso total', units: 'unidade | unidade | unidades', items: 'item | item | itens' }
   },
@@ -155,8 +156,9 @@ export default {
     viewPublic: 'Ver página',
     tabs: { details: 'Dados', lines: 'Itens', attachments: 'Fotos e arquivos', links: 'Links de acesso' },
     fields: {
-      number: 'Nº do catálogo',
-      numberHint: 'Usado no endereço da página pública. Preenchido sozinho; o comprador não o vê.',
+      number: 'ID',
+      numberHint: 'Identificação do pacote, usada no endereço da página pública. Preenchido sozinho; o comprador não o vê. Não muda depois de criado.',
+      numberLockedHint: 'Identificação do pacote, usada no endereço da página pública. Não muda depois de criado.',
       name: 'Nome público (inglês)',
       nameHint: 'Aparece no catálogo e no link do comprador.',
       storFolder: 'Pasta no STOR',
@@ -698,7 +700,7 @@ export default {
           c: 'O mesmo número pode estar em mais de um pacote. Por exemplo, 10 e 12 estão no secador e no forno.',
           d: 'Quando a planilha não tem um ID que corresponda com clareza ao pacote, o número fica vazio. O vendedor pode completar no cabeçalho do pacote.',
           e: 'As listas são ordenadas pelo menor número do pacote e depois pelo nome. Pacotes sem número vão para o fim.',
-          f: 'O comprador não vê número nenhum: nem o Nº STOR, nem o nº do catálogo, que só aparece no endereço da página.'
+          f: 'O comprador não vê o Nº STOR. Vê só o ID do pacote ("#12" no cartão e na página do pacote), o mesmo número do endereço da página.'
         },
         note: 'A planilha de estratégia de vendas tem valores e contatos de compradores. Ela serve só como referência e nunca é importada nem anexada.'
       },
@@ -909,7 +911,8 @@ export default {
     LINK_INVALID: 'Este link de acesso não é válido. Confira se usou o link completo.',
     LINK_EXPIRED: 'Este link de acesso expirou. Peça um novo ao vendedor.',
     LINK_REVOKED: 'Este link de acesso foi revogado. Fale com o vendedor.',
-    NUMBER_TAKEN: 'Já existe um pacote com este número.',
+    NUMBER_TAKEN: 'Já existe um pacote com este ID.',
+    NUMBER_LOCKED: 'O ID do pacote não pode ser alterado.',
     STOR_FOLDER_TAKEN: 'Outro pacote já usa esta pasta do STOR.',
     IMPORT_DOCUMENT_PENDING: 'Esta planilha está pendente de validação. Confirme para importar mesmo assim.',
     ITEM_NO_TAKEN: 'Este nº de item já existe no pacote.',

@@ -47,7 +47,7 @@ em `_sample-data`.
 | Números do pacote (`stor_numbers`) | IDs dos ativos na planilha de estratégia | Só vendedores (coluna "Nº STOR") |
 | Documentos STOR (`stor_documents`) | Códigos das planilhas do pacote | Só vendedores |
 | Pendentes de validação (`stor_documents_pending`) | Códigos que ainda não devem ser importados | Só vendedores |
-| Nº do catálogo (`number`) | Sequência própria, gerada sozinha; só aparece no endereço da página pública | Ninguém na tela pública |
+| ID / nº do catálogo (`number`) | Sequência própria, gerada sozinha e fixa depois de criada (decisão de 2026-11-19); aparece no endereço da página pública, na lista do vendedor e, como "#12", no cartão do catálogo e na página do pacote | Todos |
 | Origem (`origin_id`) | De onde vieram os ativos, escolhida na tabela de origens (nome, sigla, ativa); obrigatória | Todos |
 | Categoria (`category`) | Cor e ícone do cartão do catálogo sem foto | Todos |
 

@@ -90,6 +90,7 @@ export default {
     status: 'Status',
     empty: 'No packages match these filters.',
     lines: 'no items | 1 item | {n} items',
+    packageId: 'Package ID',
     viewPackage: 'View package',
     highlight: { weight: 'total weight', units: 'unit | unit | units', items: 'item | item | items' }
   },
@@ -155,8 +156,9 @@ export default {
     viewPublic: 'View page',
     tabs: { details: 'Details', lines: 'Items', attachments: 'Photos and files', links: 'Access links' },
     fields: {
-      number: 'Catalog no.',
-      numberHint: 'Used in the public page address. Filled in automatically; buyers do not see it.',
+      number: 'ID',
+      numberHint: 'Package identifier, used in the public page address. Filled in automatically; buyers do not see it. It cannot be changed after creation.',
+      numberLockedHint: 'Package identifier, used in the public page address. It cannot be changed after creation.',
       name: 'Public name (English)',
       nameHint: 'Shown in the catalog and to buyers with a link.',
       storFolder: 'STOR folder',
@@ -698,7 +700,7 @@ export default {
           c: 'The same number can be in more than one package. For example, 10 and 12 are in both the dryer and the kiln.',
           d: 'When the spreadsheet has no ID that clearly matches the package, the number is left empty. Sellers can fill it in on the package header.',
           e: 'Lists are sorted by the lowest package number, then by name. Packages without a number go last.',
-          f: 'Buyers see no numbers at all: neither the STOR no. nor the catalog no., which only appears in the page address.'
+          f: 'Buyers do not see the STOR no. They only see the package ID ("#12" on the card and on the package page), the same number as in the page address.'
         },
         note: 'The sales strategy spreadsheet has values and buyer contacts. It is a reference only and is never imported or attached.'
       },
@@ -909,7 +911,8 @@ export default {
     LINK_INVALID: 'This access link is not valid. Check that you used the complete link.',
     LINK_EXPIRED: 'This access link has expired. Please contact the seller for a new one.',
     LINK_REVOKED: 'This access link has been revoked. Please contact the seller.',
-    NUMBER_TAKEN: 'A package with this number already exists.',
+    NUMBER_TAKEN: 'A package with this ID already exists.',
+    NUMBER_LOCKED: 'The package ID cannot be changed.',
     STOR_FOLDER_TAKEN: 'Another package already uses this STOR folder.',
     IMPORT_DOCUMENT_PENDING: 'This spreadsheet is pending validation. Confirm to import it anyway.',
     ITEM_NO_TAKEN: 'This item number already exists in the package.',
