@@ -6,7 +6,7 @@
 
 const XLSX = require("xlsx");
 const { LINE_COLUMNS, PACKAGE_COLUMNS } = require("./columns");
-const { SHEETS, langOf } = require("./labels");
+const { SHEETS, langOf, enumLabel } = require("./labels");
 
 // Profundidade de cada item pela cadeia de pais (0 = nível de cima). Pai fora da lista conta como nível de cima;
 // ciclo (não deveria existir) é cortado.
@@ -83,11 +83,51 @@ function toBuffer(wb) {
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx", compression: true });
 }
 
-// Nome do arquivo: só ID e data, nada do conteúdo.
-function fileName({ number = null, lang = "en", date = new Date() } = {}) {
-  const day = date.toISOString().slice(0, 10);
-  const [one, many] = langOf(lang) === "pt" ? ["pacote", "pacotes"] : ["package", "packages"];
-  return number ? `minerecycle-${one}-${number}-${day}.xlsx` : `minerecycle-${many}-${day}.xlsx`;
+const NAME_MAX = 60;
+
+// Trecho do nome do arquivo: sem os caracteres que o Windows recusa (\ / : * ? " < > | e controle), espaços
+// juntos, sem ponto ou espaço no fim, cortado em NAME_MAX. Acento e espaço ficam (legível no Explorer e no Excel).
+function safePart(text, max = NAME_MAX) {
+  const clean = String(text ?? "")
+    .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+  const cut = clean.length > max ? clean.slice(0, max).trimEnd() : clean;
+  return cut.replace(/[.\s-]+$/, "");
+}
+
+// Dia no fuso do Brasil (o servidor roda em UTC; às 22h daqui já seria o dia seguinte).
+function dayOf(date) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(date);
+}
+
+// Nome do arquivo (só dados públicos: ID e nome público do pacote, ou os filtros da lista; nunca pasta STOR nem
+// Ativos, porque o arquivo pode ser encaminhado).
+//   um pacote: "MineRecycle - 12 - Refractories - Uberaba Dry Port - 2026-11-19.xlsx"
+//   lista:     "MineRecycle - Pacotes - A granel, Uberaba, Ativo - 2026-11-19.xlsx"
+// filters: { type, category, location, status, originCode, q } (valores do sistema; traduzidos aqui).
+function fileName({ pkg = null, filters = {}, lang = "en", date = new Date() } = {}) {
+  const l = langOf(lang);
+  const parts = ["MineRecycle"];
+  if (pkg) {
+    parts.push(String(pkg.number));
+    const name = safePart(pkg.name);
+    if (name) parts.push(name);
+  } else {
+    parts.push(l === "pt" ? "Pacotes" : "Packages");
+    const labels = [
+      filters.type && enumLabel(l, "type", filters.type),
+      filters.originCode,
+      filters.location && enumLabel(l, "location", filters.location),
+      filters.status && enumLabel(l, "status", filters.status)
+    ].filter(Boolean);
+    const q = safePart(filters.q, 30);
+    if (q) labels.push(`'${q}'`);
+    const filterPart = safePart(labels.join(", "));
+    if (filterPart) parts.push(filterPart);
+  }
+  parts.push(dayOf(date));
+  return `${parts.join(" - ")}.xlsx`;
 }
 
 module.exports = { buildWorkbook, toBuffer, fileName, treeOrder, depths };

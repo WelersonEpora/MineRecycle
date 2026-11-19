@@ -111,8 +111,16 @@ test("default sheet: items sheet of an exported file, otherwise the first", () =
   assert.equal(sheet.defaultSheet(["Lista", "Resumo"]), "Lista");
 });
 
-test("file name has only the ID and the date", () => {
+test("file name: ID and public name of one package, or the list filters", () => {
   const date = new Date("2026-11-19T12:00:00Z");
-  assert.equal(fileName({ number: 12, lang: "pt", date }), "minerecycle-pacote-12-2026-11-19.xlsx");
-  assert.equal(fileName({ lang: "en", date }), "minerecycle-packages-2026-11-19.xlsx");
+  assert.equal(fileName({ pkg: { number: 12, name: "Refractories – Uberaba Dry Port" }, lang: "pt", date }), "MineRecycle - 12 - Refractories – Uberaba Dry Port - 2026-11-19.xlsx");
+  assert.equal(fileName({ pkg: { number: 3, name: 'Pipes 2" / 3": A*B?' }, date }), "MineRecycle - 3 - Pipes 2- - 3- A-B - 2026-11-19.xlsx");
+  assert.equal(fileName({ pkg: { number: 4, name: "x".repeat(90) }, date }).length, "MineRecycle - 4 -  - 2026-11-19.xlsx".length + 60);
+  assert.equal(fileName({ lang: "en", date }), "MineRecycle - Packages - 2026-11-19.xlsx");
+  assert.equal(
+    fileName({ lang: "pt", date, filters: { type: "bulk", originCode: "SMP", location: "uberaba", status: "active", q: 'cabo "cu"' } }),
+    "MineRecycle - Pacotes - A granel, SMP, Uberaba, Ativo, 'cabo -cu' - 2026-11-19.xlsx"
+  );
+  // 22h no Brasil ainda é o mesmo dia (01h UTC do dia seguinte).
+  assert.equal(fileName({ lang: "en", date: new Date("2026-11-20T01:00:00Z") }), "MineRecycle - Packages - 2026-11-19.xlsx");
 });

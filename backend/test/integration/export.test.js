@@ -60,7 +60,7 @@ test("package export to spreadsheet", { skip }, async (t) => {
     const res = await seller.get(`/api/v1/seller/packages/${pkg.id}/export?lang=pt`);
     assert.equal(res.status, 200);
     assert.match(res.headers.get("content-type"), /spreadsheetml/);
-    assert.match(res.headers.get("content-disposition"), new RegExp(`minerecycle-pacote-${pkg.number}-\\d{4}-\\d{2}-\\d{2}\\.xlsx`));
+    assert.match(res.headers.get("content-disposition"), new RegExp(`MineRecycle - ${pkg.number} - Sample Electrical - \\d{4}-\\d{2}-\\d{2}\\.xlsx`));
     exported = res.data;
     const wb = XLSX.read(exported, { type: "buffer", cellStyles: true });
     assert.deepEqual(wb.SheetNames, ["Pacotes", "Itens"]);
@@ -89,7 +89,7 @@ test("package export to spreadsheet", { skip }, async (t) => {
     assert.deepEqual(all.SheetNames, ["Packages", "Items"]);
     assert.equal(XLSX.utils.sheet_to_json(all.Sheets.Packages).length, 2);
     const res = await seller.get("/api/v1/seller/packages/export?status=active&lang=en");
-    assert.match(res.headers.get("content-disposition"), /minerecycle-packages-/);
+    assert.match(res.headers.get("content-disposition"), /MineRecycle - Packages - Active - \d{4}-\d{2}-\d{2}\.xlsx/);
     const active = XLSX.read(res.data, { type: "buffer" });
     assert.deepEqual(XLSX.utils.sheet_to_json(active.Sheets.Packages).map((p) => p["Public name"]), ["Sample Other"]);
     assert.equal(XLSX.utils.sheet_to_json(active.Sheets.Items).length, 0);
