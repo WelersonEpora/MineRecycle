@@ -7,14 +7,14 @@
     </nav>
     <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
       <div class="flex-grow-1">
-        <div class="mr-number small">{{ t('seller.fields.number') }} <span class="mr-mono">{{ pkg.number }}</span> · {{ f.typeLabel(pkg.type) }} · {{ f.locationsLabel(pkg.locations) }}</div>
+        <div class="mr-number small">{{ t('seller.fields.number') }} {{ pkg.number }} ·{{ f.typeLabel(pkg.type) }} · {{ f.locationsLabel(pkg.locations) }}</div>
         <h1 class="h4 mb-1">{{ pkg.name }}</h1>
         <div v-if="pkg.storFolder || pkg.storNumbers?.length" class="small text-secondary mb-1">
           <i class="bi bi-folder2"></i> <span class="mr-mono">{{ pkg.storFolder }}</span>
           <span v-if="pkg.storNumbers?.length"> · {{ t('seller.fields.storNumbersShort') }} {{ pkg.storNumbers.join('-') }}</span>
         </div>
         <div v-if="pkg.storDocuments?.length" class="small text-secondary mr-mono mb-1">
-          {{ t('seller.fields.storDocuments') }}:
+          <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.storShort') }}
           <span v-for="(d, i) in pkg.storDocuments" :key="d"
             >{{ i ? ' · ' : '' }}{{ d }}<span v-if="pkg.storDocumentsPending?.includes(d)" class="badge text-bg-warning ms-1">{{ t('seller.pendingShort') }}</span></span
           >

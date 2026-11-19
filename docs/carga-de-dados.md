@@ -44,7 +44,7 @@ em `_sample-data`.
 |---|---|---|
 | Nome público (`name`) | Nome em inglês, editável pelo vendedor | Todos (catálogo, link do comprador) |
 | Pasta no STOR (`stor_folder`) | Nome da pasta, grafia original (inclusive "28-Pipping"). **Chave estável** dos scripts de dados; única | Só vendedores |
-| Números do pacote (`stor_numbers`) | IDs dos ativos na planilha de estratégia | Só vendedores (coluna "Nº STOR") |
+| Números do pacote (`stor_numbers`) | IDs dos ativos na planilha de estratégia | Só vendedores (coluna "Ativos") |
 | Documentos STOR (`stor_documents`) | Códigos das planilhas do pacote | Só vendedores |
 | Pendentes de validação (`stor_documents_pending`) | Códigos que ainda não devem ser importados | Só vendedores |
 | ID / nº do catálogo (`number`) | Sequência própria, gerada sozinha e fixa depois de criada (decisão de 2026-11-19); aparece no endereço da página pública, na lista do vendedor e, como "#12", no cartão do catálogo e na página do pacote | Todos |

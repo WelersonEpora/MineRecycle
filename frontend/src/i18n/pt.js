@@ -147,7 +147,7 @@ export default {
     users: 'Usuários',
     account: 'Minha conta',
     newPackage: 'Novo pacote',
-    storShort: 'STOR',
+    storShort: 'Doc.',
     pendingShort: 'pendente',
     lineCount: 'Itens',
     attachmentCount: 'Arquivos',
@@ -163,9 +163,9 @@ export default {
       nameHint: 'Aparece no catálogo e no link do comprador.',
       storFolder: 'Pasta no STOR',
       storFolderHint: 'Nome da pasta do pacote no STOR, escrito exatamente igual. Só vendedores veem.',
-      storNumbers: 'Números do pacote',
-      storNumbersShort: 'Nº STOR',
-      storNumbersHint: 'IDs na planilha de estratégia de vendas, ex.: 1, 6. Ordenam as listas; o comprador não vê.',
+      storNumbers: 'Ativos',
+      storNumbersShort: 'Ativos',
+      storNumbersHint: 'Números dos ativos na planilha de estratégia de vendas, ex.: 1, 6 (ativos 1 e 6). Ordenam as listas; o comprador não vê. Não é o ID do pacote.',
       storDocumentsPending: 'Pendentes de validação (não importar ainda):',
       storDocumentsPendingHint: 'A importação de uma planilha marcada pede confirmação.',
       type: 'Tipo',
@@ -664,9 +664,10 @@ export default {
         title: 'Pacotes',
         intro: 'O cabeçalho de cada pacote reúne o que o comprador vê e a identificação no STOR, que só os vendedores veem.',
         rows: {
+          id: { term: 'ID', text: 'Identificação do pacote, gerada sozinha e fixa depois de criada. Aparece como #12 no catálogo e no endereço da página, e é a referência do pacote em planilhas.' },
           name: { term: 'Nome público', text: 'Nome em inglês mostrado no catálogo e no link do comprador.' },
           folder: { term: 'Pasta no STOR', text: 'Nome da pasta, com a grafia original. Identifica o pacote e não se repete. Só vendedores.' },
-          numbers: { term: 'Nº STOR', text: 'IDs do ativo na planilha de estratégia de vendas. Usados para ordenar a lista. Só vendedores.' },
+          numbers: { term: 'Ativos', text: 'Números dos ativos na planilha de estratégia de vendas (1-6 = ativos 1 e 6). Usados para ordenar a lista; podem se repetir entre pacotes. Só vendedores.' },
           origin: {
             term: 'Origem',
             text: 'De onde vieram os ativos (Araguaia Nickel Project, Niquelândia...). É diferente de Locais, que dizem onde estão hoje: os refratários do Porto Seco de Uberaba têm origem Araguaia e local Uberaba. Escolhida numa lista cadastrada em Configuração; aparece como filtro no catálogo quando há pacotes de mais de uma origem.'
@@ -682,7 +683,7 @@ export default {
           locations: { term: 'Locais', text: 'Onde os bens estão. Um pacote pode ter vários. A confirmar pode ficar junto de um local conhecido.' },
           documents: {
             term: 'Documentos STOR',
-            text: 'Códigos das planilhas do pacote. Um código marcado como pendente ainda aguarda validação do cliente. Só vendedores.'
+            text: 'Códigos (7 dígitos) das planilhas de itens do pacote no STOR, mostrados como "Doc. 1809438". A importação confere o código no nome do arquivo. Um código marcado como pendente ainda aguarda validação do cliente. Só vendedores.'
           },
           status: { term: 'Situação', text: 'Rascunho, ativo, em negociação, vendido ou inativo. Rascunho e inativo nunca aparecem para o comprador.' }
         },
@@ -693,14 +694,14 @@ export default {
         }
       },
       numbers: {
-        title: 'Números do pacote e ordem da lista',
+        title: 'Ativos e ordem da lista',
         items: {
           a: 'A fonte dos números é a planilha de estratégia de vendas, não o nome da pasta.',
           b: 'No nome da pasta, o hífen quer dizer "e", não intervalo: 1-6 são os ativos 1 e 6.',
           c: 'O mesmo número pode estar em mais de um pacote. Por exemplo, 10 e 12 estão no secador e no forno.',
           d: 'Quando a planilha não tem um ID que corresponda com clareza ao pacote, o número fica vazio. O vendedor pode completar no cabeçalho do pacote.',
-          e: 'As listas são ordenadas pelo menor número do pacote e depois pelo nome. Pacotes sem número vão para o fim.',
-          f: 'O comprador não vê o Nº STOR. Vê só o ID do pacote ("#12" no cartão e na página do pacote), o mesmo número do endereço da página.'
+          e: 'As listas são ordenadas pelo menor número de ativo e depois pelo nome. Pacotes sem ativo vão para o fim.',
+          f: 'O comprador não vê os Ativos. Vê só o ID do pacote ("#12" no cartão e na página do pacote), o mesmo número do endereço da página.'
         },
         note: 'A planilha de estratégia de vendas tem valores e contatos de compradores. Ela serve só como referência e nunca é importada nem anexada.'
       },

@@ -66,13 +66,13 @@
           <td style="width: 64px">
             <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
           </td>
-          <td class="mr-mono small text-nowrap">{{ p.number }}</td>
-          <td class="mr-number text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
+          <td class="mr-number text-nowrap">{{ p.number }}</td>
+          <td class="mr-mono small text-secondary text-nowrap">{{ (p.storNumbers || []).join('-') }}</td>
           <td>
             <div class="fw-medium">{{ p.name }}</div>
             <div v-if="p.storFolder" class="small text-secondary"><i class="bi bi-folder2"></i> <span class="mr-mono">{{ p.storFolder }}</span></div>
             <div v-if="p.storDocuments?.length" class="small text-secondary mr-mono">
-              {{ t('seller.storShort') }}
+              <i class="bi bi-file-earmark-spreadsheet"></i> {{ t('seller.storShort') }}
               <span v-for="(d, i) in p.storDocuments" :key="d"
                 >{{ i ? ' · ' : '' }}{{ d }}<span v-if="p.storDocumentsPending?.includes(d)" class="badge text-bg-warning ms-1">{{ t('seller.pendingShort') }}</span></span
               >

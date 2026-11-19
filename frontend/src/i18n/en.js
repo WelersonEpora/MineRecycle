@@ -147,7 +147,7 @@ export default {
     users: 'Users',
     account: 'My account',
     newPackage: 'New package',
-    storShort: 'STOR',
+    storShort: 'Doc.',
     pendingShort: 'pending',
     lineCount: 'Items',
     attachmentCount: 'Files',
@@ -163,9 +163,9 @@ export default {
       nameHint: 'Shown in the catalog and to buyers with a link.',
       storFolder: 'STOR folder',
       storFolderHint: 'Name of the package folder in STOR, written exactly the same. Sellers only.',
-      storNumbers: 'Package numbers',
-      storNumbersShort: 'STOR no.',
-      storNumbersHint: 'IDs in the asset sale strategy spreadsheet, e.g. 1, 6. They order the lists; buyers do not see them.',
+      storNumbers: 'Assets',
+      storNumbersShort: 'Assets',
+      storNumbersHint: 'Asset numbers in the sales strategy spreadsheet, e.g. 1, 6 (assets 1 and 6). They order the lists; buyers do not see them. Not the package ID.',
       storDocumentsPending: 'Pending validation (do not import yet):',
       storDocumentsPendingHint: 'Importing a ticked spreadsheet asks for confirmation.',
       type: 'Type',
@@ -664,9 +664,10 @@ export default {
         title: 'Packages',
         intro: 'Each package header holds what buyers see and the STOR identification, which only sellers see.',
         rows: {
+          id: { term: 'ID', text: 'Package identifier, generated automatically and fixed after creation. Shows as #12 in the catalog and in the page address, and identifies the package in spreadsheets.' },
           name: { term: 'Public name', text: 'English name shown in the catalog and on the buyer link.' },
           folder: { term: 'STOR folder', text: 'Folder name, spelled as in STOR. Identifies the package and is unique. Sellers only.' },
-          numbers: { term: 'STOR no.', text: 'Asset IDs in the sales strategy spreadsheet. Used to sort the list. Sellers only.' },
+          numbers: { term: 'Assets', text: 'Asset numbers in the sales strategy spreadsheet (1-6 = assets 1 and 6). Used to sort the list; they can repeat across packages. Sellers only.' },
           origin: {
             term: 'Origin',
             text: 'Where the assets came from (Araguaia Nickel Project, Niquelândia...). Unlike Locations, which say where they are now: the Uberaba Dry Port refractories have origin Araguaia and location Uberaba. Chosen from a list kept in Settings; shows as a catalog filter when there are packages from more than one origin.'
@@ -682,7 +683,7 @@ export default {
           locations: { term: 'Locations', text: 'Where the goods are. A package can have several. To be confirmed can sit next to a known location.' },
           documents: {
             term: 'STOR documents',
-            text: "Codes of the package's spreadsheets. A code marked as pending still awaits the client's validation. Sellers only."
+            text: "7-digit codes of the package's item spreadsheets in STOR, shown as 'Doc. 1809438'. Import checks the code in the file name. A code marked as pending still awaits the client's validation. Sellers only."
           },
           status: { term: 'Status', text: 'Draft, active, under negotiation, sold or inactive. Draft and inactive never show to buyers.' }
         },
@@ -693,14 +694,14 @@ export default {
         }
       },
       numbers: {
-        title: 'Package numbers and list order',
+        title: 'Assets and list order',
         items: {
           a: 'Numbers come from the sales strategy spreadsheet, not from the folder name.',
           b: 'In folder names the hyphen means "and", not a range: 1-6 are assets 1 and 6.',
           c: 'The same number can be in more than one package. For example, 10 and 12 are in both the dryer and the kiln.',
           d: 'When the spreadsheet has no ID that clearly matches the package, the number is left empty. Sellers can fill it in on the package header.',
-          e: 'Lists are sorted by the lowest package number, then by name. Packages without a number go last.',
-          f: 'Buyers do not see the STOR no. They only see the package ID ("#12" on the card and on the package page), the same number as in the page address.'
+          e: 'Lists are sorted by the lowest asset number, then by name. Packages without assets go last.',
+          f: 'Buyers do not see the Assets. They only see the package ID ("#12" on the card and on the package page), the same number as in the page address.'
         },
         note: 'The sales strategy spreadsheet has values and buyer contacts. It is a reference only and is never imported or attached.'
       },
