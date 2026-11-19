@@ -1,46 +1,61 @@
 <template>
   <div>
-    <form class="mr-card p-3 mb-4" @submit.prevent="upload">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-2">
-          <label class="form-label small">{{ t('attachments.kind') }}</label>
-          <select v-model="kind" class="form-select form-select-sm">
+    <!-- Ação principal à direita, como em Itens e Links. -->
+    <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+      <span class="small text-secondary">{{ t('attachments.addFilesHint') }}</span>
+      <button class="btn btn-accent btn-sm ms-auto" @click="openUpload()"><i class="bi bi-plus-lg"></i> {{ t('attachments.addFiles') }}</button>
+    </div>
+    <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>
+
+    <!-- Arrastar arquivos sobre a aba abre o modal de envio já com eles. -->
+    <div v-if="pageDrag && !uploadOpen" class="mr-page-drop" aria-hidden="true">
+      <div><i class="bi bi-cloud-arrow-up"></i> {{ t('attachments.dropToAdd') }}</div>
+    </div>
+
+    <!-- Envio em modal (como Itens e Detalhes): a fila só existe aqui, com Cancelar e Enviar. Persistente; enquanto
+         envia, nem o X fecha. -->
+    <ModalDialog
+      :show="uploadOpen"
+      :title="t('attachments.addFiles')"
+      size="lg"
+      persistent
+      scrollable
+      @update:show="(v) => !busy && (uploadOpen = v)"
+    >
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <label class="form-label small" for="mr-up-kind">{{ t('attachments.kind') }}</label>
+          <select id="mr-up-kind" v-model="kind" class="form-select form-select-sm">
             <option v-for="k in KINDS" :key="k" :value="k">{{ f.kindLabel(k) }}</option>
           </select>
         </div>
-        <div class="col-md-2">
-          <label class="form-label small">{{ t('attachments.visibility') }}</label>
-          <select v-model="visibility" class="form-select form-select-sm">
+        <div class="col-6 col-md-3">
+          <label class="form-label small" for="mr-up-vis">{{ t('attachments.visibility') }}</label>
+          <select id="mr-up-vis" v-model="visibility" class="form-select form-select-sm">
             <option value="public">{{ t('enums.visibility.public') }}</option>
             <option value="restricted">{{ t('enums.visibility.restricted') }}</option>
             <option value="internal">{{ t('enums.visibility.internal') }}</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label small">{{ t('attachments.line') }}</label>
-          <select v-model="lineId" class="form-select form-select-sm">
+        <div class="col-md-6">
+          <label class="form-label small" for="mr-up-line">{{ t('attachments.line') }}</label>
+          <select id="mr-up-line" v-model="lineId" class="form-select form-select-sm">
             <option value="">{{ t('attachments.packageLevel') }}</option>
             <option v-for="l in lines" :key="l.id" :value="l.id">{{ l.itemNo }} — {{ l.description.slice(0, 60) }}</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label small">{{ t('attachments.titleSingleOnly') }}</label>
-          <input v-model="title" class="form-control form-control-sm" maxlength="200" :disabled="files.length > 1" />
-        </div>
-        <div class="col-md-2">
-          <button class="btn btn-accent btn-sm w-100" :disabled="!files.length || busy">
-            <i class="bi bi-upload"></i> {{ busy ? t('attachments.uploading', { percent: progress }) : t('attachments.upload') }}
-          </button>
+        <div class="col-12">
+          <label class="form-label small" for="mr-up-title">{{ t('attachments.titleSingleOnly') }}</label>
+          <input id="mr-up-title" v-model="title" class="form-control form-control-sm" maxlength="200" :disabled="files.length > 1" />
         </div>
         <div class="col-12">
-          <!-- Área de envio: clicar, arrastar ou colar (Ctrl+V em qualquer ponto da aba, fora dos campos de texto). -->
+          <!-- Área de envio: clicar, arrastar ou colar (Ctrl+V, fora dos campos de texto). A soltura é tratada no
+               documento (onDocDrop), para valer em qualquer ponto do modal. -->
           <div
             class="mr-dropzone"
             :class="{ 'is-over': dragDepth > 0 }"
-            @dragenter.prevent="dragDepth++"
-            @dragover.prevent
+            @dragenter="dragDepth++"
             @dragleave="dragDepth = Math.max(0, dragDepth - 1)"
-            @drop.prevent="onDrop"
           >
             <input
               ref="fileInput"
@@ -88,8 +103,14 @@
           </div>
         </div>
       </div>
-      <div v-if="error" class="alert alert-danger py-2 small mt-3 mb-0">{{ error }}</div>
-    </form>
+      <div v-if="uploadError" class="alert alert-danger py-2 small mt-3 mb-0">{{ uploadError }}</div>
+      <template #footer>
+        <button type="button" class="btn btn-outline-secondary btn-sm" :disabled="busy" @click="uploadOpen = false">{{ t('common.cancel') }}</button>
+        <button type="button" class="btn btn-accent btn-sm" :disabled="!files.length || busy" @click="upload">
+          <i class="bi bi-upload"></i> {{ busy ? t('attachments.uploading', { percent: progress }) : t('attachments.upload') }}
+        </button>
+      </template>
+    </ModalDialog>
 
     <p v-if="!items.length" class="text-secondary">{{ t('attachments.empty') }}</p>
 
@@ -164,8 +185,9 @@
 <script setup>
 import { computed, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useFormat, KINDS } from '../../composables/useFormat.js'
-import { confirmDialog } from '../../composables/useDialog.js'
+import { confirmDialog, notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
+import ModalDialog from '../ModalDialog.vue'
 import { MAX_FILES, isImageFile, isTextField, mergeFiles, pastedFileName } from '../../utils/pending-files.js'
 
 const props = defineProps({ packageId: { type: String, required: true } })
@@ -185,8 +207,11 @@ const fileInput = ref(null)
 const busy = ref(false)
 const progress = ref(0)
 const error = ref('')
+const uploadError = ref('')
+const uploadOpen = ref(false)
 const notice = ref('')
 const dragDepth = ref(0)
+const pageDrag = ref(false)
 let keySeq = 0
 
 function addFiles(incoming) {
@@ -221,17 +246,58 @@ function onPick(e) {
   e.target.value = ''
 }
 
-function onDrop(e) {
+// Abre o modal de envio do zero (fila vazia, Foto/Público), opcionalmente já com arquivos (colados ou arrastados).
+function openUpload(initial = []) {
+  clearFiles()
+  kind.value = 'photo'
+  visibility.value = 'public'
+  lineId.value = ''
+  title.value = ''
+  uploadError.value = ''
   dragDepth.value = 0
-  if (busy.value) return
-  addFiles([...(e.dataTransfer?.files || [])])
+  if (initial.length) {
+    // Só documentos (nenhuma imagem): já vem como ficha técnica, para não cair no "só imagem pode ser foto".
+    if (!initial.some(isImageFile)) kind.value = KINDS.find((k) => k !== 'photo')
+    addFiles(initial)
+  }
+  uploadOpen.value = true
 }
 
-// Ctrl+V com imagem (print, imagem copiada do navegador ou do WhatsApp) em qualquer ponto da aba. Dentro de campo de
-// texto com texto na área de transferência, segue a colagem normal. Com um diálogo aberto, não faz nada.
+// Entrada de arquivos vinda de colar ou arrastar: com o modal aberto, entra na fila; fechado, abre o modal com eles.
+function receiveFiles(incoming) {
+  if (!incoming.length || busy.value) return
+  if (uploadOpen.value) addFiles(incoming)
+  else openUpload(incoming)
+}
+
+const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files')
+
+// Arrastar e soltar em qualquer ponto da aba (ou do modal). Sem o preventDefault, o navegador abriria o arquivo.
+function onDocDragOver(e) {
+  if (!hasFiles(e) || otherModalOpen()) return
+  e.preventDefault()
+  pageDrag.value = true
+}
+function onDocDragLeave(e) {
+  if (!e.relatedTarget) pageDrag.value = false
+}
+function onDocDrop(e) {
+  pageDrag.value = false
+  dragDepth.value = 0
+  if (!hasFiles(e) || otherModalOpen()) return
+  e.preventDefault()
+  receiveFiles([...(e.dataTransfer?.files || [])])
+}
+
+// Outro diálogo aberto (ex.: confirmação de exclusão): colar e soltar não fazem nada.
+const otherModalOpen = () => !uploadOpen.value && Boolean(document.querySelector('.mr-modal-backdrop'))
+
+// Ctrl+V com imagem (print, imagem copiada do navegador ou do WhatsApp) em qualquer ponto da aba: abre o modal com
+// ela, ou acrescenta à fila se ele já estiver aberto. Dentro de campo de texto com texto na área de transferência,
+// segue a colagem normal.
 function onPaste(e) {
   const dt = e.clipboardData
-  if (!dt || busy.value || document.querySelector('.mr-modal-backdrop')) return
+  if (!dt || busy.value || otherModalOpen()) return
   let incoming = [...(dt.files || [])]
   if (!incoming.length) incoming = [...(dt.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean)
   if (!incoming.length) return
@@ -242,8 +308,8 @@ function onPaste(e) {
   const named = incoming.map((f) =>
     isImageFile(f) && (!f.name || /^image\.\w+$/i.test(f.name)) ? new File([f], pastedFileName(f.type, now, n++), { type: f.type, lastModified: now.getTime() }) : f
   )
-  if (!files.value.length && named.every(isImageFile)) kind.value = 'photo'
-  addFiles(named)
+  if (uploadOpen.value && !files.value.length && named.every(isImageFile)) kind.value = 'photo'
+  receiveFiles(named)
 }
 
 const photos = computed(() => items.value.filter((a) => a.kind === 'photo'))
@@ -262,23 +328,26 @@ function changed() {
   emit('changed', items.value)
 }
 
+// Erro mantém o modal aberto, com a fila intacta; sucesso fecha e avisa.
 async function upload() {
   busy.value = true
   progress.value = 0
-  error.value = ''
+  uploadError.value = ''
+  const n = files.value.length
   try {
     await api.uploadAttachments(
       props.packageId,
       files.value.map((p) => p.file),
-      { kind: kind.value, visibility: kind.value === 'proposal' && visibility.value === 'public' ? 'restricted' : visibility.value, lineId: lineId.value, title: files.value.length === 1 ? title.value : '' },
+      { kind: kind.value, visibility: kind.value === 'proposal' && visibility.value === 'public' ? 'restricted' : visibility.value, lineId: lineId.value, title: n === 1 ? title.value : '' },
       (p) => (progress.value = p)
     )
     clearFiles()
-    title.value = ''
+    uploadOpen.value = false
+    notify(t('attachments.uploaded', { n }, n))
     await load()
     changed()
   } catch (err) {
-    error.value = f.errorMessage(err)
+    uploadError.value = f.errorMessage(err)
   } finally {
     busy.value = false
   }
@@ -354,15 +423,40 @@ VisibilityToggle.emits = ['toggle']
 
 onMounted(() => {
   document.addEventListener('paste', onPaste)
+  document.addEventListener('dragover', onDocDragOver)
+  document.addEventListener('dragleave', onDocDragLeave)
+  document.addEventListener('drop', onDocDrop)
   load()
 })
 onBeforeUnmount(() => {
   document.removeEventListener('paste', onPaste)
+  document.removeEventListener('dragover', onDocDragOver)
+  document.removeEventListener('dragleave', onDocDragLeave)
+  document.removeEventListener('drop', onDocDrop)
   clearFiles()
 })
 </script>
 
 <style scoped>
+/* Aviso de soltar arquivos sobre a aba (antes de o modal abrir). Abaixo dos modais (1050). */
+.mr-page-drop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(244, 242, 238, 0.82);
+  border: 3px dashed var(--mr-accent);
+  pointer-events: none;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--mr-accent-dark);
+}
+.mr-page-drop i {
+  font-size: 1.6rem;
+  vertical-align: middle;
+}
 .mr-dropzone {
   display: flex;
   flex-direction: column;

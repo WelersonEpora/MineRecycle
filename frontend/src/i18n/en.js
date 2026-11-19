@@ -227,7 +227,11 @@ export default {
     makePublic: 'Make public',
     makeRestricted: 'Make restricted',
     size: 'Size',
-    uploadedAt: 'Uploaded'
+    uploadedAt: 'Uploaded',
+    addFiles: 'Add files',
+    addFilesHint: 'Photos and documents. You can also drag files onto this page or paste an image with Ctrl+V.',
+    dropToAdd: 'Drop to add the files',
+    uploaded: '{n} file uploaded. | {n} files uploaded.'
   },
   import: {
     title: 'Import spreadsheet',
@@ -735,7 +739,7 @@ export default {
           b: 'Proposals are never public: they are restricted or internal.',
           c: 'A file can belong to the whole package (gallery and catalog cover) or to an item (shown only on the item row). A file linked to an item stays on the same item number after a re-import.',
           d: 'Before uploading a PDF, check whether it has prices, values or buyer names. If it does, use Internal.',
-          e: 'To upload: click Choose files, drag the files onto the dashed area or paste an image with Ctrl+V (a screenshot, for example). Check the list and click Upload.'
+          e: 'To upload: click Add files, drag the files onto the page or paste an image with Ctrl+V (a screenshot, for example); all three open the upload window. Check the list and click Upload. Cancel discards the list.'
         }
       },
       access: {

@@ -227,7 +227,11 @@ export default {
     makePublic: 'Tornar público',
     makeRestricted: 'Tornar restrito',
     size: 'Tamanho',
-    uploadedAt: 'Enviado'
+    uploadedAt: 'Enviado',
+    addFiles: 'Adicionar arquivos',
+    addFilesHint: 'Fotos e documentos. Também dá para arrastar arquivos para esta página ou colar uma imagem com Ctrl+V.',
+    dropToAdd: 'Solte para adicionar os arquivos',
+    uploaded: '{n} arquivo enviado. | {n} arquivos enviados.'
   },
   import: {
     title: 'Importar planilha',
@@ -735,7 +739,7 @@ export default {
           b: 'Proposta nunca é pública: fica restrita ou interna.',
           c: 'Um arquivo pode ser do pacote inteiro (galeria e capa do catálogo) ou de um item (aparece só na linha do item). Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
           d: 'Antes de enviar um PDF, confira se ele tem preço, valor ou nome de comprador. Se tiver, use Interno.',
-          e: 'Para enviar: clique em Escolher arquivos, arraste os arquivos para a área tracejada ou cole uma imagem com Ctrl+V (um print, por exemplo). Confira a lista e clique em Enviar.'
+          e: 'Para enviar: clique em Adicionar arquivos, ou arraste os arquivos para a página, ou cole uma imagem com Ctrl+V (um print, por exemplo); as três formas abrem a janela de envio. Confira a lista e clique em Enviar. Cancelar descarta a lista.'
         }
       },
       access: {
