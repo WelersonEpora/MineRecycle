@@ -1,12 +1,14 @@
 "use strict";
 
+// Pacotes sobre lotes (decisão de 2026-11-19): ID, pacote manual, pacote automático, pacote de um lote, venda e
+// catálogo. Dados fictícios.
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const h = require("./helpers");
 
 const skip = !h.ENABLED && "needs a test database (npm run test:integration)";
 
-test("package number and locations", { skip }, async (t) => {
+test("packages and lot sales", { skip }, async (t) => {
   const server = await h.startServer();
   t.after(async () => {
     await server.close();
@@ -15,134 +17,158 @@ test("package number and locations", { skip }, async (t) => {
   await h.resetDatabase();
   const seller = await h.loggedInSeller(server.base);
   const anon = h.client(server.base);
-  const anm = await h.originId("ANM");
-  const create = (json) => seller.post("/api/v1/seller/packages", { json: { originId: anm, ...json } });
+  const { Lot, Package, PackageLot } = require("../../src/models");
+  const api = "/api/v1/seller/packages";
+  const create = (json) => seller.post(api, { json });
+  const setStatus = (id, status, confirm) => seller.put(`${api}/${id}/status`, { json: { status, confirm } });
+  const statusOf = async (lot) => (await Lot.findByPk(lot.id)).status;
 
-  await t.test("number is generated when not given", async () => {
-    const first = await create({ name: "1-6 Refractories", type: "bulk", locations: ["conceicao_do_araguaia", "uberaba"] });
+  const [a, b, c, d, e] = await h.createLots([
+    { lotNumber: "100", title: "Fictitious pump", masterSupplier: "Acme", siteName: "Site A" },
+    { lotNumber: "101", title: "Fictitious motor", siteName: "Site A" },
+    { lotNumber: "102", title: "Fictitious crane", siteName: "Site B" },
+    { lotNumber: "103", title: "Fictitious truck", siteName: "Site B", status: "unavailable", sheetStatus: "unavailable" },
+    { lotNumber: "104", title: "Fictitious hoist", siteName: "Site C" }
+  ]);
+
+  await t.test("ID is generated when not given and fixed after creation", async () => {
+    const first = await create({ name: "First" });
     assert.equal(first.status, 201);
     assert.equal(first.data.number, 1);
-    const explicit = await create({ number: 10, name: "Explicit", type: "bulk", locations: ["uberaba"] });
-    assert.equal(explicit.data.number, 10);
-    const next = await create({ name: "10-12-13 Kiln", type: "equipment", locations: ["at_supplier", "uberaba", "conceicao_do_araguaia"] });
-    assert.equal(next.data.number, 11);
-    // Ordem canônica, sem depender da ordem enviada.
-    assert.deepEqual(next.data.locations, ["conceicao_do_araguaia", "uberaba", "at_supplier"]);
+    assert.equal(first.data.source, "manual");
+    assert.equal(first.data.status, "draft");
+    assert.equal((await create({ number: 10, name: "Explicit" })).data.number, 10);
+    assert.equal((await create({ name: "Next" })).data.number, 11);
+    assert.equal((await create({ number: 10, name: "Clash" })).data.error.code, "NUMBER_TAKEN");
+
+    const id = first.data.id;
+    const same = await seller.patch(`${api}/${id}`, { json: { number: 1, name: "First renamed" } });
+    assert.equal(same.data.name, "First renamed");
+    assert.equal((await seller.patch(`${api}/${id}`, { json: { number: 500 } })).data.error.code, "NUMBER_LOCKED");
   });
 
-  await t.test("number (ID) is fixed after creation", async () => {
-    const pkg = await create({ name: "Locked", type: "bulk", locations: ["uberaba"] });
-    const id = pkg.data.id;
-    const same = await seller.patch(`/api/v1/seller/packages/${id}`, { json: { number: pkg.data.number, name: "Locked 2" } });
-    assert.equal(same.status, 200);
-    assert.equal(same.data.name, "Locked 2");
-    const other = await seller.patch(`/api/v1/seller/packages/${id}`, { json: { number: pkg.data.number + 500 } });
-    assert.equal(other.status, 400);
-    assert.equal(other.data.error.code, "NUMBER_LOCKED");
-    assert.equal((await seller.get(`/api/v1/seller/packages/${id}`)).data.number, pkg.data.number);
+  await t.test("manual package: the seller chooses, removes and orders the lots", async () => {
+    const pkg = (await create({ name: "Pumps and motors", lotIds: [a.id, b.id] })).data;
+    assert.equal(pkg.allLotCount, 2);
+    assert.equal((await create({ name: "Bad", lotIds: ["00000000-0000-4000-8000-000000000000"] })).status, 400);
+
+    await seller.post(`${api}/${pkg.id}/lots`, { json: { lotIds: [c.id, a.id] } });
+    const order = async () => (await seller.get(`${api}/${pkg.id}/lots`)).data.items.map((l) => l.lotNumber);
+    assert.deepEqual(await order(), ["100", "101", "102"]);
+    await seller.put(`${api}/${pkg.id}/lots/order`, { json: { lotIds: [c.id, b.id, a.id] } });
+    assert.deepEqual(await order(), ["102", "101", "100"]);
+    assert.equal((await seller.put(`${api}/${pkg.id}/lots/order`, { json: { lotIds: [c.id] } })).status, 400);
+    await seller.post(`${api}/${pkg.id}/lots/remove`, { json: { lotIds: [c.id] } });
+    assert.deepEqual(await order(), ["101", "100"]);
+    // Tirar do pacote não apaga o lote.
+    assert.ok(await Lot.findByPk(c.id));
   });
 
-  await t.test("locations are validated", async () => {
-    assert.equal((await create({ name: "None", type: "bulk", locations: [] })).status, 400);
-    assert.equal((await create({ name: "Bad", type: "bulk", locations: ["mars"] })).status, 400);
-    assert.equal((await create({ name: "Old field", type: "bulk", location: "uberaba" })).status, 400);
-    // "A confirmar" pode ficar junto de um local conhecido (há partes em lugar ainda não informado).
-    const mixed = await create({ name: "Mixed", type: "bulk", locations: ["to_be_confirmed", "belo_horizonte"] });
-    assert.deepEqual(mixed.data.locations, ["belo_horizonte", "to_be_confirmed"]);
+  await t.test("automatic package: lots come only from the spreadsheet; deleted only when empty", async () => {
+    const auto = await Package.create({ number: 50, name: "Water System", source: "linked_system", sourceValue: "Water System" });
+    await PackageLot.create({ packageId: auto.id, lotId: e.id, position: 0 });
+    assert.equal((await seller.post(`${api}/${auto.id}/lots`, { json: { lotIds: [a.id] } })).data.error.code, "PACKAGE_LOTS_AUTOMATIC");
+    assert.equal((await seller.post(`${api}/${auto.id}/lots/remove`, { json: { lotIds: [e.id] } })).data.error.code, "PACKAGE_LOTS_AUTOMATIC");
+    assert.equal((await seller.del(`${api}/${auto.id}`)).data.error.code, "PACKAGE_AUTOMATIC_NOT_EMPTY");
+    // Nome e descrição continuam editáveis.
+    assert.equal((await seller.patch(`${api}/${auto.id}`, { json: { name: "Water treatment" } })).data.name, "Water treatment");
+    await PackageLot.destroy({ where: { packageId: auto.id } });
+    assert.equal((await seller.del(`${api}/${auto.id}`)).status, 204);
   });
 
-  await t.test("STOR document codes: validated, searchable by sellers, never public", async () => {
-    const bad = await create({ name: "Bad code", type: "bulk", locations: ["uberaba"], storDocuments: ["123"] });
-    assert.equal(bad.status, 400);
-    const ok = await create({ name: "With codes", type: "bulk", locations: ["uberaba"], storDocuments: "1809438, 1809439 1809438" });
-    assert.deepEqual(ok.data.storDocuments, ["1809438", "1809439"]);
-    const found = (await seller.get("/api/v1/seller/packages?q=1809439")).data.map((p) => p.name);
-    assert.deepEqual(found, ["With codes"]);
-
-    await seller.put(`/api/v1/seller/packages/${ok.data.id}/status`, { json: { status: "active" } });
-    const pub = (await anon.get(`/api/v1/catalog/packages/${ok.data.number}`)).data.package;
-    assert.equal(pub.storDocuments, undefined);
-    assert.equal((await anon.get("/api/v1/catalog/packages?q=1809439")).data.items.length, 0);
-    await seller.put(`/api/v1/seller/packages/${ok.data.id}/status`, { json: { status: "draft" } });
+  await t.test("single-lot package is named after the lot", async () => {
+    const res = await seller.post(`/api/v1/seller/lots/${e.id}/package`);
+    assert.equal(res.status, 201);
+    assert.equal(res.data.name, "Fictitious hoist");
+    assert.equal(res.data.allLotCount, 1);
+    assert.equal(res.data.source, "manual");
   });
 
-  await t.test("STOR folder, numbers and pending documents: seller only", async () => {
-    const pkg = await create({
-      name: "Sample Public",
-      storFolder: "77-Sample Folder",
-      storNumbers: "13, 10-12",
-      type: "equipment",
-      locations: ["uberaba"],
-      storDocuments: ["1809001", "1809002"],
-      storDocumentsPending: ["1809002"]
-    });
-    assert.equal(pkg.status, 201);
-    assert.equal(pkg.data.storFolder, "77-Sample Folder");
-    assert.deepEqual(pkg.data.storNumbers, [10, 12, 13]);
-    assert.deepEqual(pkg.data.storDocumentsPending, ["1809002"]);
+  await t.test("catalog: only active packages with at least one lot on offer; unavailable lots hidden", async () => {
+    const empty = (await create({ name: "Empty active" })).data;
+    await setStatus(empty.id, "active");
+    const onlyUnavailable = await h.packageWithLots(seller, { name: "Only unavailable", lots: [d], status: "active" });
+    const mixed = await h.packageWithLots(seller, { name: "Mixed", lots: [c, d], status: "active" });
 
-    assert.equal((await create({ name: "Dup", storFolder: "77-Sample Folder", type: "bulk", locations: ["uberaba"] })).data.error.code, "STOR_FOLDER_TAKEN");
-    const notInList = await create({ name: "Bad pending", type: "bulk", locations: ["uberaba"], storDocuments: ["1809001"], storDocumentsPending: ["1809003"] });
-    assert.equal(notInList.status, 400);
-    assert.equal((await create({ name: "Bad nums", type: "bulk", locations: ["uberaba"], storNumbers: [0] })).status, 400);
+    const list = (await anon.get("/api/v1/catalog/packages")).data;
+    assert.deepEqual(list.items.map((p) => p.name), ["Mixed"]);
+    const card = list.items[0];
+    assert.equal(card.lotCount, 1);
+    assert.deepEqual(card.sites, ["Site B"]);
+    assert.deepEqual(list.facets.site.options, [{ value: "Site B", count: 1 }]);
 
-    // Tirar o documento da lista tira também a pendência.
-    const upd = await seller.patch(`/api/v1/seller/packages/${pkg.data.id}`, { json: { storDocuments: ["1809001"] } });
-    assert.deepEqual(upd.data.storDocumentsPending, []);
+    const lots = (await anon.get(`/api/v1/catalog/packages/${mixed.number}/lots`)).data;
+    assert.deepEqual(lots.items.map((l) => l.lotNumber), ["102"]);
+    // Campos internos do lote só para o vendedor.
+    assert.equal(lots.items[0].sheetStatus, undefined);
+    assert.equal((await anon.get(`/api/v1/catalog/packages/${mixed.number}/lots/${d.id}`)).status, 404);
+    assert.equal((await anon.get(`/api/v1/catalog/packages/${mixed.number}/lots/${c.id}`)).data.lot.title, "Fictitious crane");
+    // Lote de outro pacote não abre por este.
+    assert.equal((await anon.get(`/api/v1/catalog/packages/${mixed.number}/lots/${a.id}`)).status, 404);
+    // O vendedor vê todos os lotes, com os campos internos.
+    const sellerLots = (await seller.get(`/api/v1/catalog/packages/${mixed.number}/lots`)).data.items;
+    assert.equal(sellerLots.length, 2);
+    assert.equal(sellerLots.find((l) => l.lotNumber === "103").sheetStatus, "unavailable");
 
-    assert.deepEqual((await seller.get("/api/v1/seller/packages?q=Sample Folder")).data.map((p) => p.name), ["Sample Public"]);
-    await seller.put(`/api/v1/seller/packages/${pkg.data.id}/status`, { json: { status: "active" } });
-    const pub = (await anon.get(`/api/v1/catalog/packages/${pkg.data.number}`)).data.package;
-    for (const field of ["storFolder", "storNumbers", "storDocuments", "storDocumentsPending"]) assert.equal(pub[field], undefined, field);
-    assert.equal((await anon.get("/api/v1/catalog/packages?q=Sample Public")).data.items.length, 1);
-    assert.equal((await anon.get("/api/v1/catalog/packages?q=Sample Folder")).data.items.length, 0);
-    await seller.put(`/api/v1/seller/packages/${pkg.data.id}/status`, { json: { status: "draft" } });
+    // A busca olha os lotes que o visitante pode ver.
+    assert.deepEqual((await anon.get("/api/v1/catalog/packages?q=crane")).data.items.map((p) => p.name), ["Mixed"]);
+    assert.deepEqual((await anon.get("/api/v1/catalog/packages?q=truck")).data.items, []);
+    for (const p of [empty, onlyUnavailable, mixed]) await setStatus(p.id, "draft");
   });
 
-  await t.test("lists are ordered by smallest package number, then name; no number last", async () => {
-    await create({ name: "B second", type: "bulk", locations: ["uberaba"], storNumbers: [27] });
-    await create({ name: "A first", type: "bulk", locations: ["uberaba"], storNumbers: [6, 1] });
-    await create({ name: "A same number", type: "bulk", locations: ["uberaba"], storNumbers: [1] });
-    const names = (await seller.get("/api/v1/seller/packages")).data.map((p) => p.name);
-    assert.deepEqual(names.slice(0, 4), ["A first", "A same number", "Sample Public", "B second"]);
-    assert.equal(names.indexOf("B second") < names.indexOf("1-6 Refractories"), true);
+  await t.test("selling a package sells its lots in every package; undoing releases only its own", async () => {
+    const big = await h.packageWithLots(seller, { name: "Big", lots: [a, b, c], status: "active" });
+    const small = await h.packageWithLots(seller, { name: "Small", lots: [a], status: "active" });
+
+    const sold = await setStatus(small.id, "sold");
+    assert.equal(sold.status, 200);
+    assert.deepEqual(sold.data.sale, { sold: 1, alreadySold: 0, skipped: 0 });
+    assert.equal(await statusOf(a), "sold");
+    // Em outro pacote, o lote aparece vendido.
+    const inBig = (await anon.get(`/api/v1/catalog/packages/${big.number}/lots`)).data.items;
+    assert.equal(inBig.find((l) => l.lotNumber === "100").status, "sold");
+    assert.equal((await anon.get(`/api/v1/catalog/packages/${big.number}`)).data.package.soldCount, 1);
+    // Vendido sai do catálogo.
+    assert.equal((await anon.get(`/api/v1/catalog/packages/${small.number}`)).status, 404);
+
+    // Vender o grande: o 100 já foi vendido pelo pequeno, então pede confirmação.
+    const ask = await setStatus(big.id, "sold");
+    assert.equal(ask.status, 409);
+    assert.equal(ask.data.error.code, "PACKAGE_SALE_CONFIRM");
+    assert.equal(await statusOf(b), "available");
+    const confirmed = await setStatus(big.id, "sold", true);
+    assert.deepEqual(confirmed.data.sale, { sold: 2, alreadySold: 1, skipped: 0 });
+    assert.equal(await statusOf(b), "sold");
+
+    // Pacote vendido: lotes travados e sem exclusão.
+    assert.equal((await seller.post(`${api}/${big.id}/lots`, { json: { lotIds: [e.id] } })).data.error.code, "PACKAGE_SOLD_LOCKED");
+    assert.equal((await seller.del(`${api}/${big.id}`)).data.error.code, "PACKAGE_SOLD_LOCKED");
+
+    // Desfazer a venda do grande: 101 e 102 voltam; o 100 continua vendido pelo pequeno.
+    const undo = await setStatus(big.id, "active");
+    assert.deepEqual(undo.data.sale, { released: 2, stillSold: 1 });
+    assert.deepEqual([await statusOf(a), await statusOf(b), await statusOf(c)], ["sold", "available", "available"]);
+    await setStatus(small.id, "active");
+    assert.equal(await statusOf(a), "available");
   });
 
-  await t.test("catalog filter matches any of the package locations", async () => {
-    const kiln = (await seller.get("/api/v1/seller/packages?q=Kiln")).data[0];
-    await seller.put(`/api/v1/seller/packages/${kiln.id}/status`, { json: { status: "active" } });
-    const atUberaba = (await anon.get("/api/v1/catalog/packages?location=uberaba")).data.items.map((p) => p.name);
-    assert.deepEqual(atUberaba, ["10-12-13 Kiln"]);
-    const inNiquelandia = (await anon.get("/api/v1/catalog/packages?location=niquelandia")).data.items;
-    assert.equal(inNiquelandia.length, 0);
+  await t.test("a package with no lots cannot be sold; unavailable lots are skipped", async () => {
+    const empty = (await create({ name: "Nothing" })).data;
+    assert.equal((await setStatus(empty.id, "sold")).data.error.code, "PACKAGE_EMPTY");
+    const withTruck = await h.packageWithLots(seller, { name: "With truck", lots: [b, d] });
+    const sold = await setStatus(withTruck.id, "sold");
+    assert.equal(sold.status, 200, JSON.stringify(sold.data));
+    assert.deepEqual(sold.data.sale, { sold: 1, alreadySold: 0, skipped: 1 });
+    assert.equal(await statusOf(d), "unavailable");
   });
 
-  await t.test("category and card highlight", async () => {
-    const bad = await create({ name: "Bad Category", type: "bulk", locations: ["uberaba"], category: "toys" });
-    assert.equal(bad.status, 400);
-    const bulk = (await create({ name: "Fictitious Bricks", type: "bulk", locations: ["uberaba"], category: "refractories" })).data;
-    assert.equal(bulk.category, "refractories");
-    const equip = (await create({ name: "Fictitious Kiln", type: "equipment", locations: ["uberaba"] })).data;
-    assert.equal(equip.category, "other");
-    const line = (id, json) => seller.post(`/api/v1/seller/packages/${id}/lines`, { json });
-    await line(bulk.id, { itemNo: "1", description: "Brick A", quantity: "1500", unit: "KG" });
-    await line(bulk.id, { itemNo: "2", description: "Brick B", quantity: "2", unit: "T" });
-    await line(equip.id, { itemNo: "1", description: "Kiln shell", quantity: "2", unit: "PC" });
-    await line(equip.id, { itemNo: "3", description: "Cable", quantity: "40", unit: "M" });
-    await line(equip.id, { itemNo: "2", description: "Drive set", quantity: "1", unit: "SET" });
-    await seller.patch(`/api/v1/seller/packages/${equip.id}`, { json: { category: "process_equipment" } });
-    for (const p of [bulk, equip]) await seller.put(`/api/v1/seller/packages/${p.id}/status`, { json: { status: "active" } });
-
-    const items = (await anon.get("/api/v1/catalog/packages")).data.items;
-    const pubBulk = items.find((p) => p.name === "Fictitious Bricks");
-    const pubEquip = items.find((p) => p.name === "Fictitious Kiln");
-    assert.equal(pubBulk.category, "refractories");
-    assert.deepEqual(pubBulk.highlight, { kind: "weight", value: 3.5 });
-    assert.equal(pubEquip.category, "process_equipment");
-    // Só PC, SET e KIT contam como unidades (o item em metros fica de fora).
-    assert.deepEqual(pubEquip.highlight, { kind: "units", value: 3 });
-
-    // A busca do vendedor também olha a descrição dos itens, como o catálogo.
-    assert.deepEqual((await seller.get("/api/v1/seller/packages?q=drive set")).data.map((p) => p.name), ["Fictitious Kiln"]);
+  await t.test("seller list: level, site and lot search filters", async () => {
+    await Package.create({ number: 60, name: "Pumps family", source: "family", sourceValue: "Pumps" });
+    const names = async (qs) => (await seller.get(`${api}${qs}`)).data.map((p) => p.name);
+    assert.deepEqual(await names("?level=family"), ["Pumps family"]);
+    // O vendedor acha também pelos lotes fora da venda.
+    assert.deepEqual(await names("?q=fictitious truck"), ["Mixed", "Only unavailable", "With truck"]);
+    assert.ok((await names("?site=Site B")).includes("With truck"));
+    assert.ok(!(await names("?site=Site B")).includes("Pumps family"));
   });
 });

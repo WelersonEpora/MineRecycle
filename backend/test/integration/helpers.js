@@ -96,10 +96,54 @@ function fileForm(fields, files) {
   return form;
 }
 
+// Lotes fictícios gravados direto no banco (quando o teste não é da importação). Aceita "L-1" ou { lotNumber, ... }.
+async function createLots(specs) {
+  const { Lot } = require("../../src/models");
+  const rows = specs.map((s) => (typeof s === "string" ? { lotNumber: s } : s));
+  return Lot.bulkCreate(rows.map((r) => ({ title: `Fictitious lot ${r.lotNumber}`, siteName: "Site A", status: "available", ...r })));
+}
+
+// Pacote manual com lotes, na situação pedida (via API, como o vendedor faz).
+async function packageWithLots(seller, { lots, status = "draft", ...json }) {
+  const created = await seller.post("/api/v1/seller/packages", { json: { name: `Package ${Date.now()}`, ...json, lotIds: lots.map((l) => l.id) } });
+  if (created.status !== 201) throw new Error(`create failed: ${created.status} ${JSON.stringify(created.data)}`);
+  if (status !== "draft") {
+    const res = await seller.put(`/api/v1/seller/packages/${created.data.id}/status`, { json: { status, confirm: true } });
+    if (res.status !== 200) throw new Error(`status failed: ${res.status} ${JSON.stringify(res.data)}`);
+  }
+  return created.data;
+}
+
+// Cabeçalho da aba "Matriz de lotes" (nomes como na planilha do cliente; dados sempre fictícios).
+const LOT_HEADER = ["Lot Number", "Site Name", "Title / Equipment Description", "Master Supplier", "Equipamento ou sistema vinculado", "Família comercial", "Subfamília", "STATUS", "Price"];
+
+// Planilha .xlsx em memória. rows: [lotNumber, site, title, supplier, system, family, subfamily, status, price?].
+function lotWorkbook(rows, { header = LOT_HEADER, sheet = "Matriz de lotes", extraSheets = [] } = {}) {
+  const XLSX = require("xlsx");
+  const wb = XLSX.utils.book_new();
+  for (const name of extraSheets) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Notes"]]), name);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Fictitious inventory"], [], header, ...rows]), sheet);
+  return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+}
+
 async function cleanup() {
   const { sequelize } = require("../../src/models");
   await sequelize.close();
   if (storageDir) fs.rmSync(storageDir, { recursive: true, force: true });
 }
 
-module.exports = { ENABLED, startServer, resetDatabase, createSeller, client, loggedInSeller, fileForm, cleanup, originId };
+module.exports = {
+  ENABLED,
+  startServer,
+  resetDatabase,
+  createSeller,
+  client,
+  loggedInSeller,
+  fileForm,
+  cleanup,
+  originId,
+  createLots,
+  packageWithLots,
+  lotWorkbook,
+  LOT_HEADER
+};

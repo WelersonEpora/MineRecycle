@@ -21,9 +21,8 @@ test("buyer inquiries and team contact", { skip }, async (t) => {
   const anm = await h.originId("ANM");
 
   const mk = async (number, status) => {
-    const p = (await admin.post("/api/v1/seller/packages", { json: { number, name: `Pkg ${number}`, type: "bulk", locations: ["uberaba"], originId: anm } })).data;
-    if (status !== "draft") await admin.put(`/api/v1/seller/packages/${p.id}/status`, { json: { status } });
-    return p;
+    const lots = await h.createLots([{ lotNumber: `L-${number}` }]);
+    return h.packageWithLots(admin, { number, name: `Pkg ${number}`, originId: anm, lots, status });
   };
   const active = await mk(1, "active");
   const sold = await mk(2, "sold");
@@ -60,6 +59,16 @@ test("buyer inquiries and team contact", { skip }, async (t) => {
     assert.equal((await ask(anon, 3, { email: "a@example.test" })).status, 404);
     assert.equal((await ask(anon, 999, { email: "a@example.test" })).status, 404);
     assert.equal((await ask(seller, 1, { email: "a@example.test" })).data.error.code, "INQUIRY_NOT_ALLOWED");
+    assert.equal(await Inquiry.count(), 1);
+  });
+
+  await t.test("a package whose lots were all sold by another package takes no requests", async () => {
+    const { Lot } = require("../../src/models");
+    const lots = await h.createLots(["L-40", "L-41"]);
+    const pkg = await h.packageWithLots(admin, { number: 4, name: "Pkg 4", lots, status: "active" });
+    await Lot.update({ status: "sold", soldBySheet: true, sheetStatus: "sold" }, { where: { id: lots.map((l) => l.id) } });
+    assert.equal((await anon.get("/api/v1/catalog/packages/4")).data.canInquire, false);
+    await admin.put(`/api/v1/seller/packages/${pkg.id}/status`, { json: { status: "draft" } });
     assert.equal(await Inquiry.count(), 1);
   });
 

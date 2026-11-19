@@ -24,10 +24,10 @@ test("access links and attachment visibility", { skip }, async (t) => {
   const { AccessLink, AccessLog } = require("../../src/models");
   const anm = await h.originId("ANM");
 
+  // Cada pacote com um lote próprio (pacote sem lote em oferta não aparece no catálogo).
   const mk = async (number, status) => {
-    const p = (await seller.post("/api/v1/seller/packages", { json: { number, name: `Pkg ${number}`, type: "equipment", locations: ["niquelandia"], originId: anm } })).data;
-    if (status !== "draft") await seller.put(`/api/v1/seller/packages/${p.id}/status`, { json: { status } });
-    return p;
+    const lots = await h.createLots([{ lotNumber: `L-${number}` }]);
+    return h.packageWithLots(seller, { number, name: `Pkg ${number}`, originId: anm, lots, status });
   };
   const active = await mk(10, "active");
   const negotiating = await mk(11, "under_negotiation");
@@ -141,8 +141,8 @@ test("access links and attachment visibility", { skip }, async (t) => {
     // Filtros do link: sem a caixa de negociação; só os pacotes do link.
     const browse = (await buyer.get("/api/v1/access/packages")).data;
     assert.deepEqual(browse.items.map((p) => p.number), [10, 11]);
-    assert.equal(browse.facets.type.all, 2);
-    assert.deepEqual((await buyer.get("/api/v1/access/packages?type=bulk")).data.items, []);
+    assert.equal(browse.facets.level.all, 2);
+    assert.deepEqual((await buyer.get("/api/v1/access/packages?level=family")).data.items, []);
     assert.equal((await anon.get("/api/v1/access/packages")).status, 401);
 
     const detail = (await buyer.get("/api/v1/catalog/packages/10")).data;
@@ -224,6 +224,50 @@ test("access links and attachment visibility", { skip }, async (t) => {
     const owner = h.client(server.base);
     assert.equal((await owner.post("/api/v1/access/redeem", { json: { token: link.url.split("#")[1] } })).status, 204);
     assert.deepEqual((await owner.get("/api/v1/access/packages")).data.items.map((p) => p.number), [12]);
+  });
+
+  await t.test("lot attachments follow the lot into every package, with the best access among them", async () => {
+    const [lot] = await h.createLots([{ lotNumber: "L-SHARED" }]);
+    const [hidden] = await h.createLots([{ lotNumber: "L-HIDDEN" }]);
+    const upLot = async (lotId, fields, file) =>
+      (await seller.post(`/api/v1/seller/lots/${lotId}/attachments`, { form: h.fileForm(fields, [file]) })).data[0];
+    const lotPhoto = await upLot(lot.id, { kind: "photo" }, { name: "lot.png", buffer: await png() });
+    const lotSheet = await upLot(lot.id, { kind: "datasheet", visibility: "restricted" }, { name: "lot.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
+    const hiddenPhoto = await upLot(hidden.id, { kind: "photo" }, { name: "h.png", buffer: await png() });
+    assert.equal(lotPhoto.lotId, lot.id);
+    assert.equal(lotPhoto.packageId, null);
+
+    // O lote está num pacote ativo (público) e num rascunho; o outro só num rascunho.
+    const shown = await h.packageWithLots(seller, { number: 20, name: "Shown", lots: [lot], status: "active" });
+    await h.packageWithLots(seller, { number: 21, name: "Hidden", lots: [lot, hidden] });
+
+    assert.equal((await anon.get(lotPhoto.thumbUrl)).status, 200);
+    assert.equal((await anon.get(`/api/v1/files/${lotSheet.id}/original`)).status, 404);
+    assert.equal((await anon.get(`/api/v1/files/${hiddenPhoto.id}/thumb`)).status, 404);
+    const page = (await anon.get(`/api/v1/catalog/packages/20/lots/${lot.id}`)).data;
+    assert.deepEqual(page.attachments.map((a) => a.id), [lotPhoto.id]);
+    const row = (await anon.get("/api/v1/catalog/packages/20/lots")).data.items[0];
+    assert.equal(row.attachmentCount, 1);
+    assert.ok(row.coverUrl);
+    // O mesmo lote não abre pelo pacote em rascunho.
+    assert.equal((await anon.get(`/api/v1/catalog/packages/21/lots/${lot.id}`)).status, 404);
+
+    // Comprador com o pacote no link: vê o restrito do lote, e o download fica registrado.
+    const link = (
+      await seller.post("/api/v1/seller/access-links", {
+        json: { label: "Lots buyer", expiresAt: new Date(Date.now() + DAY).toISOString(), packageIds: [shown.id] }
+      })
+    ).data;
+    const b3 = h.client(server.base);
+    await b3.post("/api/v1/access/redeem", { json: { token: link.url.split("#")[1] } });
+    const buyerPage = (await b3.get(`/api/v1/catalog/packages/20/lots/${lot.id}`)).data;
+    assert.equal(buyerPage.attachments.length, 2);
+    assert.equal((await b3.get(`/api/v1/files/${lotSheet.id}/original`)).status, 200);
+    assert.equal((await b3.get(`/api/v1/files/${hiddenPhoto.id}/thumb`)).status, 404);
+    const logs = (await seller.get(`/api/v1/seller/access-links/${link.id}/logs`)).data;
+    assert.ok(logs.some((l) => l.action === "download" && l.attachment?.kind === "datasheet" && l.package?.number === 20));
+    // O vendedor lê tudo.
+    assert.equal((await seller.get(`/api/v1/files/${hiddenPhoto.id}/original`)).status, 200);
   });
 
   await t.test("deactivated seller loses access at once", async () => {

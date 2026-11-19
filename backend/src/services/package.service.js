@@ -320,7 +320,7 @@ async function setStatus(id, body, userId) {
         throw new ValidationError("A package with no lots cannot be sold.", null, "PACKAGE_EMPTY");
       }
       const plan = await packageLots.sell(pkg, userId, { confirm, transaction });
-      sale = { sold: plan.sales.length, alreadySold: plan.alreadySold.length, skipped: plan.skipped.length };
+      sale = { sold: plan.changes.length, alreadySold: plan.alreadySold.length, skipped: plan.skipped.length };
     } else if (pkg.status === "sold") {
       const plan = await packageLots.unsell(pkg, { transaction });
       sale = { released: plan.changes.length, stillSold: plan.stillSold.length };
