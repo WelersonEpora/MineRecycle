@@ -93,7 +93,7 @@ async function listPublic(query = {}) {
 
 async function findAccessible(number, viewer) {
   const n = positiveInt(number, "number");
-  const pkg = await Package.findOne({ where: { number: n }, include: [ORIGIN_INCLUDE] });
+  const pkg = await Package.findOne({ where: { number: n }, attributes: { include: packageLots.CARD_STATS }, include: [ORIGIN_INCLUDE] });
   const access = packageAccess(pkg, viewer);
   // Pacote inexistente e pacote fora do alcance dão a mesma resposta.
   if (!access) throw new NotFoundError("Package not found.");
@@ -112,7 +112,7 @@ async function getForViewer(number, viewer, req) {
   if (access === "buyer") await accessLog.record(viewer.link.id, "view_package", { packageId: pkg.id }, req);
 
   return {
-    package: packageDto(pkg, { lotCount: summary.total, soldCount: summary.sold, availableCount: summary.available }),
+    package: packageDto(pkg, packageLots.cardExtra(pkg)),
     access,
     attachments: visible.map((a) => attachmentDto(a, { full })),
     // O público sabe que existem documentos restritos (sem ver quais), para pedir acesso.
@@ -122,6 +122,13 @@ async function getForViewer(number, viewer, req) {
     buyerLink: access === "buyer" ? { label: viewer.link.label, expiresAt: viewer.link.expiresAt } : undefined
   };
 }
+
+// Anexos que cada acesso vê (mesma regra de attachmentVisibleTo), para contar sem revelar os que não vê.
+const VISIBLE_ATTACHMENT_SQL = {
+  seller: "",
+  buyer: "AND a.visibility <> 'internal'",
+  public: "AND a.visibility = 'public' AND a.kind <> 'proposal'"
+};
 
 // Lotes do pacote, paginados, na ordem do pacote. `seller`: todos, com os campos internos; senão, só os visíveis.
 async function lotsPage(pkg, access, query = {}) {
@@ -138,7 +145,7 @@ async function lotsPage(pkg, access, query = {}) {
     attributes: {
       include: [
         [sequelize.literal(`(SELECT pl.position FROM package_lot pl WHERE pl.lot_id = "Lot"."id" AND pl.package_id = ${sequelize.escape(pkg.id)})`), "position"],
-        [sequelize.literal(`(SELECT count(*) FROM attachment a WHERE a.lot_id = "Lot"."id")::int`), "attachmentCount"]
+        [sequelize.literal(`(SELECT count(*) FROM attachment a WHERE a.lot_id = "Lot"."id" ${VISIBLE_ATTACHMENT_SQL[access]})::int`), "attachmentCount"]
       ]
     },
     // Ordem do pacote, ou a coluna escolhida na tabela.

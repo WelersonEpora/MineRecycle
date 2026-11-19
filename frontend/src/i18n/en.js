@@ -91,10 +91,11 @@ export default {
     location: 'Location',
     status: 'Status',
     empty: 'No packages match these filters.',
-    lines: 'no items | 1 item | {n} items',
+    lots: 'no lots | 1 lot | {n} lots',
+    soldOf: '{sold} of {total} sold',
     packageId: 'Package ID',
     viewPackage: 'View package',
-    highlight: { weight: 'total weight', units: 'unit | unit | units', items: 'item | item | items' }
+    highlight: { lots: 'lot | lot | lots' }
   },
   package: {
     number: 'Package {number}',
@@ -102,7 +103,9 @@ export default {
     photos: 'Photos',
     documents: 'Documents',
     noDocuments: 'No documents available.',
-    items: 'Items',
+    lots: 'Lots',
+    noLots: 'No lots.',
+    searchLots: 'Number, description or supplier',
     restrictedHint:
       'There is restricted documentation for this package ({n} file) available to qualified buyers through an access link. | There is restricted documentation for this package ({n} files) available to qualified buyers through an access link.',
     buyerBanner: 'You are viewing this package through the access link “{label}”, valid until {date}. Restricted documents are included.',
@@ -741,12 +744,13 @@ export default {
   },
   filters: {
     title: 'Filters',
-    searchPlaceholder: 'Search by package, item or description',
+    searchPlaceholder: 'Search by package, lot, supplier or description',
     clearSearch: 'Clear search',
     button: 'Filters',
     type: 'Type',
     origin: 'Origin',
-    location: 'Location',
+    level: 'Grouping',
+    site: 'Site',
     all: 'All',
     types: { bulk: 'Bulk', equipment: 'Equipment' },
     count: 'no packages | 1 package | {n} packages',

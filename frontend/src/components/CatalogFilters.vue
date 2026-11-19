@@ -31,13 +31,14 @@
 
     <div :id="`${idPrefix}-groups`" class="mr-filter-groups" :class="{ 'is-open': open }">
       <ChipGroup
-        :id="`${idPrefix}-type`"
-        :label="t('filters.type')"
-        :model-value="filters.type"
+        v-if="levelOptions.length > 1 || filters.level"
+        :id="`${idPrefix}-level`"
+        :label="t('filters.level')"
+        :model-value="filters.level"
         :all-label="t('filters.all')"
-        :all-count="facets?.type.all"
-        :options="typeOptions"
-        @update:model-value="emit('set', 'type', $event)"
+        :all-count="facets?.level.all"
+        :options="levelOptions"
+        @update:model-value="emit('set', 'level', $event)"
       />
       <ChipGroup
         v-if="showOrigin"
@@ -50,13 +51,13 @@
         @update:model-value="emit('set', 'origin', $event)"
       />
       <ChipGroup
-        :id="`${idPrefix}-location`"
-        :label="t('filters.location')"
-        :model-value="filters.location"
+        :id="`${idPrefix}-site`"
+        :label="t('filters.site')"
+        :model-value="filters.site"
         :all-label="t('filters.all')"
-        :all-count="facets?.location.all"
-        :options="locationOptions"
-        @update:model-value="emit('set', 'location', $event)"
+        :all-count="facets?.site.all"
+        :options="siteOptions"
+        @update:model-value="emit('set', 'site', $event)"
       />
     </div>
 
@@ -81,14 +82,14 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useFormat, TYPES } from '../composables/useFormat.js'
+import { useFormat, SOURCES } from '../composables/useFormat.js'
 import { activeFilterCount } from '../composables/useCatalogFilters.js'
 import ChipGroup from './ChipGroup.vue'
 
 const props = defineProps({
   idPrefix: { type: String, default: 'mr-filters' },
   filters: { type: Object, required: true },
-  // facets da API: { type, origin, location }, cada um com { all, options: [{ value, count, name? }] }
+  // facets da API: { level, origin, site }, cada um com { all, options: [{ value, count, name? }] }
   facets: { type: Object, default: null },
   total: { type: Number, default: 0 },
   showNegotiation: { type: Boolean, default: false }
@@ -99,7 +100,7 @@ const t = f.t
 const open = ref(false)
 
 const activeCount = computed(() => activeFilterCount(props.filters))
-const chipCount = computed(() => ['type', 'origin', 'location'].filter((k) => props.filters[k]).length)
+const chipCount = computed(() => ['level', 'origin', 'site'].filter((k) => props.filters[k]).length)
 
 // A opção escolhida continua visível mesmo sem pacotes (ex.: veio de um link antigo), com contagem 0.
 function withSelected(options, selected, label) {
@@ -107,8 +108,13 @@ function withSelected(options, selected, label) {
   return [...options, { value: selected, label: label(selected), count: 0 }]
 }
 
-const typeOptions = computed(() =>
-  TYPES.map((v) => ({ value: v, label: t(`filters.types.${v}`), count: props.facets?.type.options.find((o) => o.value === v)?.count ?? 0 }))
+// Nível: só os que têm pacote visível (o grupo some quando há um só).
+const levelOptions = computed(() =>
+  withSelected(
+    SOURCES.map((v) => ({ value: v, label: f.sourceLabel(v), count: props.facets?.level.options.find((o) => o.value === v)?.count ?? 0 })).filter((o) => o.count > 0),
+    props.filters.level,
+    (v) => f.sourceLabel(v)
+  )
 )
 const originOptions = computed(() =>
   withSelected(
@@ -117,11 +123,12 @@ const originOptions = computed(() =>
     (v) => v
   )
 )
-const locationOptions = computed(() =>
+// Site como está na planilha (CDA, Dry Port...).
+const siteOptions = computed(() =>
   withSelected(
-    (props.facets?.location.options || []).map((o) => ({ value: o.value, label: f.locationLabel(o.value), count: o.count })),
-    props.filters.location,
-    (v) => f.locationLabel(v)
+    (props.facets?.site.options || []).map((o) => ({ value: o.value, label: o.value, count: o.count })),
+    props.filters.site,
+    (v) => v
   )
 )
 // Origem só aparece com pacotes visíveis de mais de uma origem (ou com uma origem já escolhida).

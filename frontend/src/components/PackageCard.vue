@@ -2,7 +2,7 @@
   <RouterLink :to="{ name: 'package', params: { number: pkg.number } }" class="text-decoration-none text-reset">
     <article class="mr-card mr-package-card h-100 d-flex flex-column">
       <img v-if="pkg.coverUrl" :src="pkg.coverUrl" class="mr-cover" :alt="pkg.name" loading="lazy" />
-      <!-- Sem foto pública: etiqueta de inventário (cor e ícone da categoria, número em destaque). -->
+      <!-- Sem foto pública: etiqueta de inventário (cor e ícone da categoria, número de lotes em destaque). -->
       <div v-else class="mr-cover-tag" :class="`mr-cat-${category}`" role="img" :aria-label="coverLabel">
         <span class="mr-cover-water"><CategoryIcon :category="category" /></span>
         <span class="mr-cover-stencil">{{ f.categoryLabel(category) }}</span>
@@ -13,14 +13,17 @@
       </div>
       <div class="p-3 d-flex flex-column flex-grow-1">
         <div class="d-flex align-items-center gap-2 mb-1 small">
-          <span class="badge rounded-pill text-bg-light border">{{ f.typeLabel(pkg.type) }}</span>
+          <span class="badge rounded-pill text-bg-light border">{{ f.sourceLabel(pkg.source) }}</span>
           <StatusBadge v-if="pkg.status !== 'active'" :status="pkg.status" />
           <span class="text-secondary mr-mono ms-auto" :title="t('catalog.packageId')">#{{ pkg.number }}</span>
         </div>
         <h3 class="h6 mb-2">{{ pkg.name }}</h3>
         <div class="mt-auto small text-secondary d-flex justify-content-between">
-          <span><i class="bi bi-geo-alt"></i> {{ f.locationsLabel(pkg.locations) }}</span>
-          <span v-if="pkg.lineCount">{{ t('catalog.lines', pkg.lineCount) }}</span>
+          <span v-if="pkg.sites?.length"><i class="bi bi-geo-alt"></i> {{ pkg.sites.join(' · ') }}</span>
+          <span class="ms-auto text-end">
+            {{ t('catalog.lots', pkg.lotCount) }}
+            <span v-if="pkg.soldCount" class="d-block">{{ t('catalog.soldOf', { sold: pkg.soldCount, total: pkg.lotCount }) }}</span>
+          </span>
         </div>
       </div>
     </article>
@@ -40,16 +43,7 @@ const f = useFormat()
 
 const category = computed(() => (CATEGORIES.includes(props.pkg.category) ? props.pkg.category : 'other'))
 
-// Número em destaque calculado no servidor: peso (t), unidades ou itens. Peso abaixo de 1 t aparece em kg.
-const highlight = computed(() => {
-  const h = props.pkg.highlight
-  if (!h) return null
-  if (h.kind === 'weight') {
-    if (h.value < 1) return { value: `${f.num(h.value * 1000)} kg`, label: t('catalog.highlight.weight') }
-    return { value: `${f.num(h.value, h.value < 10 ? 1 : 0)} t`, label: t('catalog.highlight.weight') }
-  }
-  if (h.kind === 'units') return { value: f.num(h.value), label: t('catalog.highlight.units', h.value) }
-  return { value: f.num(h.value), label: t('catalog.highlight.items', h.value) }
-})
+// Número em destaque: os lotes do pacote (desde 2026-11-19 a planilha não traz peso nem quantidade).
+const highlight = computed(() => (props.pkg.lotCount ? { value: f.num(props.pkg.lotCount), label: t('catalog.highlight.lots', props.pkg.lotCount) } : null))
 const coverLabel = computed(() => [f.categoryLabel(category.value), highlight.value && `${highlight.value.value} ${highlight.value.label}`].filter(Boolean).join(': '))
 </script>

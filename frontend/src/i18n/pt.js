@@ -91,10 +91,11 @@ export default {
     location: 'Local',
     status: 'Situação',
     empty: 'Nenhum pacote com esses filtros.',
-    lines: 'nenhum item | 1 item | {n} itens',
+    lots: 'nenhum lote | 1 lote | {n} lotes',
+    soldOf: '{sold} de {total} vendidos',
     packageId: 'ID do pacote',
     viewPackage: 'Ver pacote',
-    highlight: { weight: 'peso total', units: 'unidade | unidade | unidades', items: 'item | item | itens' }
+    highlight: { lots: 'lote | lote | lotes' }
   },
   package: {
     number: 'Pacote {number}',
@@ -102,7 +103,9 @@ export default {
     photos: 'Fotos',
     documents: 'Documentos',
     noDocuments: 'Nenhum documento disponível.',
-    items: 'Itens',
+    lots: 'Lotes',
+    noLots: 'Nenhum lote.',
+    searchLots: 'Nº, descrição ou fornecedor',
     restrictedHint:
       'Há documentação restrita deste pacote ({n} arquivo) disponível para compradores qualificados por link de acesso. | Há documentação restrita deste pacote ({n} arquivos) disponível para compradores qualificados por link de acesso.',
     buyerBanner: 'Você está vendo este pacote pelo link de acesso “{label}”, válido até {date}. Os documentos restritos estão incluídos.',
@@ -741,12 +744,13 @@ export default {
   },
   filters: {
     title: 'Filtros',
-    searchPlaceholder: 'Buscar por pacote, item ou descrição',
+    searchPlaceholder: 'Buscar por pacote, lote, fornecedor ou descrição',
     clearSearch: 'Limpar busca',
     button: 'Filtros',
     type: 'Tipo',
     origin: 'Origem',
-    location: 'Local',
+    level: 'Agrupamento',
+    site: 'Site',
     all: 'Todos',
     types: { bulk: 'A granel', equipment: 'Equipamentos' },
     count: 'nenhum pacote | 1 pacote | {n} pacotes',

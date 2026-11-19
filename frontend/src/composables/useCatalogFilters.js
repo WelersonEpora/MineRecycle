@@ -1,18 +1,19 @@
 import { reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-// Estado dos filtros do catálogo e do link do comprador, refletido na URL (?q=&type=&origin=&location=&negotiation=1)
+// Estado dos filtros do catálogo e do link do comprador, refletido na URL (?q=&level=&origin=&site=&negotiation=1)
 // para o link filtrado poder ser compartilhado. `load(params)` busca na API; a busca por texto espera o usuário parar
 // de digitar.
-export const EMPTY_FILTERS = { q: '', type: '', origin: '', location: '', negotiation: false }
+// Nível = de onde veio o pacote (sistema, família, subfamília, montado); site = onde estão os lotes (2026-11-19).
+export const EMPTY_FILTERS = { q: '', level: '', origin: '', site: '', negotiation: false }
 
 export function filtersFromQuery(query) {
   const one = (v) => (Array.isArray(v) ? v[0] : v) || ''
   return {
     q: String(one(query.q)).slice(0, 100),
-    type: String(one(query.type)),
+    level: String(one(query.level)),
     origin: String(one(query.origin)).toUpperCase(),
-    location: String(one(query.location)),
+    site: String(one(query.site)).slice(0, 120),
     negotiation: one(query.negotiation) === '1'
   }
 }
@@ -20,16 +21,16 @@ export function filtersFromQuery(query) {
 export function filtersToQuery(f) {
   const q = {}
   if (f.q.trim()) q.q = f.q.trim()
-  if (f.type) q.type = f.type
+  if (f.level) q.level = f.level
   if (f.origin) q.origin = f.origin
-  if (f.location) q.location = f.location
+  if (f.site) q.site = f.site
   if (f.negotiation) q.negotiation = '1'
   return q
 }
 
 // Filtros ativos (para "Limpar filtros" e o número no botão "Filtros" do celular). A caixa de negociação não conta.
 export function activeFilterCount(f) {
-  return ['type', 'origin', 'location'].filter((k) => f[k]).length + (f.q.trim() ? 1 : 0)
+  return ['level', 'origin', 'site'].filter((k) => f[k]).length + (f.q.trim() ? 1 : 0)
 }
 
 export function useCatalogFilters(load) {
