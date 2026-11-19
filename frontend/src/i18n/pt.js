@@ -115,20 +115,6 @@ export default {
     lineFiles: 'Arquivos deste item',
     noPhotos: 'Ainda sem fotos.'
   },
-  lines: {
-    itemNo: 'Item',
-    description: 'Descrição',
-    quantity: 'Qtde',
-    unit: 'Unid.',
-    storCode: 'Código STOR',
-    tag: 'Tag',
-    warehouseLocation: 'Localização no almoxarifado',
-    parent: 'Item pai',
-    files: 'Arquivos',
-    searchPlaceholder: 'Buscar descrição, item, código STOR ou tag',
-    empty: 'Nenhum item.',
-    total: '{n} itens'
-  },
   access: {
     opening: 'Abrindo seu link de acesso…',
     missingToken: 'Este endereço não contém um link de acesso. Use o link completo que você recebeu.',
@@ -343,158 +329,6 @@ export default {
     dropToAdd: 'Solte para adicionar os arquivos',
     uploaded: '{n} arquivo enviado. | {n} arquivos enviados.'
   },
-  import: {
-    title: 'Importar itens',
-    step1: '1. Arquivo',
-    step2: '2. Colunas',
-    step3: '3. Conferência',
-    chooseFile: 'Escolha um arquivo Excel (.xlsx ou .xls). Os itens atuais deste pacote serão substituídos.',
-    readFile: 'Ler arquivo',
-    systemFile: 'Este arquivo foi exportado pelo sistema. Aqui só os itens são importados (aba Itens). Para atualizar também os dados do pacote, use Importar pacote, no cabeçalho.',
-    sheet: 'Aba',
-    headerRow: 'Linha do cabeçalho',
-    headerRowHint: 'Linha da planilha com os títulos das colunas (as linhas acima dela são ignoradas).',
-    previewTitle: 'Primeiras linhas da aba',
-    mapping: 'Qual coluna tem cada campo?',
-    fieldHelp: 'O que vai no campo {field}',
-    required: 'obrigatório',
-    notMapped: '— não usar —',
-    inferHierarchy: 'Detectar kits pela numeração (1.1 e 1.2 pertencem a 1)',
-    numberRows: 'A planilha não tem nº do item: numerar pela ordem das linhas (1, 2, 3…)',
-    numberRowsHint: 'Numa reimportação, os arquivos ligados a itens seguem o número. Se a ordem das linhas mudar, a foto do item 5 passa para a nova linha 5.',
-    mappingMissing: 'Escolha a coluna de: {fields}.',
-    mappingMissingItem: 'Escolha a coluna de: {fields}. Se a planilha não tem nº do item, marque “numerar pela ordem das linhas”.',
-    mappingDuplicate: 'A mesma coluna está em “{a}” e em “{b}”. Escolha uma coluna diferente para cada campo.',
-    keepFile: 'Guardar a planilha como arquivo interno do pacote (só vendedores, nunca o comprador)',
-    check: 'Conferir',
-    summary: '{valid} linhas válidas de {total}. {invalid} linhas com erro. {children} subitens.',
-    unknownUnits: 'Unidades não reconhecidas (mantidas como escritas):',
-    replaceWarning: 'Este pacote tem {n} itens hoje. Todos serão substituídos.',
-    linkedWarning: '{n} arquivos estão ligados a itens: continuam no mesmo nº de item, se ele ainda existir.',
-    errors: 'Erros',
-    warnings: 'Avisos',
-    row: 'Linha',
-    field: 'Campo',
-    problem: 'Problema',
-    moreNotShown: '… e mais {n}',
-    skipInvalid: 'Importar as linhas válidas e pular as linhas com erro',
-    commit: 'Importar {n} itens',
-    done: '{n} itens importados.',
-    sampleLines: 'Prévia dos itens importados',
-    stor: {
-      thisPackage: 'Planilha {code}: é deste pacote ({name}).',
-      otherPackage: 'A planilha {code} está cadastrada em outro pacote: {packages}. Confira se abriu o pacote certo.',
-      confirmOther: 'Importar mesmo assim neste pacote',
-      pending: 'A planilha {code} está marcada como pendente de validação: ainda não deveria ser importada.',
-      confirmPending: 'Sei que está pendente e quero importar mesmo assim',
-      notLinked: 'A planilha {code} ainda não está ligada a nenhum pacote.',
-      addToPackage: 'Ligar o código {code} a este pacote ao importar',
-      noCode: 'O nome do arquivo não começa com um código do STOR. Confira se a planilha é deste pacote.'
-    },
-    codes: {
-      item_no_missing: 'Nº do item vazio',
-      item_no_duplicate: 'Nº do item repetido',
-      description_missing: 'Descrição vazia',
-      quantity_invalid: 'Quantidade não é número',
-      quantity_negative: 'Quantidade negativa',
-      quantity_too_large: 'Quantidade grande demais',
-      quantity_missing: 'Quantidade vazia',
-      quantity_rounded: 'Quantidade arredondada para 4 casas',
-      quantity_ambiguous: 'Número ambíguo (lido no formato brasileiro)',
-      unit_missing: 'Unidade vazia',
-      unit_unknown: 'Unidade não reconhecida',
-      too_long: 'Valor longo demais',
-      truncated: 'Valor cortado',
-      too_many_rows: 'Linhas demais'
-    }
-  },
-  pkgImport: {
-    title: 'Importar pacotes',
-    titleOne: 'Importar pacote {number}',
-    step1: '1. Arquivo',
-    step2: '2. Verificação',
-    chooseFile:
-      'Escolha uma planilha exportada pelo sistema (Exportar pacotes), com as abas Pacotes e Itens. Linha com ID atualiza o pacote; linha sem ID cria um pacote novo (rascunho). Nada é gravado antes de você confirmar.',
-    chooseFileOne:
-      'Escolha uma planilha exportada pelo sistema (Exportar pacote ou Exportar pacotes). Só a linha deste pacote é usada; as outras são ignoradas. Nada é gravado antes de você confirmar.',
-    verify: 'Verificar',
-    otherFile: 'Outro arquivo',
-    commit: 'Importar',
-    summary: '{create} novos, {update} atualizados, {unchanged} sem mudança.',
-    scope: 'Os pacotes que não estão no arquivo não são alterados.',
-    blocked: 'Corrija os problemas em vermelho no arquivo e verifique de novo.',
-    done: 'Importação concluída: {created} pacotes novos, {updated} atualizados.',
-    package: 'Pacote',
-    action: 'O que acontece',
-    changes: 'O que muda',
-    items: 'Itens',
-    itemsKept: 'mantidos',
-    itemsDelta: '+{added} −{removed} ~{changed}',
-    reordered: 'ordem nova',
-    pendingDocuments: 'Doc. pendentes',
-    actions: { create: 'Novo', update: 'Atualizado', unchanged: 'Sem mudança' },
-    reasons: { required: 'vazio', invalid: 'valor inválido', too_long: 'longo demais' },
-    groups: {
-      no_packages_sheet: 'O arquivo não tem a aba Pacotes',
-      missing_column: 'Coluna obrigatória ausente',
-      package_id_invalid: 'ID inválido',
-      package_id_unknown: 'ID que não existe no sistema',
-      package_id_duplicate: 'ID repetido no arquivo',
-      origin_unknown: 'Origem não cadastrada',
-      origin_inactive: 'Origem inativa',
-      field_invalid: 'Dado do pacote inválido',
-      package_not_in_file: 'Este pacote não está no arquivo',
-      new_package_name_duplicate: 'Nome de pacote novo repetido',
-      stor_folder_taken: 'Pasta STOR já usada por outro pacote',
-      item_package_not_in_file: 'Itens de pacote que não está na aba Pacotes',
-      item_package_unknown: 'Itens sem pacote',
-      item_invalid: 'Itens inválidos',
-      changed_after_export: 'Alterado no sistema depois da exportação',
-      item_column_missing: 'Coluna de item ausente',
-      package_without_items: 'Pacote novo sem itens',
-      items_removed_all: 'Pacote vai ficar sem itens',
-      attachments_unlinked: 'Arquivos que vão ficar sem item',
-      status_sensitive: 'Pacote vendido ou em negociação',
-      unknown_columns: 'Colunas não reconhecidas (ignoradas)',
-      package_columns_missing: 'Colunas de pacote ausentes (os campos ficam como estão)',
-      status_ignored: 'A situação não é importada',
-      other_packages_ignored: 'Outros pacotes do arquivo ignorados',
-      other_items_ignored: 'Itens de outros pacotes ignorados',
-      no_items_sheet: 'Sem aba Itens',
-      item_warning: 'Avisos nos itens',
-      hidden_rows: 'Linhas ocultas consideradas'
-    },
-    issues: {
-      no_packages_sheet: 'Use uma planilha exportada pelo sistema, com a aba Pacotes (ou Packages).',
-      missing_column: 'Falta a coluna "{column}".',
-      package_id_invalid: 'Linha {row}: o ID "{value}" não é um número.',
-      package_id_unknown: 'Linha {row}: não existe pacote com ID {pkg}. Para criar um pacote, deixe o ID vazio.',
-      package_id_duplicate: 'Linha {row}: o ID {pkg} já aparece na linha {firstRow}.',
-      origin_unknown: 'Linha {row} ({pkg}): a origem "{value}" não está cadastrada.',
-      origin_inactive: 'Linha {row} ({pkg}): a origem "{value}" está inativa.',
-      field_invalid: 'Linha {row} ({pkg}): {field} — {reason}.',
-      package_not_in_file: 'O arquivo não tem a linha do pacote {number}.',
-      new_package_name_duplicate: 'Linha {row}: o pacote novo "{pkg}" já aparece na linha {firstRow}. Os itens de um pacote novo seguem o nome, que não pode se repetir.',
-      stor_folder_taken: '{pkg}: a pasta "{value}" já é do pacote {other}.',
-      item_package_not_in_file: 'Aba Itens, linha {row}: o pacote {number} não está na aba Pacotes (ou foi recusado).',
-      item_package_unknown: 'Aba Itens, linha {row}: sem ID do pacote e sem um pacote novo com o nome "{name}".',
-      item_invalid: 'Aba Itens, linha {row} ({pkg}): {field} — {reason}.',
-      changed_after_export: '{pkg} foi alterado em {updatedAt}, depois desta exportação. Importar sobrescreve essas mudanças.',
-      item_column_missing: 'O arquivo não tem a coluna "{column}": os itens importados ficarão com esse campo vazio.',
-      package_without_items: '{pkg} será criado sem itens.',
-      items_removed_all: '{pkg} tem {count} itens hoje e vai ficar sem nenhum.',
-      attachments_unlinked: '{pkg}: {count} arquivos estão ligados a itens que saem. Eles continuam no pacote, sem item.',
-      status_sensitive: '{pkg} está {status}. Confirmar a alteração?',
-      unknown_columns: '{columns}',
-      package_columns_missing: '{columns}',
-      status_ignored: 'Linha {row} ({pkg}): a situação "{value}" não é importada; mude pelo menu do pacote.',
-      other_packages_ignored: '{count} linhas de outros pacotes na aba Pacotes.',
-      other_items_ignored: '{count} linhas de outros pacotes na aba Itens.',
-      no_items_sheet: 'Só os dados dos pacotes serão importados; os itens ficam como estão.',
-      item_warning: 'Aba Itens, linha {row} ({pkg}): {field} — {reason}.',
-      hidden_rows: 'O arquivo foi salvo com filtro ou grupos recolhidos: {count} linhas ocultas foram consideradas. Para tirar um item, apague a linha.'
-    }
-  },
   links: {
     new: 'Novo link de acesso',
     newForPackage: 'Novo link para este pacote',
@@ -592,59 +426,65 @@ export default {
   how: {
     tab: 'Como funciona',
     title: 'Como o MineRecycle funciona',
-    intro: 'Do pacote no STOR até a venda: quem faz cada passo, onde no sistema e o que o comprador vê.',
+    intro: 'Da planilha de lotes até a venda: quem faz cada passo, onde no sistema e o que o comprador vê.',
     expandAll: 'Abrir todos',
     collapseAll: 'Fechar todos',
     where: 'Onde:',
     who: { outside: 'Fora do sistema', seller: 'Vendedor', buyer: 'Comprador' },
     lanes: { prepare: 'Preparação', publish: 'Publicação', serve: 'Atendimento', close: 'Desfecho' },
     steps: {
-      stor: {
-        title: 'Pacote no STOR',
+      sheet: {
+        title: 'Planilha de lotes',
         items: {
-          a: 'Cada pacote tem uma pasta no STOR, com a planilha de itens e as fotos.',
-          b: 'O código de 7 dígitos no início do nome da planilha identifica o documento.',
-          c: 'Planilhas com preço ou valor ficam só no computador: nunca entram no sistema.'
+          a: 'A aba "Matriz de lotes" da planilha de inventário lista os lotes, um por linha, com nº do lote, site, descrição, fornecedor, agrupamentos e STATUS.',
+          b: 'A planilha continua sendo mantida fora do sistema. Quando ela muda, basta importar de novo.',
+          c: 'Colunas de preço e valor nunca são lidas.'
         }
       },
-      register: {
-        title: 'Cadastro do pacote',
-        intro: 'Os 22 pacotes já chegam cadastrados como Rascunho, com nome público, pasta no STOR, números, tipo, categoria, origem, locais e códigos STOR.',
-        items: { a: 'O vendedor confere os dados e escreve a descrição.', b: 'Pacote fora da lista: botão "Novo pacote".' },
-        where: 'Pacotes → aba Detalhes'
-      },
-      import: {
-        title: 'Importar os itens',
+      importLots: {
+        title: 'Importar os lotes',
         items: {
-          a: 'Baixe a planilha do STOR e importe no pacote. O sistema lê o código no nome do arquivo e confere se a planilha é deste pacote.',
-          b: 'Confira o cabeçalho, as colunas e o relatório antes de gravar.',
-          c: 'Uma planilha por pacote. Importar de novo substitui os itens.',
-          d: 'Planilha pendente de validação pede confirmação. Pacote sem planilha (Steel Structure): itens à mão.'
+          a: 'Envie a planilha: o sistema mostra o que muda (lotes novos, alterados, retirados, mudanças de situação) e só grava quando você confirma.',
+          b: 'Lote que sai da planilha não é apagado: fica como retirado e some do lado público.',
+          c: 'STATUS "Sold" marca o lote como vendido; "Collected by court officer" tira o lote da venda.'
         },
-        where: 'Pacotes → aba Itens → Importar itens'
+        where: 'Lotes → Importar lotes'
+      },
+      packages: {
+        title: 'Montar os pacotes',
+        intro: 'O pacote agrupa lotes, e um lote pode estar em vários pacotes.',
+        items: {
+          a: 'A importação cria um pacote automático (rascunho) para cada valor das colunas Sistema vinculado, Família comercial e Subfamília. Os lotes dele seguem a planilha.',
+          b: 'O vendedor monta pacotes manuais com os lotes que quiser ("Novo pacote" e a aba Lotes do pacote).',
+          c: 'Pacote de um lote só: "Criar pacote deste lote", na página do lote.',
+          d: 'Confira nome, descrição, categoria e origem de cada pacote antes de publicar.'
+        },
+        where: 'Pacotes e Lotes'
       },
       files: {
         title: 'Fotos e arquivos',
         items: {
-          a: 'Fotos, ficha técnica, desenho, lista e proposta, no pacote ou num item.',
-          b: 'Cada arquivo tem uma visibilidade: Público (todos), Restrito (comprador com link) ou Interno (só vendedores).',
-          c: 'Proposta nunca é pública. A primeira foto pública vira a capa no catálogo.'
+          a: 'Fotos, ficha técnica, desenho, lista e proposta, no pacote ou no lote.',
+          b: 'Arquivo do lote acompanha o lote em todos os pacotes em que ele estiver.',
+          c: 'Cada arquivo tem uma visibilidade: Público (todos), Restrito (comprador com link) ou Interno (só vendedores). Proposta nunca é pública.'
         },
-        where: 'Pacotes → aba Fotos e arquivos'
+        where: 'Pacote → aba Fotos e arquivos; Lote → Fotos e arquivos'
       },
       activate: {
         title: 'Publicar: situação Ativo',
         items: {
           a: 'Ao mudar para Ativo, o pacote entra no catálogo público: qualquer pessoa vê, sem login.',
-          b: 'O catálogo mostra nome, descrição, itens, fotos e arquivos públicos. Nunca preço.'
+          b: 'O catálogo mostra o pacote com os lotes em oferta, fotos e arquivos públicos. Lotes fora da venda não aparecem. Nunca preço.',
+          c: 'Pacote sem nenhum lote em oferta não aparece no catálogo.'
         },
         where: 'Pacotes → Mudar situação'
       },
       browse: {
         title: 'Visitante encontra o pacote',
         items: {
-          a: 'Busca por nome, descrição ou item; filtra por tipo, origem e local.',
-          b: 'Vê que há documentos restritos (sem ver quais) e pode pedir acesso.'
+          a: 'Busca por nome, descrição, nº do lote, descrição do lote ou fornecedor; filtra por agrupamento, origem e site.',
+          b: 'Abre cada lote para ver os dados e as fotos dele.',
+          c: 'Vê que há documentos restritos (sem ver quais) e pode pedir acesso.'
         },
         where: 'Catálogo (página inicial)'
       },
@@ -652,7 +492,7 @@ export default {
         title: 'Link do comprador',
         intro: 'Opcional, para comprador qualificado. Pode vir antes ou durante o atendimento.',
         items: {
-          a: 'Escolha os pacotes e a validade (até um ano). O comprador vê os arquivos restritos e a proposta.',
+          a: 'Escolha os pacotes e a validade (até um ano). O comprador vê os arquivos restritos do pacote e dos lotes, e a proposta.',
           b: 'Cada acesso fica registrado. O link pode ser revogado na hora.'
         },
         where: 'Links de acesso'
@@ -662,7 +502,7 @@ export default {
         items: {
           a: 'Formulário na página do pacote: vira um pedido Novo na aba Pedidos.',
           b: 'E-mail ou WhatsApp da equipe, com o pacote já no texto: a conversa acontece fora do sistema.',
-          c: 'Pacote vendido não recebe pedido.'
+          c: 'Pacote vendido, ou com todos os lotes já vendidos, não recebe pedido.'
         },
         where: 'Página do pacote → "Interessado neste pacote?"'
       },
@@ -699,21 +539,23 @@ export default {
         where: 'Pedidos → Desfecho'
       },
       package: {
-        title: 'Atualizar o pacote',
+        title: 'Vender o pacote',
         items: {
-          a: 'Vendido: sai do catálogo e deixa de receber pedidos. O comprador com link ainda o vê.',
-          b: 'Ativo: a negociação não avançou e o pacote volta ao catálogo.',
-          c: 'Inativo: retirado por outro motivo. Ninguém fora da equipe vê.'
+          a: 'Quem é vendido é o pacote: ao marcar Vendido, todos os lotes dele passam a vendidos, em todos os pacotes em que aparecem.',
+          b: 'Se algum lote já tinha sido vendido (por outro pacote ou pela planilha), o sistema avisa e pede confirmação.',
+          c: 'Desfazer a venda (voltar para Ativo) libera só os lotes vendidos por este pacote.',
+          d: 'Pacote vendido sai do catálogo e deixa de receber pedidos; o comprador com link ainda o vê.'
         },
         where: 'Pacotes → Mudar situação'
       },
       others: {
-        title: 'Fechar os outros pedidos',
+        title: 'Fechar o resto',
         items: {
-          a: 'Pacote vendido: responda e conclua os outros pedidos em aberto sobre ele.',
-          b: 'Revogue os links de comprador que não fazem mais sentido.'
+          a: 'Responda e conclua os outros pedidos em aberto sobre o pacote vendido.',
+          b: 'Revise os pacotes que tinham os mesmos lotes: os lotes aparecem vendidos neles.',
+          c: 'Atualize a coluna STATUS da planilha, para a próxima importação concordar com o sistema.'
         },
-        where: 'Pedidos (busca pelo pacote) e Links de acesso'
+        where: 'Pedidos, Pacotes e a planilha'
       }
     },
     states: {
@@ -783,8 +625,8 @@ export default {
   guide: {
     tab: 'Guia do MineRecycle',
     title: 'Guia do MineRecycle',
-    intro: 'Como o sistema está organizado, de onde vêm os dados dos pacotes e as regras que valem para todos.',
-    goToImport: 'Ver o passo a passo da carga de planilhas',
+    intro: 'Como o sistema está organizado, de onde vêm os dados e as regras que valem para todos.',
+    goToImport: 'Ver como importar a planilha de lotes',
     sections: {
       overview: {
         title: 'O que é o MineRecycle',
@@ -792,141 +634,57 @@ export default {
           'Plataforma temporária que conecta vendedores e compradores dos ativos de um projeto de mineração paralisado. O comprador conhece os pacotes pelo catálogo ou por um link de acesso e negocia direto com a equipe de vendas.',
         items: {
           a: 'Não há preço na plataforma: nem campo, nem tela, nem arquivo público com valor.',
-          b: 'O site é em inglês, com português como opção. Nomes, descrições e itens cadastrados não são traduzidos.',
-          c: 'Uma equipe só de vendedores: todos podem editar todos os pacotes, cada um com o seu login.'
+          b: 'O site é em inglês, com português como opção. Nomes, descrições e lotes cadastrados não são traduzidos.',
+          c: 'Uma equipe só de vendedores: todos podem editar todos os pacotes e lotes, cada um com o seu login.'
         }
       },
-      scope: {
-        title: 'Por que não são 60 mil itens',
-        conclusion:
-          'O site mostra os 22 pacotes de venda, cada um com a sua própria lista de itens. Ele não mostra os cerca de 60 mil itens do projeto.',
-        status: 'É uma conclusão sustentada por evidências, ainda não confirmada pelo cliente.',
-        startTitle: 'Ponto de partida',
-        start:
-          'A informação inicial era que o cliente tinha uma planilha com cerca de 60 mil itens, formando cerca de mil lotes, e que o dado mais confiável estaria no STOR.',
-        evidenceTitle: 'Evidências, na ordem em que apareceram',
-        evidence: {
-          e1: 'Os 60 mil são o projeto, não o estoque. O número aparece no cadastro de itens (61.246) e na árvore da Planta de Processo (61.835 linhas). Nessas bases há cerca de 36 mil itens na etapa "Inicial" (especificados e nunca finalizados), cerca de 2 mil serviços, cerca de 3.600 linhas de matéria-prima e itens de catálogo criados em 2015, antes do projeto. Não há quantidade em estoque nem localização.',
-          e2: 'O recebido é muito menos. O ramo "Recebimento de Materiais" (item 443815) tem cerca de 3.650 itens, organizados por fornecedor e contrato. O projeto parou no meio da obra.',
-          e3: 'O inventário físico confirma a ordem de grandeza. A planilha "Inventário Almoxarifado" (documento 1810554) tem 14.144 linhas contadas, com endereço de armazenagem e a chave "Nº STOR".',
-          e4: 'A venda é organizada em pacotes. Em Documento > Suprimentos/Supply > Projeto Araguaia - ANM > Assets Sales > Packages há 24 pastas de pacote. A matriz de responsabilidades do cliente (documento 1808732) descreve o processo como organizar os ativos em pacotes e compilar uma lista de materiais por pacote.',
-          e5: 'Estrutura metálica é vendida a peso. A planilha do pacote (1809537) é uma linha, com toneladas. A maior parte do inventário é estrutura metálica, que não precisa aparecer peça a peça.',
-          e6: 'As listas de venda são independentes do STOR. A lista de material elétrico (1809601) tem 561 linhas, foi escrita à mão, não tem código STOR, e nenhuma das descrições bate com o cadastro, o inventário ou o ERP.'
-        },
-        factsTitle: 'Fato e inferência',
-        colClaim: 'Afirmação',
-        colBasis: 'Base',
-        facts: {
-          f1: { claim: 'Os 60 mil incluem itens nunca comprados, serviços e matéria-prima', basis: 'Visto nos dados' },
-          f2: { claim: 'Fisicamente existem cerca de 14 mil linhas', basis: 'Inventário do cliente' },
-          f3: { claim: 'A venda é por pacote', basis: 'Pastas e documento de processo do cliente' },
-          f4: {
-            claim: 'Cada pacote tem lista própria, independente do STOR',
-            basis: 'Testado em um pacote; nos demais, pelo formato das planilhas'
-          },
-          f5: { claim: 'O cliente não espera ver os 60 mil no site', basis: 'Inferência, a confirmar' }
-        },
-        ambiguityTitle: 'Ambiguidade conhecida',
-        ambiguity:
-          'Há três bases com cerca de 60 mil linhas: o cadastro de itens, a árvore da Planta de Processo e a aba "Analítico" da "Lista de materiais e Ativos" (1808778), com 61.726 lançamentos contábeis. Não se sabe a qual delas a informação inicial se referia.',
-        source:
-          'Fonte dos números: exploração do STOR feita em 16/11/2026. As exportações que sustentam esses números não estão guardadas com os arquivos do projeto.',
-        consequencesTitle: 'Consequências no sistema',
-        consequences: {
-          c1: 'A unidade do catálogo é o pacote. Os itens são linhas do pacote, importadas da planilha de cada um, e importar de novo substitui a lista (ver Pacotes e Itens).',
-          c2: 'Dois tipos de pacote: a granel e equipamento (ver Pacotes, campo Tipo).',
-          c3: 'Código STOR, tag e localização no almoxarifado são campos opcionais de referência, não chave. O item é identificado pelo pacote e pelo nº do item (ver Itens).',
-          c4: 'O número do pacote não é chave: o mesmo número aparece em mais de uma pasta. Quem identifica o pacote é a pasta no STOR (ver Números do pacote e ordem da lista).'
-        },
-        questionTitle: 'Pergunta em aberto para o cliente',
-        question:
-          'O site mostra os pacotes de venda com as suas listas, ou é esperado consultar os 60 mil itens do projeto? Se for a segunda opção, os dados já foram exportados do STOR e a mudança é de volume, não de modelo.'
-      },
-      stor: {
-        title: 'Como o STOR está organizado',
+      source: {
+        title: 'De onde vêm os dados',
         intro:
-          'O STOR Global é o repositório de documentos e materiais do cliente. Ele não tem cadastro de pacotes: o que existe são pastas e planilhas feitas à mão.',
+          'A fonte é a planilha de inventário do cliente, aba "Matriz de lotes". O sistema lê só as colunas de lote dessa aba; as outras colunas e abas, inclusive as de preço e valor, são ignoradas.',
         items: {
-          a: 'Cada pacote de venda é uma pasta dentro de Packages. O nome da pasta mistura números e texto, por exemplo 7-8-11 Crushers ou 28-Pipping.',
-          b: 'Cada documento tem um código de 7 dígitos, que vem no começo do nome do arquivo baixado (por exemplo 1809438_REV0_VER0_...).',
-          c: 'O código STOR do material é outra coisa: fica dentro da planilha, na linha do item, e pode se repetir em várias linhas.',
-          d: 'Cada pacote tem a sua própria planilha, cada uma num formato: o cabeçalho muda de linha, os nomes das colunas variam e algumas não têm nº do item ou unidade.',
-          e: 'Alguns pacotes não têm planilha, só PDFs e fotos. Nesses, os itens são cadastrados à mão.',
-          f: 'Fotos no STOR só existem para os transformadores das subestações, os móveis de escritório e Niquelândia. Os demais pacotes dependem de fotos novas.',
-          g: 'Nem toda pasta é um pacote: o contrato de leilão (Superbid), a venda do projeto inteiro (32-Project) e a negociação conjunta (32-BULK Sale) ficam de fora.'
+          a: 'A planilha continua sendo mantida fora do sistema. Importar de novo atualiza os lotes; nada é gravado antes da confirmação.',
+          b: 'Os dados que vêm da planilha só mudam pela importação. O vendedor acrescenta a sua descrição, fotos e arquivos, que a importação não apaga.'
+        }
+      },
+      lots: {
+        title: 'Lotes',
+        intro: 'O lote é a menor unidade: cada linha da planilha é um lote, identificado pelo nº do lote.',
+        rows: {
+          number: { term: 'Lote', text: 'Nº do lote na planilha. Não se repete e é a chave da reimportação.' },
+          data: { term: 'Dados da planilha', text: 'Site (como está na planilha), descrição, fornecedor, sistema vinculado, família comercial e subfamília.' },
+          available: { term: 'Disponível', text: 'À venda nos pacotes em que estiver.' },
+          sold: { term: 'Vendido', text: 'Pela planilha (STATUS "Sold") ou pela venda de um pacote que o contém. Aparece com o selo de vendido em todos os pacotes. A planilha nunca tira um lote de vendido.' },
+          unavailable: { term: 'Fora da venda', text: 'STATUS "Collected by court officer". Some do lado público; o vendedor continua vendo.' },
+          withdrawn: { term: 'Retirado', text: 'Saiu da planilha. Não é apagado (guarda arquivos e histórico) e volta se reaparecer numa importação.' }
         }
       },
       packages: {
         title: 'Pacotes',
-        intro: 'O cabeçalho de cada pacote reúne o que o comprador vê e a identificação no STOR, que só os vendedores veem.',
+        intro: 'O pacote é o que se vende: agrupa lotes, e um lote pode estar em vários pacotes.',
         rows: {
-          id: { term: 'ID', text: 'Identificação do pacote, gerada sozinha e fixa depois de criada. Aparece como #12 no catálogo e no endereço da página, e é a referência do pacote em planilhas.' },
-          name: { term: 'Nome público', text: 'Nome em inglês mostrado no catálogo e no link do comprador.' },
-          folder: { term: 'Pasta no STOR', text: 'Nome da pasta, com a grafia original. Identifica o pacote e não se repete. Só vendedores.' },
-          numbers: { term: 'Ativos', text: 'Números dos ativos na planilha de estratégia de vendas (1-6 = ativos 1 e 6). Usados para ordenar a lista; podem se repetir entre pacotes. Só vendedores.' },
-          origin: {
-            term: 'Origem',
-            text: 'De onde vieram os ativos (Araguaia Nickel Project, Niquelândia...). É diferente de Locais, que dizem onde estão hoje: os refratários do Porto Seco de Uberaba têm origem Araguaia e local Uberaba. Escolhida numa lista cadastrada em Configuração; aparece como filtro no catálogo quando há pacotes de mais de uma origem.'
+          automatic: {
+            term: 'Automático',
+            text: 'Um por valor das colunas Sistema vinculado, Família comercial e Subfamília, criado pela importação como rascunho, com o valor como nome. Os lotes seguem a planilha; o vendedor edita nome, descrição e o resto, mas não os lotes.'
           },
-          category: {
-            term: 'Categoria',
-            text: 'Refratários, elétrica, tubulação, equipamentos de processo, escritório ou outros. No catálogo, o pacote sem foto aparece como uma etiqueta na cor e com o ícone da categoria e um número em destaque: unidades (equipamento), peso total (a granel, com itens em kg ou t) ou número de itens.'
-          },
-          type: {
-            term: 'Tipo',
-            text: 'A granel, quando o lote é vendido em bloco (refratários, cabos, tubulação), ou equipamento, vendido por equipamento ou conjunto.'
-          },
-          locations: { term: 'Locais', text: 'Onde os bens estão. Um pacote pode ter vários. A confirmar pode ficar junto de um local conhecido.' },
-          documents: {
-            term: 'Documentos STOR',
-            text: 'Códigos (7 dígitos) das planilhas de itens do pacote no STOR, mostrados como "Doc. 1809438". A importação confere o código no nome do arquivo. Um código marcado como pendente ainda aguarda validação do cliente. Só vendedores.'
-          },
-          status: { term: 'Situação', text: 'Rascunho, ativo, em negociação, vendido ou inativo. Rascunho e inativo nunca aparecem para o comprador.' }
+          manual: { term: 'Manual', text: 'Montado pelo vendedor com os lotes que quiser. Inclui o pacote de um lote só ("Criar pacote deste lote").' },
+          id: { term: 'ID', text: 'Número do pacote, gerado ao criar e fixo depois. É o endereço público ("#12") e aparece para todos.' },
+          name: { term: 'Nome e descrição', text: 'O que o comprador vê. Em inglês, como o resto do site.' },
+          origin: { term: 'Origem', text: 'De onde vieram os ativos (cadastro em Configuração). Opcional.' }
         },
         items: {
-          a: 'Uma planilha por pacote: importar de novo substitui todos os itens. Quando uma pasta tem uma planilha por local, ela vira um pacote por local, como os refratários de Conceição do Araguaia e de Uberaba.',
-          b: 'O cadastro inicial dos pacotes veio do levantamento no STOR. O que for editado aqui é mantido: as atualizações do sistema não sobrescrevem o que o vendedor ajustou.',
-          c: 'Por que o catálogo é de pacotes, e não dos itens do projeto: ver Por que não são 60 mil itens.',
-          d: 'Exportar pacotes (na lista) e Exportar pacote (na página do pacote) geram um Excel com as abas Pacotes e Itens; a lista exporta o que está filtrado na tela.',
-          e: 'Importar pacotes e Importar pacote trazem esse Excel de volta: linha com ID atualiza o pacote, linha sem ID cria um pacote novo (rascunho). A situação nunca é importada e nenhum pacote é apagado. Com a aba Itens, ela é a lista completa de itens de cada pacote do arquivo; linhas ocultas por filtro ou grupo contam (para tirar um item, apague a linha). Antes de gravar, a verificação mostra o que muda, o que impede e o que precisa de confirmação.'
+          a: 'Pacote automático que fica sem lotes (o valor saiu da planilha) não aparece no catálogo e pode ser excluído.',
+          b: 'Pacote vendido não muda de lotes e não pode ser excluído.'
         }
       },
-      numbers: {
-        title: 'Ativos e ordem da lista',
+      sale: {
+        title: 'Venda',
         items: {
-          a: 'A fonte dos números é a planilha de estratégia de vendas, não o nome da pasta.',
-          b: 'No nome da pasta, o hífen quer dizer "e", não intervalo: 1-6 são os ativos 1 e 6.',
-          c: 'O mesmo número pode estar em mais de um pacote. Por exemplo, 10 e 12 estão no secador e no forno.',
-          d: 'Quando a planilha não tem um ID que corresponda com clareza ao pacote, o número fica vazio. O vendedor pode completar no cabeçalho do pacote.',
-          e: 'As listas são ordenadas pelo menor número de ativo e depois pelo nome. Pacotes sem ativo vão para o fim.',
-          f: 'O comprador não vê os Ativos. Vê só o ID do pacote ("#12" no cartão e na página do pacote), o mesmo número do endereço da página.'
-        },
-        note: 'A planilha de estratégia de vendas tem valores e contatos de compradores. Ela serve só como referência e nunca é importada nem anexada.'
-      },
-      locations: {
-        title: 'Locais',
-        intro: 'Um local só entra no pacote quando há um documento que o indique. Na dúvida, fica A confirmar.',
-        rows: {
-          cda: { term: 'Conceição do Araguaia', text: 'O site do projeto.' },
-          uberaba: { term: 'Uberaba', text: 'O Porto Seco de Uberaba (EADI), onde há equipamentos e materiais armazenados.' },
-          niquelandia: { term: 'Niquelândia', text: 'A refinaria de Niquelândia.' },
-          bh: { term: 'Belo Horizonte', text: 'Móveis e equipamentos de escritório.' },
-          supplier: { term: 'No fornecedor', text: 'Bens que ainda estão com o fornecedor.' },
-          tbc: { term: 'A confirmar', text: 'Local ainda sem documento, ou partes do pacote em local desconhecido.' }
-        }
-      },
-      items: {
-        title: 'Itens',
-        items: {
-          a: 'Cada item é identificado pelo pacote e pelo nº do item, que é texto (1, 1.2, 10A). Se a planilha não tem nº do item, a importação pode numerar pela ordem das linhas.',
-          b: 'Kits: 1.1 e 1.2 viram subitens do item 1 quando o item 1 está na mesma planilha.',
-          c: 'A quantidade é a quantidade total na unidade da linha, não o número de embalagens.',
-          d: 'Números são lidos primeiro no formato brasileiro (1.234,5). Quando o valor é ambíguo, a conferência avisa.',
-          e: 'Unidades são padronizadas por uma tabela de sinônimos (pç, Peça e un viram PC). Unidade desconhecida é mantida como foi escrita.',
-          f: 'Colunas sem campo no sistema, como fornecedor, peso, categoria e valores, não viram dado do item. Elas continuam na planilha original guardada no pacote, que só vendedores veem.',
-          g: 'Linhas ocultas e filtradas da planilha também são importadas. Se não devem entrar, apague-as numa cópia antes de enviar.',
-          h: 'Planilha com código pendente de validação só é importada com confirmação.',
-          i: 'Código STOR, tag e localização são referência, não chave: ver Por que não são 60 mil itens.'
+          a: 'Marcar o pacote como Vendido marca todos os seus lotes como vendidos, em todos os pacotes.',
+          b: 'Se algum lote já estava vendido, o sistema mostra quais e pede confirmação.',
+          c: 'Desfazer a venda libera só os lotes vendidos por este pacote. Os vendidos pela planilha ou por outro pacote continuam vendidos.',
+          d: 'Lote fora da venda ou retirado não é vendido junto.',
+          e: 'Depois da venda, atualize a coluna STATUS da planilha. A importação avisa quando o sistema e a planilha discordam.'
         }
       },
       files: {
@@ -934,12 +692,12 @@ export default {
         rows: {
           public: { term: 'Público', text: 'Qualquer visitante vê, quando o pacote está no catálogo.' },
           restricted: { term: 'Restrito', text: 'Só quem tem link de acesso ao pacote, além dos vendedores.' },
-          internal: { term: 'Interno', text: 'Só vendedores logados. É o caso da planilha original da importação, que pode ter valores.' }
+          internal: { term: 'Interno', text: 'Só vendedores logados.' }
         },
         items: {
           a: 'Fotos ganham uma versão para a web e uma miniatura, sem metadados. O público nunca recebe o arquivo original de uma foto, que pode ter localização GPS.',
           b: 'Proposta nunca é pública: fica restrita ou interna.',
-          c: 'Um arquivo pode ser do pacote inteiro (galeria e capa do catálogo) ou de um item (aparece só na linha do item). Arquivo ligado a item continua no mesmo nº de item depois de uma reimportação.',
+          c: 'Um arquivo pode ser do pacote (galeria e capa do catálogo) ou do lote. O do lote acompanha o lote em todos os pacotes; quem vê é decidido pelo melhor acesso entre esses pacotes.',
           d: 'Antes de enviar um PDF, confira se ele tem preço, valor ou nome de comprador. Se tiver, use Interno.',
           e: 'Para enviar: clique em Adicionar arquivos, ou arraste os arquivos para a página, ou cole uma imagem com Ctrl+V (um print, por exemplo); as três formas abrem a janela de envio. Confira a lista e clique em Enviar. Cancelar descarta a lista.'
         }
@@ -949,13 +707,13 @@ export default {
         rows: {
           visitor: {
             term: 'Visitante',
-            text: 'O catálogo: pacotes ativos e, com a caixa "Mostrar pacotes em negociação" marcada, os em negociação, com os arquivos públicos. Vendidos e rascunhos nunca aparecem.'
+            text: 'O catálogo: pacotes ativos e, com a caixa "Mostrar pacotes em negociação" marcada, os em negociação, com os lotes em oferta e os arquivos públicos. Vendidos e rascunhos nunca aparecem.'
           },
           buyer: {
             term: 'Comprador com link',
-            text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos e os mesmos filtros do catálogo. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
+            text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos do pacote e dos lotes. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
           },
-          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, a identificação no STOR e os arquivos internos.' },
+          seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, todos os lotes (inclusive retirados e fora da venda) e os arquivos internos.' },
           admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários, o cadastro de origens e o contato comercial (Configuração).' }
         }
       },
@@ -970,7 +728,7 @@ export default {
           },
           where: {
             term: 'Quem pode pedir',
-            text: 'Visitantes (catálogo) e compradores com link. Pacote vendido não recebe pedido. Pedido enviado por um link mostra o nome do link.'
+            text: 'Visitantes (catálogo) e compradores com link. Pacote vendido, ou com todos os lotes já vendidos, não recebe pedido. Pedido enviado por um link mostra o nome do link.'
           },
           panel: {
             term: 'Aba Pedidos',
@@ -1002,96 +760,64 @@ export default {
       rules: {
         title: 'Regras que valem sempre',
         items: {
-          a: 'Nenhum preço, valor ou nome de comprador entra no cadastro, nos itens ou em arquivo público.',
-          b: 'Os dados do cliente são confidenciais. Planilhas e documentos entram só pelas telas do sistema.',
-          c: 'Um pacote tem uma planilha. Importar de novo substitui os itens; não soma.',
-          d: 'Local só com fonte em documento.',
-          e: 'Na dúvida sobre um número, um local ou se uma planilha deve ser importada, deixe em aberto e confirme com o cliente.'
+          a: 'Nenhum preço, valor ou nome de comprador entra no cadastro, nos lotes ou em arquivo público.',
+          b: 'Os dados do cliente são confidenciais. A planilha e os documentos entram só pelas telas do sistema.',
+          c: 'A planilha manda nos dados dos lotes e nos lotes dos pacotes automáticos; o sistema manda na venda dos pacotes.',
+          d: 'Na dúvida sobre um lote ou um agrupamento, corrija a planilha e importe de novo, em vez de contornar no sistema.'
         }
       }
     }
   },
   help: {
     menu: 'Ajuda',
-    tab: 'Carga de planilhas',
-    title: 'Ajuda: carga de planilhas',
-    intro: 'Como baixar do STOR as planilhas dos pacotes e importá-las no MineRecycle, uma planilha por pacote.',
+    tab: 'Importar lotes',
+    title: 'Ajuda: importar a planilha de lotes',
+    intro: 'Como a planilha de lotes é lida, o que cada coluna vira no sistema e o que acontece ao importar de novo.',
     contents: 'Nesta página',
-    export: {
-      title: '1. Baixar a planilha do STOR',
-      intro:
-        'As listas de venda ficam no STOR Global, o sistema de documentos e materiais do cliente. Cada pacote tem a sua própria planilha, feita à mão e com formato próprio; não existe uma lista única.',
-      whereLabels: { site: 'Endereço', project: 'Projeto', folder: 'Pasta dos pacotes' },
-      where: {
-        site: 'stor.storglobal.com/storweb',
-        project: 'ANM - Araguaia Nickel Project',
-        folder: 'Suprimentos/Supply › Projeto Araguaia - ANM › Assets Sales › Packages'
-      },
-      steps: {
-        s1: 'Abra Documento › Gestão de Documentos.',
-        s2: 'Na árvore de pastas, selecione Assets Sales.',
-        s3: 'Digite o código do documento no campo de busca e clique na lupa. A busca só funciona com uma pasta selecionada e procura também nas subpastas.',
-        s4: 'Marque a linha do documento e clique em Download.',
-        s5: 'Salve o arquivo no seu computador. O nome do arquivo já começa pelo código do documento.'
-      },
-      careTitle: 'Cuidados no STOR',
-      care: {
-        c1: 'Use somente Download. Não use Novo, Importar, Salvar nem Enviar.',
-        c2: 'Na tela de detalhes de um documento, saia sempre por Cancelar.',
-        c3: 'Planilhas com preços ou valores são confidenciais: guarde-as só no seu computador e não as repasse por e-mail ou chat.'
-      }
-    },
-    prepare: {
-      title: '2. Conferir a planilha antes de enviar',
-      intro: 'Abra o arquivo no Excel e confira os pontos abaixo. Se precisar mudar algo, trabalhe numa cópia.',
+    sheet: {
+      title: '1. A planilha',
+      intro: 'Use a planilha de inventário do cliente (.xlsx, .xlsm ou .xls). O sistema abre a aba "Matriz de lotes"; se ela não existir, a primeira aba, e você pode escolher outra na prévia.',
       items: {
-        i1: 'Formato: .xlsx ou .xls. Se vier .xlsm, salve uma cópia como .xlsx.',
-        i2: 'Se o arquivo tiver várias abas, você escolhe a aba certa na importação.',
-        i3: 'O nº do item é obrigatório. Se a planilha não tiver essa coluna, marque “numerar pela ordem das linhas” (1, 2, 3…). Numa reimportação, mantenha a ordem das linhas para as fotos continuarem no item certo.',
-        i4: 'Se a unidade só aparece no título da coluna (por exemplo, Quantidade (metros)), insira uma coluna de unidade com m, kg etc.',
-        i5: 'Linhas ocultas ou escondidas por filtro são importadas como as outras. Apague na cópia as que não estão à venda.',
-        i6: 'Linhas de total ou subtotal no fim da planilha aparecem como erro: apague-as ou pule-as na conferência.'
+        a: 'O cabeçalho pode estar em qualquer uma das 30 primeiras linhas e as colunas podem estar em qualquer ordem: o sistema acha cada coluna pelo nome.',
+        b: 'As 8 colunas da tabela abaixo são obrigatórias. Coluna faltando impede a importação, para não apagar um campo em todos os lotes.',
+        c: 'Todas as outras colunas são ignoradas, inclusive as de preço e valor.'
       }
     },
     upload: {
-      title: '3. Importar no MineRecycle',
+      title: '2. Importar',
       steps: {
-        s1: 'Em Pacotes, abra o pacote. Se ele ainda não existir, crie com Novo pacote: o nome público em inglês (o que o comprador vê), a pasta no STOR escrita exatamente igual (ex.: 1-6 Refractories), os números do pacote na planilha de estratégia, o tipo e todos os locais. Deixe-o em rascunho enquanto confere.',
-        s2: 'Na aba Itens, clique em Importar itens, escolha o arquivo e clique em Ler arquivo. O sistema confere o código do STOR no nome do arquivo e avisa se a planilha for de outro pacote.',
-        s3: 'Confira a aba e a linha do cabeçalho (a linha com os títulos das colunas). A prévia destaca a linha escolhida; troque o número se estiver errado.',
-        s4: 'Para cada campo, escolha a coluna correspondente. O sistema sugere colunas pelo título: confira. O ? ao lado de cada campo explica o que vai nele. Colunas de preço ou valor (inclusive valor total) ficam em "não usar".',
-        s5: 'Clique em Conferir. Nada é gravado ainda: veja quantas linhas são válidas, os erros e avisos por linha da planilha e a prévia dos itens.',
-        s6: 'Se houver erros, corrija a planilha e envie de novo, ou marque a opção de pular as linhas com erro.',
-        s7: 'Clique em Importar. Os itens atuais do pacote são substituídos pelos da planilha.',
-        s8: 'Confira os itens na aba Itens e, quando estiver tudo certo, mude a situação do pacote.'
+        s1: 'Em Lotes, clique em Importar lotes e escolha o arquivo.',
+        s2: 'Confira a prévia: lotes novos, alterados, retirados, mudanças de situação e pacotes automáticos novos ou alterados.',
+        s3: 'Se a prévia mostrar erros (nº de lote repetido ou vazio, STATUS desconhecido, coluna faltando), corrija a planilha e envie de novo.',
+        s4: 'Clique em Importar. Se alguém mudou os lotes depois da prévia, o sistema pede para conferir de novo.'
       },
-      goToPackages: 'Ir para Pacotes'
+      goToLots: 'Ir para Lotes'
     },
     fields: {
-      title: 'Campos da importação',
-      colField: 'Campo',
-      colRequired: 'Obrigatório',
-      colNotes: 'Observação',
-      yes: 'sim',
-      no: 'não',
+      title: 'Colunas lidas',
+      colColumn: 'Coluna na planilha',
+      colField: 'No sistema',
+      colNotes: 'Observações',
       notes: {
-        itemNo: 'Número do item na planilha, como 1, 1.2 ou 10A. Não pode se repetir no pacote, e 1.2 vira subitem de 1. Se a planilha não tiver essa coluna, marque a opção de numerar pela ordem das linhas.',
-        description: 'O que é o item, do jeito que o comprador vai ler (ex.: Tijolo refratário 230 x 114 x 64 mm). Até 4.000 caracteres.',
-        quantity: 'Quantidade na unidade escolhida em Unid. Se a unidade for KG ou T, use a coluna do peso total, não a do número de caixas ou paletes. Aceita decimal com vírgula ou ponto (12,5). Célula vazia gera só um aviso.',
-        unit: 'Unidade da quantidade. É padronizada: UN, pç e PEÇ viram PC; MT vira M; kg vira KG. Unidade desconhecida é mantida e sinalizada na conferência.',
-        storCode: 'Código do material no STOR (ex.: 100245). É referência, não chave: pode se repetir em várias linhas. Opcional; entra na busca de itens.',
-        tag: 'Identificação do equipamento no projeto da planta, a mesma das listas de equipamentos e da plaqueta (ex.: MO-101, TR-01). Serve para pacotes de equipamento; material a granel normalmente não tem. Opcional; entra na busca de itens.',
-        warehouseLocation: 'Onde o item está guardado no almoxarifado ou no pátio (ex.: Galpão 2 - Box 3, A3-R2). Opcional.'
+        lotNumber: 'Chave do lote: não pode faltar nem se repetir. É por ele que a reimportação acha o lote.',
+        siteName: 'Mostrado como está na planilha, também para o comprador.',
+        title: 'Obrigatória em cada linha.',
+        masterSupplier: 'Opcional.',
+        linkedSystem: 'Cada valor vira um pacote automático.',
+        commercialFamily: 'Cada valor vira um pacote automático.',
+        subfamily: 'Cada valor vira um pacote automático.',
+        status: 'Vazio ou "Available": disponível. "Sold": vendido. "Collected by court officer": fora da venda. Outro valor impede a importação.'
       },
-      discarded: 'Colunas não usadas (fornecedor, categoria, preço, valor etc.) não são gravadas nos itens.'
+      discarded: 'Os nomes das colunas são comparados sem acento, maiúsculas ou pontuação, e alguns sinônimos em inglês e português também são aceitos.'
     },
     after: {
-      title: '4. Depois da importação',
+      title: '3. Importar de novo',
       items: {
-        i1: 'Importar de novo substitui todos os itens do pacote: não soma nem duplica. Fotos ligadas a um item continuam ligadas se o nº do item se mantiver.',
-        i2: 'Não há botão de desfazer. Para corrigir, importe a planilha certa de novo ou edite os itens um a um.',
-        i3: 'Com a opção de guardar a planilha marcada, o arquivo original fica em Fotos e arquivos como Interno: só vendedores logados o veem, nunca o comprador com link nem o público.',
-        i4: 'Pacotes sem planilha no STOR são cadastrados à mão, item por item, na aba Itens.'
+        a: 'Importar a mesma planilha não muda nada. Lote alterado na planilha é atualizado; lote novo é criado.',
+        b: 'Lote que saiu da planilha fica como retirado (some do lado público) e volta se reaparecer.',
+        c: 'A planilha só marca um lote como vendido, nunca desfaz: se o sistema tem um lote vendido que a planilha não tem, a prévia avisa e ele continua vendido.',
+        d: 'Os pacotes automáticos acompanham a planilha: ganham e perdem lotes. O que ficar sem lotes sai do catálogo e pode ser excluído. Lote novo num pacote automático já vendido entra vendido.',
+        e: 'Descrição do vendedor, fotos, arquivos e pacotes manuais nunca são apagados pela importação.'
       }
     }
   },

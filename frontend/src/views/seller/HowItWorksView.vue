@@ -1,6 +1,6 @@
 <template>
   <HelpTabs />
-  <!-- Como funciona: o processo de ponta a ponta, do pacote no STOR até a venda. Textos em how.* (en.js/pt.js). -->
+  <!-- Como funciona: o processo de ponta a ponta, da planilha de lotes até a venda. Textos em how.* (en.js/pt.js). -->
   <div class="d-flex flex-column gap-4">
     <header class="text-center">
       <h1 class="h4 mb-1"><i class="bi bi-diagram-3"></i> {{ t('how.title') }}</h1>
@@ -90,7 +90,7 @@ const { t, tm } = useI18n()
 const WHO = ['outside', 'seller', 'buyer']
 // Ordem e quem age em cada passo; o texto vem de how.steps.<chave>.
 const LANES = [
-  { key: 'prepare', steps: [{ key: 'stor', who: 'outside' }, { key: 'register', who: 'seller' }, { key: 'import', who: 'seller' }, { key: 'files', who: 'seller' }] },
+  { key: 'prepare', steps: [{ key: 'sheet', who: 'outside' }, { key: 'importLots', who: 'seller' }, { key: 'packages', who: 'seller' }, { key: 'files', who: 'seller' }] },
   { key: 'publish', steps: [{ key: 'activate', who: 'seller' }, { key: 'browse', who: 'buyer' }, { key: 'link', who: 'seller' }] },
   { key: 'serve', steps: [{ key: 'ask', who: 'buyer' }, { key: 'direct', who: 'seller' }, { key: 'take', who: 'seller' }, { key: 'negotiate', who: 'seller' }] },
   { key: 'close', steps: [{ key: 'outcome', who: 'seller' }, { key: 'package', who: 'seller' }, { key: 'others', who: 'seller' }] }

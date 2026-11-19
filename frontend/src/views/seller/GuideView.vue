@@ -21,48 +21,6 @@
       <section v-for="s in sections" :id="`guide-${s}`" :key="s" class="mr-card p-3">
         <h2 class="h5">{{ t(`guide.sections.${s}.title`) }}</h2>
 
-        <!-- Escopo dos dados: estrutura própria (evidências, tabela de fato e inferência, pergunta ao cliente). -->
-        <template v-if="s === 'scope'">
-          <p class="mb-2">{{ t('guide.sections.scope.conclusion') }}</p>
-          <div class="alert alert-warning small py-2">
-            <i class="bi bi-exclamation-triangle"></i> {{ t('guide.sections.scope.status') }}
-          </div>
-          <h3 class="h6 mt-3">{{ t('guide.sections.scope.startTitle') }}</h3>
-          <p>{{ t('guide.sections.scope.start') }}</p>
-          <h3 class="h6">{{ t('guide.sections.scope.evidenceTitle') }}</h3>
-          <ol>
-            <li v-for="k in keys('guide.sections.scope.evidence')" :key="k" class="mb-1">{{ t(`guide.sections.scope.evidence.${k}`) }}</li>
-          </ol>
-          <h3 class="h6">{{ t('guide.sections.scope.factsTitle') }}</h3>
-          <div class="table-responsive">
-            <table class="table table-sm small align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>{{ t('guide.sections.scope.colClaim') }}</th>
-                  <th>{{ t('guide.sections.scope.colBasis') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="k in keys('guide.sections.scope.facts')" :key="k">
-                  <td>{{ t(`guide.sections.scope.facts.${k}.claim`) }}</td>
-                  <td>{{ t(`guide.sections.scope.facts.${k}.basis`) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <h3 class="h6">{{ t('guide.sections.scope.ambiguityTitle') }}</h3>
-          <p>{{ t('guide.sections.scope.ambiguity') }}</p>
-          <p class="small text-secondary">{{ t('guide.sections.scope.source') }}</p>
-          <h3 class="h6">{{ t('guide.sections.scope.consequencesTitle') }}</h3>
-          <ul>
-            <li v-for="k in keys('guide.sections.scope.consequences')" :key="k">{{ t(`guide.sections.scope.consequences.${k}`) }}</li>
-          </ul>
-          <div class="alert alert-info small mb-0">
-            <div class="fw-semibold mb-1"><i class="bi bi-question-circle"></i> {{ t('guide.sections.scope.questionTitle') }}</div>
-            {{ t('guide.sections.scope.question') }}
-          </div>
-        </template>
-
         <p v-if="has(s, 'intro')">{{ t(`guide.sections.${s}.intro`) }}</p>
         <dl v-if="has(s, 'rows')" class="row small mb-3">
           <template v-for="k in keys(`guide.sections.${s}.rows`)" :key="k">

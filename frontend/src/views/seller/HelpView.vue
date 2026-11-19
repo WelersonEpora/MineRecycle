@@ -17,64 +17,32 @@
         <p class="text-secondary mb-0">{{ t('help.intro') }}</p>
       </header>
 
-      <!-- 1. Exportar do STOR -->
-      <section :id="'help-export'" class="mr-card p-3">
-        <h2 class="h5">{{ t('help.export.title') }}</h2>
-        <p>{{ t('help.export.intro') }}</p>
-        <dl class="row small mb-3">
-          <template v-for="k in keys('help.export.where')" :key="k">
-            <dt class="col-sm-3">{{ t(`help.export.whereLabels.${k}`) }}</dt>
-            <dd class="col-sm-9 mr-mono">{{ t(`help.export.where.${k}`) }}</dd>
-          </template>
-        </dl>
-        <ol class="mb-3">
-          <li v-for="k in keys('help.export.steps')" :key="k">{{ t(`help.export.steps.${k}`) }}</li>
-        </ol>
-        <div class="alert alert-warning small mb-0">
-          <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle"></i> {{ t('help.export.careTitle') }}</div>
-          <ul class="mb-0 ps-3">
-            <li v-for="k in keys('help.export.care')" :key="k">{{ t(`help.export.care.${k}`) }}</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- 2. Preparar a planilha -->
-      <section :id="'help-prepare'" class="mr-card p-3">
-        <h2 class="h5">{{ t('help.prepare.title') }}</h2>
-        <p>{{ t('help.prepare.intro') }}</p>
+      <!-- 1. A planilha -->
+      <section id="help-sheet" class="mr-card p-3">
+        <h2 class="h5">{{ t('help.sheet.title') }}</h2>
+        <p>{{ t('help.sheet.intro') }}</p>
         <ul class="mb-0">
-          <li v-for="k in keys('help.prepare.items')" :key="k">{{ t(`help.prepare.items.${k}`) }}</li>
+          <li v-for="k in keys('help.sheet.items')" :key="k">{{ t(`help.sheet.items.${k}`) }}</li>
         </ul>
       </section>
 
-      <!-- 3. Importar -->
-      <section :id="'help-upload'" class="mr-card p-3">
-        <h2 class="h5">{{ t('help.upload.title') }}</h2>
-        <ol class="mb-3">
-          <li v-for="k in keys('help.upload.steps')" :key="k">{{ t(`help.upload.steps.${k}`) }}</li>
-        </ol>
-        <RouterLink :to="{ name: 'seller-packages' }" class="btn btn-sm btn-outline-secondary">
-          <i class="bi bi-box-seam"></i> {{ t('help.upload.goToPackages') }}
-        </RouterLink>
-      </section>
-
-      <!-- Campos -->
-      <section :id="'help-fields'" class="mr-card p-3">
+      <!-- Colunas lidas -->
+      <section id="help-fields" class="mr-card p-3">
         <h2 class="h5">{{ t('help.fields.title') }}</h2>
         <div class="table-responsive">
           <table class="table table-sm small align-middle">
             <thead class="table-light">
               <tr>
+                <th>{{ t('help.fields.colColumn') }}</th>
                 <th>{{ t('help.fields.colField') }}</th>
-                <th>{{ t('help.fields.colRequired') }}</th>
                 <th>{{ t('help.fields.colNotes') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="fd in FIELDS" :key="fd.key">
-                <td class="text-nowrap fw-medium">{{ t(`lines.${fd.key}`) }}</td>
-                <td>{{ fd.required ? t('help.fields.yes') : t('help.fields.no') }}</td>
-                <td>{{ t(`help.fields.notes.${fd.key}`) }}</td>
+              <tr v-for="c in COLUMNS" :key="c.key">
+                <td class="text-nowrap mr-mono">{{ c.column }}</td>
+                <td class="text-nowrap fw-medium">{{ t(`lots.${c.label}`) }}</td>
+                <td>{{ t(`help.fields.notes.${c.key}`) }}</td>
               </tr>
             </tbody>
           </table>
@@ -82,8 +50,19 @@
         <p class="small text-secondary mb-0">{{ t('help.fields.discarded') }}</p>
       </section>
 
-      <!-- 4. Depois -->
-      <section :id="'help-after'" class="mr-card p-3">
+      <!-- 2. Importar -->
+      <section id="help-upload" class="mr-card p-3">
+        <h2 class="h5">{{ t('help.upload.title') }}</h2>
+        <ol class="mb-3">
+          <li v-for="k in keys('help.upload.steps')" :key="k">{{ t(`help.upload.steps.${k}`) }}</li>
+        </ol>
+        <RouterLink :to="{ name: 'seller-lots' }" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-list-ul"></i> {{ t('help.upload.goToLots') }}
+        </RouterLink>
+      </section>
+
+      <!-- 3. Importar de novo -->
+      <section id="help-after" class="mr-card p-3">
         <h2 class="h5">{{ t('help.after.title') }}</h2>
         <ul class="mb-0">
           <li v-for="k in keys('help.after.items')" :key="k">{{ t(`help.after.items.${k}`) }}</li>
@@ -99,17 +78,19 @@ import HelpTabs from '../../components/seller/HelpTabs.vue'
 
 const { t, tm } = useI18n()
 
-const SECTIONS = ['export', 'prepare', 'upload', 'fields', 'after']
+const SECTIONS = ['sheet', 'fields', 'upload', 'after']
 
-// Mesmos campos e obrigatoriedade do assistente de importação (ImportWizard.vue).
-const FIELDS = [
-  { key: 'itemNo', required: true },
-  { key: 'description', required: true },
-  { key: 'quantity', required: true },
-  { key: 'unit', required: true },
-  { key: 'storCode' },
-  { key: 'tag' },
-  { key: 'warehouseLocation' }
+// Colunas da aba "Matriz de lotes", com o nome como está na planilha do cliente (não traduzido). Mesma lista do
+// leitor do backend (LOT_COLUMNS em backend/src/import/lot-sheet.js).
+const COLUMNS = [
+  { key: 'lotNumber', column: 'Lot Number', label: 'lotNumber' },
+  { key: 'siteName', column: 'Site Name', label: 'site' },
+  { key: 'title', column: 'Title / Equipment Description', label: 'title' },
+  { key: 'masterSupplier', column: 'Master Supplier', label: 'supplier' },
+  { key: 'linkedSystem', column: 'Equipamento ou sistema vinculado', label: 'linkedSystem' },
+  { key: 'commercialFamily', column: 'Família comercial', label: 'family' },
+  { key: 'subfamily', column: 'Subfamília', label: 'subfamily' },
+  { key: 'status', column: 'STATUS', label: 'status' }
 ]
 
 // Chaves de um grupo de mensagens (passos, itens), na ordem em que estão em en.js/pt.js.

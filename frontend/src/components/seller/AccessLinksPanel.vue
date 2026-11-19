@@ -70,7 +70,7 @@
             <div v-for="p in shareable" :key="p.id" class="form-check">
               <input :id="`mr-lp-${p.id}`" v-model="form.packageIds" class="form-check-input" type="checkbox" :value="p.id" />
               <label class="form-check-label small" :for="`mr-lp-${p.id}`">
-                {{ p.name }} <span v-if="p.storFolder" class="text-secondary mr-mono">({{ p.storFolder }})</span> <StatusBadge :status="p.status" />
+                {{ p.name }} <StatusBadge :status="p.status" />
               </label>
             </div>
           </div>

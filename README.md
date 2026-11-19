@@ -1,10 +1,12 @@
 # MineRecycle
 
 Plataforma temporária (cerca de 6 meses) que conecta vendedores e compradores dos ativos de um projeto de mineração
-paralisado. Os ativos estão organizados em pacotes de venda:
+paralisado. Os ativos vêm da planilha de inventário do cliente (aba "Matriz de lotes"):
 
-- **A granel** (`bulk`): vendido em bloco (por peso ou lote fechado). A página mostra resumo, totais e a lista de itens.
-- **Equipamento** (`equipment`): vendido por equipamento ou conjunto. Cada item pode ter fotos e documentos.
+- **Lote**: a menor unidade, uma linha da planilha (nº do lote, site, descrição, fornecedor, agrupamentos e situação).
+- **Pacote**: agrupa lotes e é o que se vende. Um lote pode estar em vários pacotes. A importação cria um pacote
+  automático (rascunho) por valor de sistema vinculado, família comercial e subfamília; o vendedor monta outros como
+  quiser, inclusive de um lote só. Vender o pacote marca os lotes dele como vendidos em todos os pacotes.
 
 O site é em inglês (com português como opção, pela bandeirinha na barra superior) e não tem preço público.
 
@@ -12,9 +14,9 @@ O site é em inglês (com português como opção, pela bandeirinha na barra sup
 
 | Área | Função |
 |---|---|
-| Catálogo público | Pacotes ativos (em negociação com a caixa marcada), busca e filtros por tipo, origem e local. Página do pacote com fotos públicas, documentos públicos e itens paginados com busca. |
-| Área do vendedor (login) | Criar e editar pacotes, mudar a situação (ativo, em negociação, vendido, inativo, rascunho), itens manuais, fotos e anexos. |
-| Importação de planilha | `.xlsx`/`.xls` por pacote: o vendedor confere o cabeçalho, mapeia as colunas e vê o relatório antes de gravar. Unidades normalizadas (UN, pç, PEÇ → PC; MT, m → M…). A reimportação **substitui** os itens do pacote. |
+| Catálogo público | Pacotes ativos (em negociação com a caixa marcada) com algum lote em oferta, busca e filtros por agrupamento, origem e site. Página do pacote com fotos e documentos públicos e a tabela de lotes (busca, ordenação, paginação); cada lote abre com as fotos e arquivos dele. |
+| Área do vendedor (login) | Lotes (lista com filtros, página do lote com descrição, fotos e arquivos, "Criar pacote deste lote") e pacotes (criar, editar, escolher os lotes dos manuais, mudar a situação, vender e desfazer a venda, fotos e anexos). |
+| Importação de lotes | `.xlsx`/`.xlsm`/`.xls` com a aba "Matriz de lotes": prévia do que muda (lotes novos, alterados, retirados, situação, pacotes automáticos) e confirmação. Colunas de preço nunca são lidas. Reimportar atualiza os lotes; lote que sai da planilha fica retirado, nunca é apagado. |
 | Link do comprador | O vendedor gera um link com validade e escopo de pacotes. Por ele o comprador vê os anexos restritos e a proposta. Cada acesso fica registrado. O link pode ser editado ou revogado na hora. |
 | Pedidos de informação | Na página do pacote, o comprador envia um pedido (formulário) ou chama a equipe por e-mail ou WhatsApp. Os pedidos chegam na aba Pedidos da área do vendedor, com responsável, situação e nota interna. |
 | Configuração (admin) | Origens dos pacotes e contato comercial da equipe (e-mail e WhatsApp). |
@@ -22,8 +24,8 @@ O site é em inglês (com português como opção, pela bandeirinha na barra sup
 
 ### Regras de visibilidade
 
-- **Público** vê só pacotes com situação marcada na Configuração. Rascunho e inativo nunca aparecem.
-- **Comprador com link válido** vê os pacotes do escopo do link (menos rascunho e inativo), com todos os anexos, inclusive restritos e propostas.
+- **Público** vê os pacotes ativos (e os em negociação, com a caixa marcada) que têm algum lote em oferta, sem os lotes fora da venda. Rascunho, inativo e vendido nunca aparecem.
+- **Comprador com link válido** vê os pacotes do escopo do link (menos rascunho e inativo), com os anexos do pacote e dos lotes, inclusive restritos e propostas (internos, não).
 - **Vendedor logado** vê tudo.
 - **Proposta** é sempre restrita, mesmo que alguém tente marcá-la como pública (regra no código e no banco).
 - **Fotos públicas**: o público recebe só a versão web (até 1600 px) e a miniatura, ambas sem metadados (EXIF/GPS). O original fica para vendedor e comprador.
