@@ -176,7 +176,8 @@ export default {
       locationsHint: 'Marque todos os locais onde há itens do pacote. Use "A confirmar" enquanto não souber.',
       storDocuments: 'Documentos STOR',
       storDocumentsHint: 'Códigos das planilhas deste pacote no STOR (7 dígitos, separados por vírgula). O código está no começo do nome do arquivo baixado. Só vendedores veem.',
-      description: 'Descrição'
+      description: 'Descrição',
+      help: 'Ajuda: {field}'
     },
     saved: 'Salvo.',
     editDetails: 'Editar dados do pacote',

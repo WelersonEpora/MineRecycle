@@ -176,7 +176,8 @@ export default {
       locationsHint: 'Tick every location holding items of this package. Use "To be confirmed" while unknown.',
       storDocuments: 'STOR documents',
       storDocumentsHint: 'Codes of this package spreadsheets in STOR (7 digits, comma separated). The code is at the start of the downloaded file name. Sellers only.',
-      description: 'Description'
+      description: 'Description',
+      help: 'Help: {field}'
     },
     saved: 'Saved.',
     editDetails: 'Edit package details',

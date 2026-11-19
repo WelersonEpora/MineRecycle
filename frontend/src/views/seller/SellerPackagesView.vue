@@ -88,7 +88,7 @@
     </table>
   </div>
 
-  <ModalDialog v-model:show="creating" :title="t('seller.newPackage')">
+  <ModalDialog v-model:show="creating" :title="t('seller.newPackage')" size="lg" persistent scrollable>
     <PackageForm v-model="draft" />
     <div v-if="createError" class="alert alert-danger py-2 small mt-3">{{ createError }}</div>
     <template #footer>

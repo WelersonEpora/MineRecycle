@@ -1,19 +1,16 @@
 <template>
   <div class="row g-3">
     <div class="col-12">
-      <label class="form-label small" for="mr-pkg-name">{{ t('seller.fields.name') }}</label>
+      <label class="form-label small" for="mr-pkg-name">{{ t('seller.fields.name') }}<HelpTip :text="t('seller.fields.nameHint')" :label="t('seller.fields.help', { field: t('seller.fields.name') })" /></label>
       <input id="mr-pkg-name" v-model="model.name" type="text" maxlength="200" class="form-control" required />
-      <div class="form-text">{{ t('seller.fields.nameHint') }}</div>
     </div>
-    <div class="col-md-8">
-      <label class="form-label small" for="mr-pkg-folder">{{ t('seller.fields.storFolder') }}</label>
+    <div class="col-md-6">
+      <label class="form-label small" for="mr-pkg-folder">{{ t('seller.fields.storFolder') }}<HelpTip :text="t('seller.fields.storFolderHint')" :label="t('seller.fields.help', { field: t('seller.fields.storFolder') })" /></label>
       <input id="mr-pkg-folder" v-model="model.storFolder" type="text" maxlength="200" class="form-control mr-mono" />
-      <div class="form-text">{{ t('seller.fields.storFolderHint') }}</div>
     </div>
-    <div class="col-md-4">
-      <label class="form-label small" for="mr-pkg-numbers">{{ t('seller.fields.storNumbers') }}</label>
+    <div class="col-md-6">
+      <label class="form-label small" for="mr-pkg-numbers">{{ t('seller.fields.storNumbers') }}<HelpTip :text="t('seller.fields.storNumbersHint')" :label="t('seller.fields.help', { field: t('seller.fields.storNumbers') })" /></label>
       <input id="mr-pkg-numbers" v-model.lazy="storNumbersText" type="text" inputmode="numeric" class="form-control mr-mono" />
-      <div class="form-text">{{ t('seller.fields.storNumbersHint') }}</div>
     </div>
     <div class="col-6">
       <label class="form-label small" for="mr-pkg-type">{{ t('seller.fields.type') }}</label>
@@ -22,39 +19,34 @@
       </select>
     </div>
     <div class="col-6">
-      <label class="form-label small" for="mr-pkg-category">{{ t('seller.fields.category') }}</label>
+      <label class="form-label small" for="mr-pkg-category">{{ t('seller.fields.category') }}<HelpTip :text="t('seller.fields.categoryHint')" :label="t('seller.fields.help', { field: t('seller.fields.category') })" /></label>
       <select id="mr-pkg-category" v-model="model.category" class="form-select">
         <option v-for="c in CATEGORIES" :key="c" :value="c">{{ f.categoryLabel(c) }}</option>
       </select>
-      <div class="form-text">{{ t('seller.fields.categoryHint') }}</div>
     </div>
     <div class="col-6">
-      <label class="form-label small" for="mr-pkg-origin">{{ t('seller.fields.origin') }} <span class="text-danger">*</span></label>
+      <label class="form-label small" for="mr-pkg-origin">{{ t('seller.fields.origin') }} <span class="text-danger">*</span><HelpTip :text="t('seller.fields.originHint')" :label="t('seller.fields.help', { field: t('seller.fields.origin') })" /></label>
       <select id="mr-pkg-origin" v-model="model.originId" class="form-select" required>
         <option value="" disabled>{{ t('seller.fields.originChoose') }}</option>
         <option v-for="o in originChoices" :key="o.id" :value="o.id">{{ o.name }} ({{ o.code }}){{ o.active ? '' : ` · ${t('origins.inactive')}` }}</option>
       </select>
-      <div class="form-text">{{ t('seller.fields.originHint') }}</div>
     </div>
     <fieldset class="col-6">
-      <legend class="form-label small mb-1">{{ t('seller.fields.location') }}</legend>
+      <legend class="form-label small mb-1">{{ t('seller.fields.location') }}<HelpTip :text="t('seller.fields.locationsHint')" :label="t('seller.fields.help', { field: t('seller.fields.location') })" /></legend>
       <div v-for="l in LOCATIONS" :key="l" class="form-check">
         <input :id="`mr-loc-${l}`" v-model="model.locations" class="form-check-input" type="checkbox" :value="l" />
         <label class="form-check-label small" :for="`mr-loc-${l}`">{{ f.locationLabel(l) }}</label>
       </div>
-      <div class="form-text">{{ t('seller.fields.locationsHint') }}</div>
     </fieldset>
     <div class="col-12">
-      <label class="form-label small" for="mr-stor-docs">{{ t('seller.fields.storDocuments') }}</label>
+      <label class="form-label small" for="mr-stor-docs">{{ t('seller.fields.storDocuments') }}<HelpTip :text="t('seller.fields.storDocumentsHint')" :label="t('seller.fields.help', { field: t('seller.fields.storDocuments') })" /></label>
       <input id="mr-stor-docs" v-model.lazy="storDocumentsText" type="text" inputmode="numeric" class="form-control mr-mono" />
-      <div class="form-text">{{ t('seller.fields.storDocumentsHint') }}</div>
       <div v-if="validCodes.length" class="mt-2">
-        <div class="small mb-1">{{ t('seller.fields.storDocumentsPending') }}</div>
+        <div class="small mb-1">{{ t('seller.fields.storDocumentsPending') }}<HelpTip :text="t('seller.fields.storDocumentsPendingHint')" :label="t('seller.fields.help', { field: t('seller.fields.storDocumentsPending') })" /></div>
         <div v-for="c in validCodes" :key="c" class="form-check form-check-inline">
           <input :id="`mr-pend-${c}`" v-model="model.storDocumentsPending" class="form-check-input" type="checkbox" :value="c" />
           <label class="form-check-label small mr-mono" :for="`mr-pend-${c}`">{{ c }}</label>
         </div>
-        <div class="form-text">{{ t('seller.fields.storDocumentsPendingHint') }}</div>
       </div>
     </div>
     <div class="col-12">
@@ -62,9 +54,8 @@
       <textarea id="mr-pkg-desc" v-model="model.description" rows="5" class="form-control"></textarea>
     </div>
     <div class="col-4 col-md-3">
-      <label class="form-label small" for="mr-pkg-number">{{ t('seller.fields.number') }}</label>
+      <label class="form-label small" for="mr-pkg-number">{{ t('seller.fields.number') }}<HelpTip :text="t('seller.fields.numberHint')" :label="t('seller.fields.help', { field: t('seller.fields.number') })" /></label>
       <input id="mr-pkg-number" v-model.number="model.number" type="number" min="1" class="form-control" />
-      <div class="form-text">{{ t('seller.fields.numberHint') }}</div>
     </div>
   </div>
 </template>
@@ -72,6 +63,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { api } from '../../services/api.js'
+import HelpTip from '../HelpTip.vue'
 import { useFormat, TYPES, LOCATIONS, CATEGORIES } from '../../composables/useFormat.js'
 
 const model = defineModel({ type: Object, required: true })
