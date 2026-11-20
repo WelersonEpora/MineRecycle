@@ -13,7 +13,8 @@
     "db:migrate": "sequelize-cli db:migrate --config sequelize.config.js",
     "db:migrate:undo": "sequelize-cli db:migrate:undo --config sequelize.config.js",
     "db:seed": "sequelize-cli db:seed:all --config sequelize.config.js",
-    "import:lots": "node scripts/import-lots.js"
+    "import:lots": "node scripts/import-lots.js",
+    "files:orphans": "node scripts/files-orphans.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

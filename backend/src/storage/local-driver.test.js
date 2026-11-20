@@ -28,3 +28,24 @@ test("put, open, get and remove", async () => {
   await storage.remove("packages/p1/a1/original.txt");
   await fs.rm(dir, { recursive: true, force: true });
 });
+
+test("list returns every stored file and pruneEmptyDirs removes empty folders", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "mr-storage-"));
+  const storage = createLocalDriver(dir);
+  assert.deepEqual(await storage.list(), []);
+  await storage.put("packages/p1/a1/original.txt", Buffer.from("hello"));
+  await storage.put("lots/l1/a2/web.webp", Buffer.from("ab"));
+  const listed = (await storage.list()).sort((a, b) => a.key.localeCompare(b.key));
+  assert.deepEqual(
+    listed.map((f) => [f.key, f.size]),
+    [
+      ["lots/l1/a2/web.webp", 2],
+      ["packages/p1/a1/original.txt", 5]
+    ]
+  );
+  assert.ok(listed[0].modifiedAt instanceof Date);
+  await storage.remove("packages/p1/a1/original.txt");
+  await storage.pruneEmptyDirs();
+  assert.deepEqual(await fs.readdir(dir), ["lots"]);
+  await fs.rm(dir, { recursive: true, force: true });
+});

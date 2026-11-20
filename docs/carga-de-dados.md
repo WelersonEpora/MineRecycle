@@ -51,6 +51,7 @@ O commit refaz o plano sob um lock e só grava se o arquivo, a aba e o banco for
 
 ## Pendências
 
-- **Arquivos órfãos no servidor:** a limpeza de 2026-11-19 apagou os registros de anexos, mas os arquivos antigos
-  continuam no volume `minerecycle_file_storage`. Falta o script que lista e remove arquivos sem registro.
+- **Arquivos órfãos:** a limpeza de 2026-11-19 apagou os registros de anexos, não os arquivos. `npm run files:orphans`
+  mostra os arquivos sem registro (com margem de 1 hora, e de 24 horas para prévias de importação); `-- --delete`
+  apaga. No servidor: `docker compose exec backend node scripts/files-orphans.js`.
 - **Exportação para planilha** (pacotes e lotes): ainda não refeita sobre lotes.

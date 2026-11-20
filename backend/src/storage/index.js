@@ -2,7 +2,8 @@
 
 // Único ponto de gravação e leitura de arquivos (fotos, anexos, planilhas em importação). Hoje: disco local, num
 // volume Docker fora do contêiner. Para trocar por armazenamento tipo S3, basta um driver novo com a mesma
-// interface: put(key, buffer), get(key), open(key) -> { stream, size } | null, remove(key), removePrefix(prefix).
+// interface: put(key, buffer), get(key), open(key) -> { stream, size } | null, remove(key), removePrefix(prefix),
+// list() -> [{ key, size, modifiedAt }] e pruneEmptyDirs() (estes dois só para a limpeza de órfãos).
 const env = require("../config/env");
 const { createLocalDriver } = require("./local-driver");
 

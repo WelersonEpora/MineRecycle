@@ -166,6 +166,7 @@ cd frontend && npm run lint && npm test && npm run build
 - 2026-11-19: mudança de rota para lotes (aba "Matriz de lotes"). Feito: modelo, migrations, regras puras, services e
   rotas; banco local no Postgres do infra, com a planilha real importada (1.089 lotes, 85 pacotes automáticos).
   Depois, no mesmo dia: telas do vendedor (Lotes, pacotes, importação) e públicas, tabelas no padrão do FinMind,
-  testes de integração sobre lotes (CI verde), Ajuda e decisões nesta página. Pendente: exportação para planilha
-  (pacotes e lotes) e limpeza dos arquivos órfãos no servidor.
+  testes de integração sobre lotes (CI verde), Ajuda e decisões nesta página. Script dos arquivos órfãos
+  (`npm run files:orphans`). Pendente: exportação para planilha (pacotes e lotes) e rodar a limpeza dos órfãos no
+  servidor.
 - Etapa 3 (publicação) concluída em 2026-11-16. Catálogo público desde 2026-11-16; dados reais entram pelas telas.

@@ -65,6 +65,51 @@ function createLocalDriver(baseDir) {
     async removePrefix(prefix) {
       const full = resolve(prefix);
       await fsp.rm(full, { recursive: true, force: true });
+    },
+
+    // Todos os arquivos guardados: [{ key, size, modifiedAt }]. Para a limpeza de órfãos (scripts/files-orphans.js).
+    async list() {
+      const out = [];
+      async function walk(dir, prefix) {
+        let entries;
+        try {
+          entries = await fsp.readdir(dir, { withFileTypes: true });
+        } catch (err) {
+          if (err.code === "ENOENT") return;
+          throw err;
+        }
+        for (const e of entries) {
+          const full = path.join(dir, e.name);
+          const key = prefix ? `${prefix}/${e.name}` : e.name;
+          if (e.isDirectory()) await walk(full, key);
+          else if (e.isFile()) {
+            const stat = await fsp.stat(full);
+            out.push({ key, size: stat.size, modifiedAt: stat.mtime });
+          }
+        }
+      }
+      await walk(root, "");
+      return out;
+    },
+
+    // Remove os diretórios que ficaram vazios (depois de apagar arquivos). A raiz fica.
+    async pruneEmptyDirs() {
+      async function prune(dir) {
+        let entries;
+        try {
+          entries = await fsp.readdir(dir, { withFileTypes: true });
+        } catch (err) {
+          if (err.code === "ENOENT") return true;
+          throw err;
+        }
+        let empty = true;
+        for (const e of entries) {
+          if (e.isDirectory() && (await prune(path.join(dir, e.name)))) await fsp.rmdir(path.join(dir, e.name));
+          else empty = false;
+        }
+        return empty;
+      }
+      await prune(root);
     }
   };
 }
