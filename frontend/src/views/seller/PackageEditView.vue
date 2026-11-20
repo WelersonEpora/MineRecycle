@@ -53,8 +53,8 @@
         <dd>{{ f.sourceLabel(pkg.source) }}<span v-if="pkg.source !== 'manual'" class="text-secondary"> · {{ pkg.sourceValue }}</span></dd>
         <dt>{{ t('seller.fields.category') }}</dt>
         <dd>{{ f.categoryLabel(pkg.category) }}</dd>
-        <dt>{{ t('seller.fields.origin') }}</dt>
-        <dd>{{ pkg.origin ? `${pkg.origin.name} (${pkg.origin.code})` : '—' }}</dd>
+        <dt v-if="SHOW_ORIGIN">{{ t('seller.fields.origin') }}</dt>
+        <dd v-if="SHOW_ORIGIN">{{ pkg.origin ? `${pkg.origin.name} (${pkg.origin.code})` : '—' }}</dd>
         <dt>{{ t('seller.site') }}</dt>
         <dd>{{ pkg.sites?.length ? pkg.sites.join(' · ') : '—' }}</dd>
         <dt>{{ t('seller.fields.description') }}</dt>
@@ -98,6 +98,7 @@ import { api } from '../../services/api.js'
 import StatusBadge from '../../components/StatusBadge.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
+import { SHOW_ORIGIN } from '../../utils/features.js'
 import PackageLotsPanel from '../../components/seller/PackageLotsPanel.vue'
 import AttachmentsPanel from '../../components/seller/AttachmentsPanel.vue'
 import AccessLinksPanel from '../../components/seller/AccessLinksPanel.vue'

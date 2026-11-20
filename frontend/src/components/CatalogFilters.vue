@@ -85,6 +85,7 @@ import { computed, ref } from 'vue'
 import { useFormat, SOURCES } from '../composables/useFormat.js'
 import { activeFilterCount } from '../composables/useCatalogFilters.js'
 import ChipGroup from './ChipGroup.vue'
+import { SHOW_ORIGIN } from '../utils/features.js'
 
 const props = defineProps({
   idPrefix: { type: String, default: 'mr-filters' },
@@ -132,5 +133,5 @@ const siteOptions = computed(() =>
   )
 )
 // Origem só aparece com pacotes visíveis de mais de uma origem (ou com uma origem já escolhida).
-const showOrigin = computed(() => (props.facets?.origin.options || []).filter((o) => o.count > 0).length > 1 || !!props.filters.origin)
+const showOrigin = computed(() => SHOW_ORIGIN && ((props.facets?.origin.options || []).filter((o) => o.count > 0).length > 1 || !!props.filters.origin))
 </script>

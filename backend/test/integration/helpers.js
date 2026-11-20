@@ -126,6 +126,14 @@ function lotWorkbook(rows, { header = LOT_HEADER, sheet = "Matriz de lotes", ext
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 }
 
+// Chaves de todos os arquivos guardados no diretório de teste ("packages/<id>/<id>/original.pdf").
+function listFiles(dir) {
+  if (!dir || !fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => path.relative(dir, path.join(e.parentPath || e.path, e.name)).split(path.sep).join("/"));
+}
+
 async function cleanup() {
   const { sequelize } = require("../../src/models");
   await sequelize.close();
@@ -145,5 +153,6 @@ module.exports = {
   createLots,
   packageWithLots,
   lotWorkbook,
+  listFiles,
   LOT_HEADER
 };

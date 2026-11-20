@@ -31,6 +31,9 @@ export const api = {
   updateInquiry: (id, body) => data(http.patch(`/seller/inquiries/${id}`, body)),
   deleteInquiry: (id) => http.delete(`/seller/inquiries/${id}`),
   setContact: (body) => data(http.put('/seller/contact', body)),
+  // Limpeza geral (só admin): contagens e última limpeza; depois { confirm, password } apaga tudo.
+  dataReset: () => data(http.get('/seller/data-reset')),
+  runDataReset: (body) => data(http.post('/seller/data-reset', body)),
 
   // Vendedor: pacotes
   sellerPackages: (params) => data(http.get('/seller/packages', { params })),

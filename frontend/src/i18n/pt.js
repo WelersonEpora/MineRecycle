@@ -428,6 +428,32 @@ export default {
     adminOnly: 'Só administradores alteram o contato.',
     saved: 'Contato salvo.'
   },
+  // Limpeza geral (decisão de 2026-11-19): só admin, em Configuração.
+  reset: {
+    title: 'Limpeza geral',
+    help: 'Apaga todos os lotes, pacotes, fotos e arquivos, pedidos dos compradores e links de acesso, para recomeçar a carga do zero. Usuários e contato comercial ficam.',
+    open: 'Limpeza geral',
+    last: 'Última limpeza: {date}, por {name}.',
+    modalTitle: 'Limpeza geral: apagar TODOS os dados',
+    warningTitle: 'TODOS OS DADOS SERÃO EXCLUÍDOS',
+    warningText: 'Não há como desfazer. Os compradores perdem os links, a numeração dos pacotes recomeça do 1 e os arquivos são apagados do servidor.',
+    willDelete: 'O que será apagado:',
+    lots: 'Lotes',
+    packages: 'Pacotes',
+    attachments: 'Fotos e arquivos',
+    inquiries: 'Pedidos dos compradores',
+    accessLinks: 'Links de acesso',
+    kept: 'Usuários e contato comercial são mantidos.',
+    exportFirst: 'Antes de continuar, exporte os lotes: a planilha pode ser importada de volta depois.',
+    exportLots: 'Exportar lotes',
+    phraseLabel: 'Para confirmar, digite {phrase}',
+    phrase: 'APAGAR TUDO',
+    passwordLabel: 'Sua senha',
+    confirm: 'Apagar todos os dados',
+    busy: 'Apagando...',
+    done: 'Todos os dados foram apagados.',
+    filesPending: 'Dados apagados, mas alguns arquivos não puderam ser removidos. Peça a limpeza dos arquivos órfãos.'
+  },
   how: {
     tab: 'Como funciona',
     title: 'Como o MineRecycle funciona',
@@ -462,7 +488,7 @@ export default {
           a: 'A importação cria um pacote automático (rascunho) para cada valor das colunas Sistema vinculado, Família comercial e Subfamília. Os lotes dele seguem a planilha.',
           b: 'O vendedor monta pacotes manuais com os lotes que quiser ("Novo pacote" e a aba Lotes do pacote).',
           c: 'Pacote de um lote só: "Criar pacote deste lote", na página do lote.',
-          d: 'Confira nome, descrição, categoria e origem de cada pacote antes de publicar.'
+          d: 'Confira nome, descrição e categoria de cada pacote antes de publicar.'
         },
         where: 'Pacotes e Lotes'
       },
@@ -480,14 +506,14 @@ export default {
         items: {
           a: 'Ao mudar para Ativo, o pacote entra no catálogo público: qualquer pessoa vê, sem login.',
           b: 'O catálogo mostra o pacote com os lotes em oferta, fotos e arquivos públicos. Lotes fora da venda não aparecem. Nunca preço.',
-          c: 'Pacote sem nenhum lote em oferta não aparece no catálogo.'
+          c: 'Pacote sem nenhum lote em oferta (todos retirados ou fora da venda) não aparece no catálogo. Lote vendido continua em oferta, com o selo de vendido.'
         },
         where: 'Pacotes → Mudar situação'
       },
       browse: {
         title: 'Visitante encontra o pacote',
         items: {
-          a: 'Busca por nome, descrição, nº do lote, descrição do lote ou fornecedor; filtra por agrupamento, origem e site.',
+          a: 'Busca por nome, descrição, nº do lote, descrição do lote ou fornecedor; filtra por agrupamento e site.',
           b: 'Abre cada lote para ver os dados e as fotos dele.',
           c: 'Vê que há documentos restritos (sem ver quais) e pode pedir acesso.'
         },
@@ -649,7 +675,9 @@ export default {
           'A fonte é a planilha de inventário do cliente, aba "Matriz de lotes". O sistema lê só as colunas de lote dessa aba; as outras colunas e abas, inclusive as de preço e valor, são ignoradas.',
         items: {
           a: 'A planilha continua sendo mantida fora do sistema. Importar de novo atualiza os lotes; nada é gravado antes da confirmação.',
-          b: 'Os dados que vêm da planilha só mudam pela importação. O vendedor acrescenta a sua descrição, fotos e arquivos, que a importação não apaga.'
+          b: 'Os dados que vêm da planilha só mudam pela importação. O vendedor acrescenta a sua descrição, fotos e arquivos, que a importação não apaga.',
+          c: 'Exportar lotes (tela Lotes) gera a planilha de todos os lotes no mesmo formato da importação, com a situação no sistema, os pacotes, a descrição do vendedor e o nº de arquivos em colunas à parte. Serve de cópia e pode ser importada de volta.',
+          d: 'Para recomeçar a carga do zero, um administrador usa a Limpeza geral (Configuração): apaga todos os lotes, pacotes, fotos e arquivos, pedidos e links, e a numeração dos pacotes recomeça do 1. Usuários e contato comercial ficam. Pede a frase de confirmação e a senha, e não tem volta: exporte os lotes antes.'
         }
       },
       lots: {
@@ -662,6 +690,11 @@ export default {
           sold: { term: 'Vendido', text: 'Pela planilha (STATUS "Sold") ou pela venda de um pacote que o contém. Aparece com o selo de vendido em todos os pacotes. A planilha nunca tira um lote de vendido.' },
           unavailable: { term: 'Fora da venda', text: 'STATUS "Collected by court officer". Some do lado público; o vendedor continua vendo.' },
           withdrawn: { term: 'Retirado', text: 'Saiu da planilha. Não é apagado (guarda arquivos e histórico) e volta se reaparecer numa importação.' }
+        },
+        items: {
+          a: 'A área do vendedor abre em Lotes. A página de cada lote tem as abas Dados (planilha e descrição do vendedor), Pacotes (onde o lote está, com "Criar pacote deste lote") e Fotos e arquivos.',
+          b: 'A descrição do vendedor é o único dado do lote editável na tela: botão Editar, na aba Dados.',
+          c: 'A situação do lote não se edita direto: vem da planilha ou da venda de um pacote.'
         }
       },
       packages: {
@@ -672,10 +705,9 @@ export default {
             term: 'Automático',
             text: 'Um por valor das colunas Sistema vinculado, Família comercial e Subfamília, criado pela importação como rascunho, com o valor como nome. Os lotes seguem a planilha; o vendedor edita nome, descrição e o resto, mas não os lotes.'
           },
-          manual: { term: 'Manual', text: 'Montado pelo vendedor com os lotes que quiser. Inclui o pacote de um lote só ("Criar pacote deste lote").' },
+          manual: { term: 'Manual', text: 'Montado pelo vendedor com os lotes que quiser: na aba Lotes do pacote, Adicionar lotes e Tirar do pacote (enquanto o pacote não estiver vendido). Inclui o pacote de um lote só ("Criar pacote deste lote").' },
           id: { term: 'ID', text: 'Número do pacote, gerado ao criar e fixo depois. É o endereço público ("#12") e aparece para todos.' },
-          name: { term: 'Nome e descrição', text: 'O que o comprador vê. Em inglês, como o resto do site.' },
-          origin: { term: 'Origem', text: 'De onde vieram os ativos (cadastro em Configuração). Opcional.' }
+          name: { term: 'Nome e descrição', text: 'O que o comprador vê. Em inglês, como o resto do site.' }
         },
         items: {
           a: 'Pacote automático que fica sem lotes (o valor saiu da planilha) não aparece no catálogo e pode ser excluído.',
@@ -719,7 +751,7 @@ export default {
             text: 'Os pacotes do link, menos rascunho e inativo (vendidos aparecem: podem ser dele), com os arquivos públicos e restritos do pacote e dos lotes. O link vale até a data definida (no máximo um ano) e pode ser revogado a qualquer momento.'
           },
           seller: { term: 'Vendedor', text: 'Tudo: todos os pacotes e situações, todos os lotes (inclusive retirados e fora da venda) e os arquivos internos.' },
-          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários, o cadastro de origens e o contato comercial (Configuração).' }
+          admin: { term: 'Administrador', text: 'O mesmo que o vendedor, mais a gestão de usuários, o contato comercial e a Limpeza geral (Configuração). A Limpeza geral apaga todos os lotes, pacotes, arquivos, pedidos e links para recomeçar a carga do zero; pede a frase de confirmação e a senha, e não tem volta.' }
         }
       },
       inquiries: {
@@ -828,6 +860,8 @@ export default {
     }
   },
   errors: {
+    RESET_CONFIRM_INVALID: 'Digite a frase de confirmação exatamente como aparece.',
+    RESET_PASSWORD_INVALID: 'Senha incorreta.',
     PACKAGE_SALE_CONFIRM: 'Há lotes deste pacote já vendidos. Confirme para marcar o pacote como vendido.',
     PACKAGE_LOTS_AUTOMATIC: 'Os lotes deste pacote vêm da planilha: mude pela importação de lotes.',
     PACKAGE_SOLD_LOCKED: 'Pacote vendido não muda de lotes nem pode ser excluído.',

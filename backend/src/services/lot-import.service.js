@@ -193,4 +193,4 @@ async function commit(importId, body, userId) {
   return { summary };
 }
 
-module.exports = { start, preview, commit, cancel, IMPORT_EXTENSIONS, AUTO_PACKAGE_SOURCES };
+module.exports = { start, preview, commit, cancel, IMPORT_EXTENSIONS, AUTO_PACKAGE_SOURCES, LOCK_KEY };

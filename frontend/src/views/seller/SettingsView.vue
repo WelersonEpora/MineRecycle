@@ -21,7 +21,7 @@
     </form>
   </section>
 
-  <section class="mr-card p-3" style="max-width: 820px">
+  <section v-if="SHOW_ORIGIN" class="mr-card p-3" style="max-width: 820px">
     <div class="d-flex align-items-start gap-2 mb-2">
       <div class="flex-grow-1">
         <h2 class="h6 mb-1">{{ t('origins.title') }}</h2>
@@ -54,6 +54,59 @@
     </DataTableCard>
   </section>
 
+  <!-- Limpeza geral (decisão de 2026-11-19): só admin. Apaga todos os dados de negócio; ficam usuários, contato e origens. -->
+  <section v-if="isAdmin" class="mr-card p-3 mt-4 border border-2 border-danger" style="max-width: 820px">
+    <div class="d-flex align-items-start gap-3 flex-wrap">
+      <div class="flex-grow-1" style="min-width: 240px">
+        <h2 class="h6 mb-1 text-danger"><i class="bi bi-exclamation-octagon-fill"></i> {{ t('reset.title') }}</h2>
+        <p class="small text-secondary mb-1">{{ t('reset.help') }}</p>
+        <p v-if="reset.last" class="small text-secondary mb-0">{{ t('reset.last', { date: f.dateTime(reset.last.at), name: reset.last.userName }) }}</p>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" @click="openReset"><i class="bi bi-trash3"></i> {{ t('reset.open') }}</button>
+    </div>
+  </section>
+
+  <ModalDialog :show="reset.show" persistent scrollable :title="t('reset.modalTitle')" @update:show="closeReset">
+    <div class="alert alert-danger text-center mb-3">
+      <div class="display-6 mb-2"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="fs-4 fw-bold">{{ t('reset.warningTitle') }}</div>
+      <div class="mt-2">{{ t('reset.warningText') }}</div>
+    </div>
+    <p class="small fw-medium mb-1">{{ t('reset.willDelete') }}</p>
+    <ul v-if="reset.counts" class="small mb-2">
+      <li>{{ t('reset.lots') }}: <strong>{{ f.num(reset.counts.lots) }}</strong></li>
+      <li>{{ t('reset.packages') }}: <strong>{{ f.num(reset.counts.packages) }}</strong></li>
+      <li>{{ t('reset.attachments') }}: <strong>{{ f.num(reset.counts.attachments) }}</strong> ({{ f.bytes(reset.counts.attachmentBytes) }})</li>
+      <li>{{ t('reset.inquiries') }}: <strong>{{ f.num(reset.counts.inquiries) }}</strong></li>
+      <li>{{ t('reset.accessLinks') }}: <strong>{{ f.num(reset.counts.accessLinks) }}</strong></li>
+    </ul>
+    <p class="small text-secondary">{{ t('reset.kept') }}</p>
+    <div class="alert alert-light border small d-flex align-items-center gap-2 flex-wrap">
+      <span class="flex-grow-1">{{ t('reset.exportFirst') }}</span>
+      <a class="btn btn-outline-secondary btn-sm" :href="api.lotExportUrl(locale)"><i class="bi bi-download"></i> {{ t('reset.exportLots') }}</a>
+    </div>
+    <form id="mr-reset-form" class="row g-3" autocomplete="off" @submit.prevent="runReset">
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-reset-phrase">
+          <i18n-t keypath="reset.phraseLabel" tag="span"><template #phrase><strong class="mr-mono">{{ t('reset.phrase') }}</strong></template></i18n-t>
+        </label>
+        <input id="mr-reset-phrase" v-model="reset.phrase" class="form-control" autocomplete="off" spellcheck="false" :disabled="reset.busy" />
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label small" for="mr-reset-password">{{ t('reset.passwordLabel') }}</label>
+        <input id="mr-reset-password" v-model="reset.password" type="password" class="form-control" autocomplete="current-password" :disabled="reset.busy" />
+      </div>
+    </form>
+    <div v-if="reset.error" class="alert alert-danger py-2 small mt-3 mb-0">{{ reset.error }}</div>
+    <template #footer>
+      <button class="btn btn-outline-secondary btn-sm" :disabled="reset.busy" @click="closeReset(false)">{{ t('common.cancel') }}</button>
+      <button class="btn btn-danger btn-sm" type="submit" form="mr-reset-form" :disabled="!canReset">
+        <span v-if="reset.busy" class="spinner-border spinner-border-sm me-1"></span>
+        {{ reset.busy ? t('reset.busy') : t('reset.confirm') }}
+      </button>
+    </template>
+  </ModalDialog>
+
   <ModalDialog v-model:show="form.show" size="sm" :title="form.id ? t('origins.edit') : t('origins.new')">
     <form id="mr-origin-form" class="row g-3" @submit.prevent="save">
       <div class="col-12">
@@ -83,12 +136,14 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useFormat } from '../../composables/useFormat.js'
 import { useSession } from '../../stores/session.js'
 import { notify } from '../../composables/useDialog.js'
 import { api } from '../../services/api.js'
 import DataTableCard from '../../components/table/DataTableCard.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import { SHOW_ORIGIN } from '../../utils/features.js'
 
 // Configuração: contato comercial (e-mail e WhatsApp da equipe) e cadastro de origens dos pacotes (de onde vieram os ativos). Todos veem; só admin inclui e edita.
 // O catálogo não tem mais configuração: regra fixa (ativos; em negociação com a caixa marcada; vendidos nunca).
@@ -100,6 +155,46 @@ const origins = ref([])
 const error = ref('')
 const contact = reactive({ email: '', whatsapp: '', error: '', busy: false })
 const form = reactive({ show: false, id: null, name: '', code: '', active: true, error: '', busy: false })
+const { locale } = useI18n()
+const reset = reactive({ show: false, counts: null, last: null, phrase: '', password: '', error: '', busy: false })
+// O botão só libera com a frase exata do idioma da tela e a senha preenchida (o backend confere as duas de novo).
+const canReset = computed(() => !reset.busy && reset.phrase.trim() === t('reset.phrase') && reset.password.length > 0)
+
+async function loadReset() {
+  try {
+    const r = await api.dataReset()
+    reset.counts = r.counts
+    reset.last = r.lastReset
+  } catch (err) {
+    reset.error = f.errorMessage(err)
+  }
+}
+
+async function openReset() {
+  Object.assign(reset, { show: true, phrase: '', password: '', error: '', counts: null })
+  await loadReset()
+}
+
+// Enquanto apaga, nada fecha o modal.
+function closeReset(value) {
+  if (value === false && !reset.busy) Object.assign(reset, { show: false, phrase: '', password: '' })
+}
+
+async function runReset() {
+  if (!canReset.value) return
+  reset.busy = true
+  reset.error = ''
+  try {
+    const r = await api.runDataReset({ confirm: reset.phrase, password: reset.password })
+    Object.assign(reset, { show: false, phrase: '', password: '' })
+    notify(r.filesRemoved ? t('reset.done') : t('reset.filesPending'))
+    await loadReset()
+  } catch (err) {
+    reset.error = f.errorMessage(err)
+  } finally {
+    reset.busy = false
+  }
+}
 
 async function loadContact() {
   try {
@@ -154,7 +249,8 @@ async function save() {
 }
 
 onMounted(() => {
-  load()
+  if (SHOW_ORIGIN) load()
   loadContact()
+  if (isAdmin.value) loadReset()
 })
 </script>

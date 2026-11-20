@@ -19,7 +19,7 @@
           <option v-for="l in SOURCES" :key="l" :value="l">{{ f.sourceLabel(l) }}</option>
         </select>
       </div>
-      <div v-if="origins.length">
+      <div v-if="SHOW_ORIGIN && origins.length">
         <label class="form-label">{{ t('seller.fields.origin') }}</label>
         <select v-model="filters.originId" class="form-select form-select-sm">
           <option value="">{{ t('common.all') }}</option>
@@ -73,7 +73,7 @@
       <td>
         <div class="fw-medium">{{ p.name }}</div>
         <div v-if="p.source !== 'manual' && p.sourceValue !== p.name" class="small text-secondary">{{ p.sourceValue }}</div>
-        <div v-if="p.origin" class="small text-secondary" :title="p.origin.name">{{ p.origin.code }}</div>
+        <div v-if="SHOW_ORIGIN && p.origin" class="small text-secondary" :title="p.origin.name">{{ p.origin.code }}</div>
       </td>
       <td class="small text-nowrap">{{ f.sourceLabel(p.source) }}</td>
       <td class="small" style="min-width: 9rem">{{ (p.sites || []).join(' · ') }}</td>
@@ -111,6 +111,7 @@ import SortHeader from '../../components/table/SortHeader.vue'
 import { PAGE_SIZES, slicePage, sortItems } from '../../utils/pagination.js'
 import ModalDialog from '../../components/ModalDialog.vue'
 import PackageForm from '../../components/seller/PackageForm.vue'
+import { SHOW_ORIGIN } from '../../utils/features.js'
 
 const f = useFormat()
 const t = f.t
@@ -119,10 +120,12 @@ const router = useRouter()
 const listRoute = route.name
 const filters = reactive(sellerFiltersFromQuery(route.query))
 const origins = ref([])
-api
-  .origins()
-  .then((list) => (origins.value = list))
-  .catch(() => {})
+if (SHOW_ORIGIN) {
+  api
+    .origins()
+    .then((list) => (origins.value = list))
+    .catch(() => {})
+}
 // Sites dos lotes (como estão na planilha), para o filtro.
 const sites = ref([])
 api

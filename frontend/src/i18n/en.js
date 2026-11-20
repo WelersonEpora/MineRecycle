@@ -428,6 +428,32 @@ export default {
     adminOnly: 'Only administrators change the contact.',
     saved: 'Contact saved.'
   },
+  // Limpeza geral (decisão de 2026-11-19): só admin, em Configuração.
+  reset: {
+    title: 'General cleanup',
+    help: 'Deletes all lots, packages, photos and files, buyer requests and access links, to start loading from scratch. Users and the sales contact stay.',
+    open: 'General cleanup',
+    last: 'Last cleanup: {date}, by {name}.',
+    modalTitle: 'General cleanup: delete ALL data',
+    warningTitle: 'ALL DATA WILL BE DELETED',
+    warningText: 'This cannot be undone. Buyers lose their links, package numbers start again from 1 and files are deleted from the server.',
+    willDelete: 'What will be deleted:',
+    lots: 'Lots',
+    packages: 'Packages',
+    attachments: 'Photos and files',
+    inquiries: 'Buyer requests',
+    accessLinks: 'Access links',
+    kept: 'Users and the sales contact are kept.',
+    exportFirst: 'Before you go on, export the lots: the spreadsheet can be imported back later.',
+    exportLots: 'Export lots',
+    phraseLabel: 'To confirm, type {phrase}',
+    phrase: 'DELETE ALL',
+    passwordLabel: 'Your password',
+    confirm: 'Delete all data',
+    busy: 'Deleting...',
+    done: 'All data was deleted.',
+    filesPending: 'Data deleted, but some files could not be removed. Ask for the orphan file cleanup.'
+  },
   how: {
     tab: 'How it works',
     title: 'How MineRecycle works',
@@ -461,8 +487,8 @@ export default {
         items: {
           a: 'The import creates an automatic package (draft) for each value of the Linked system, Commercial family and Subfamily columns. Its lots follow the spreadsheet.',
           b: 'Sellers build manual packages with any lots they want ("New package" and the package Lots tab).',
-          c: 'Single-lot package: "Create package from this lot", on the lot page.',
-          d: 'Check the name, description, category and origin of each package before publishing.'
+          c: 'Single-lot package: "Create a package from this lot", on the lot page.',
+          d: 'Check the name, description and category of each package before publishing.'
         },
         where: 'Packages and Lots'
       },
@@ -480,14 +506,14 @@ export default {
         items: {
           a: 'Once Active, the package is in the public catalog: anyone can see it, no login.',
           b: 'The catalog shows the package with the lots on offer, public photos and files. Lots off sale are hidden. Never a price.',
-          c: 'A package with no lot on offer does not show in the catalog.'
+          c: 'A package with no lot on offer (all withdrawn or off sale) does not show in the catalog. A sold lot is still on offer, with the sold badge.'
         },
         where: 'Packages → Change status'
       },
       browse: {
         title: 'A visitor finds the package',
         items: {
-          a: 'Searches by name, description, lot number, lot description or supplier; filters by grouping, origin and site.',
+          a: 'Searches by name, description, lot number, lot description or supplier; filters by grouping and site.',
           b: 'Opens each lot to see its data and photos.',
           c: 'Sees that restricted documents exist (not which) and can ask for access.'
         },
@@ -649,7 +675,9 @@ export default {
           'The source is the client inventory workbook, sheet "Matriz de lotes". The system reads only the lot columns of that sheet; the other columns and sheets, including price and value, are ignored.',
         items: {
           a: 'The spreadsheet is still kept outside the system. Importing again updates the lots; nothing is saved before you confirm.',
-          b: 'Data that comes from the spreadsheet changes only through the import. Sellers add their own description, photos and files, which the import never deletes.'
+          b: 'Data that comes from the spreadsheet changes only through the import. Sellers add their own description, photos and files, which the import never deletes.',
+          c: 'Export lots (Lots page) creates a spreadsheet of all lots in the same format as the import, with the system status, packages, seller description and number of files in separate columns. It works as a copy and can be imported back.',
+          d: 'To start loading from scratch, an administrator uses the General cleanup (Settings): it deletes all lots, packages, photos and files, requests and links, and package numbers start again from 1. Users and the sales contact stay. It asks for the confirmation phrase and the password, and cannot be undone: export the lots first.'
         }
       },
       lots: {
@@ -662,6 +690,11 @@ export default {
           sold: { term: 'Sold', text: 'By the spreadsheet (STATUS "Sold") or by the sale of a package that contains it. Shows with the sold badge in every package. The spreadsheet never takes a lot back from sold.' },
           unavailable: { term: 'Off sale', text: 'STATUS "Collected by court officer". Hidden from the public side; sellers still see it.' },
           withdrawn: { term: 'Withdrawn', text: 'Left the spreadsheet. Not deleted (keeps files and history) and comes back if it reappears in an import.' }
+        },
+        items: {
+          a: 'The seller area opens on Lots. Each lot page has the tabs Details (spreadsheet and seller description), Packages (where the lot is, with "Create a package from this lot") and Photos and files.',
+          b: 'The seller description is the only lot data editable on screen: Edit button, on the Details tab.',
+          c: 'The lot status is not edited directly: it comes from the spreadsheet or from the sale of a package.'
         }
       },
       packages: {
@@ -672,10 +705,9 @@ export default {
             term: 'Automatic',
             text: 'One per value of the Linked system, Commercial family and Subfamily columns, created by the import as a draft, named after the value. Its lots follow the spreadsheet; sellers edit the name, description and the rest, but not the lots.'
           },
-          manual: { term: 'Manual', text: 'Built by a seller with any lots. Includes the single-lot package ("Create package from this lot").' },
+          manual: { term: 'Manual', text: 'Built by a seller with any lots: on the package Lots tab, Add lots and Remove from package (while the package is not sold). Includes the single-lot package ("Create a package from this lot").' },
           id: { term: 'ID', text: 'Package number, generated on creation and fixed afterwards. It is the public address ("#12") and everyone sees it.' },
-          name: { term: 'Name and description', text: 'What the buyer sees. In English, like the rest of the site.' },
-          origin: { term: 'Origin', text: 'Where the assets came from (registry in Settings). Optional.' }
+          name: { term: 'Name and description', text: 'What the buyer sees. In English, like the rest of the site.' }
         },
         items: {
           a: 'An automatic package left with no lots (its value left the spreadsheet) does not show in the catalog and can be deleted.',
@@ -719,7 +751,7 @@ export default {
             text: 'The link packages, except draft and inactive (sold ones show: they may be theirs), with the public and restricted files of the package and its lots. The link is valid until the chosen date (one year at most) and can be revoked at any time.'
           },
           seller: { term: 'Seller', text: 'Everything: all packages and statuses, all lots (including withdrawn and off sale) and internal files.' },
-          admin: { term: 'Administrator', text: 'The same as a seller, plus user management, the origin registry and the sales contact (Settings).' }
+          admin: { term: 'Administrator', text: 'The same as a seller, plus user management, the sales contact and the General cleanup (Settings). The General cleanup deletes all lots, packages, files, requests and links to start loading from scratch; it asks for the confirmation phrase and the password, and cannot be undone.' }
         }
       },
       inquiries: {
@@ -828,6 +860,8 @@ export default {
     }
   },
   errors: {
+    RESET_CONFIRM_INVALID: 'Type the confirmation phrase exactly as shown.',
+    RESET_PASSWORD_INVALID: 'Password is incorrect.',
     PACKAGE_SALE_CONFIRM: 'Some lots of this package were already sold. Confirm to mark the package as sold.',
     PACKAGE_LOTS_AUTOMATIC: 'The lots of this package come from the spreadsheet: change them through the lot import.',
     PACKAGE_SOLD_LOCKED: 'A sold package cannot change its lots or be deleted.',

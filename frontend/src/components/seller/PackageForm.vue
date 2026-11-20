@@ -10,7 +10,7 @@
         <option v-for="c in CATEGORIES" :key="c" :value="c">{{ f.categoryLabel(c) }}</option>
       </select>
     </div>
-    <div class="col-6">
+    <div v-if="SHOW_ORIGIN" class="col-6">
       <label class="form-label small" for="mr-pkg-origin">{{ t('seller.fields.origin') }}<HelpTip :text="t('seller.fields.originHint')" :label="t('seller.fields.help', { field: t('seller.fields.origin') })" /></label>
       <select id="mr-pkg-origin" v-model="model.originId" class="form-select">
         <option value="">{{ t('seller.fields.originNone') }}</option>
@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+import { SHOW_ORIGIN } from '../../utils/features.js'
 import { computed, onMounted, ref } from 'vue'
 import { api } from '../../services/api.js'
 import HelpTip from '../HelpTip.vue'
@@ -46,6 +47,7 @@ const t = f.t
 const origins = ref([])
 const originChoices = computed(() => origins.value.filter((o) => o.active || o.id === model.value.originId))
 onMounted(async () => {
+  if (!SHOW_ORIGIN) return
   try {
     origins.value = await api.origins()
   } catch {

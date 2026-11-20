@@ -12,6 +12,7 @@ const accessLinkService = require("../services/access-link.service");
 const originService = require("../services/origin.service");
 const inquiryService = require("../services/inquiry.service");
 const contactService = require("../services/contact.service");
+const dataResetService = require("../services/data-reset.service");
 const userService = require("../services/user.service");
 const authService = require("../services/auth.service");
 
@@ -117,6 +118,9 @@ router.put("/contact", requireAdmin, async (req, res) => res.json(await contactS
 router.get("/origins", async (_req, res) => res.json(await originService.list()));
 router.post("/origins", requireAdmin, async (req, res) => res.status(201).json(await originService.create(req.body || {})));
 router.patch("/origins/:originId", requireAdmin, async (req, res) => res.json(await originService.update(req.params.originId, req.body || {})));
+// Limpeza geral: o que seria apagado e a última limpeza; depois { confirm, password } apaga tudo (só admin).
+router.get("/data-reset", requireAdmin, async (_req, res) => res.json(await dataResetService.summary()));
+router.post("/data-reset", requireAdmin, async (req, res) => res.json(await dataResetService.run(req.body || {}, userId(req))));
 router.get("/users", requireAdmin, async (_req, res) => res.json(await userService.list()));
 router.post("/users", requireAdmin, async (req, res) => res.status(201).json(await userService.create(req.body || {})));
 router.patch("/users/:userId", requireAdmin, async (req, res) =>
