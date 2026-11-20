@@ -7,72 +7,103 @@
     </nav>
     <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
       <div class="flex-grow-1">
-        <div class="mr-number small">{{ t('lots.lotNumber') }} <span class="mr-mono">{{ lot.lotNumber }}</span></div>
+        <div class="mr-number small">
+          {{ t('lots.lotNumber') }} <span class="mr-mono">{{ lot.lotNumber }}</span><template v-if="lot.siteName"> · {{ lot.siteName }}</template>
+        </div>
         <h1 class="h4 mb-1">{{ lot.title }}</h1>
         <LotStatusBadge :status="lot.status" :withdrawn="Boolean(lot.withdrawnAt)" />
         <span v-if="lot.soldBySheet" class="small text-secondary ms-2">{{ t('lots.soldBySheet') }}</span>
       </div>
-      <button class="btn btn-sm btn-outline-secondary" :disabled="busy" @click="createPackage"><i class="bi bi-box-seam"></i> {{ t('lots.createPackage') }}</button>
     </div>
+
     <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>
 
-    <div class="row g-3">
-      <div class="col-lg-6">
-        <section class="mr-card p-3 mb-3">
-          <h2 class="h6 text-secondary">{{ t('lots.fromSheet') }}</h2>
-          <dl class="mr-details mb-0">
-            <dt>{{ t('lots.lotNumber') }}</dt>
-            <dd class="mr-mono">{{ lot.lotNumber }}</dd>
-            <dt>{{ t('lots.title') }}</dt>
-            <dd>{{ lot.title }}</dd>
-            <dt>{{ t('lots.supplier') }}</dt>
-            <dd>{{ lot.masterSupplier || '—' }}</dd>
-            <dt>{{ t('lots.site') }}</dt>
-            <dd>{{ lot.siteName || '—' }}</dd>
-            <dt>{{ t('lots.linkedSystem') }}</dt>
-            <dd>{{ lot.linkedSystem || '—' }}</dd>
-            <dt>{{ t('lots.family') }}</dt>
-            <dd>{{ lot.commercialFamily || '—' }}</dd>
-            <dt>{{ t('lots.subfamily') }}</dt>
-            <dd>{{ lot.subfamily || '—' }}</dd>
-            <dt>{{ t('lots.sheetStatus') }}</dt>
-            <dd>{{ f.lotStatusLabel(lot.sheetStatus) }}</dd>
-            <dt>{{ t('lots.imported') }}</dt>
-            <dd>{{ lot.importedAt ? f.dateTime(lot.importedAt) : '—' }}</dd>
-          </dl>
-        </section>
-        <section class="mr-card p-3 mb-3">
-          <label class="form-label small fw-medium" for="mr-lot-desc">{{ t('lots.description') }}<HelpTip :text="t('lots.descriptionHint')" :label="t('seller.fields.help', { field: t('lots.description') })" /></label>
-          <textarea id="mr-lot-desc" v-model="description" rows="5" class="form-control"></textarea>
-          <div class="text-end mt-2">
-            <button class="btn btn-accent btn-sm" :disabled="busy || description === (lot.description || '')" @click="saveDescription">{{ busy ? t('common.saving') : t('common.save') }}</button>
-          </div>
-        </section>
-      </div>
-      <div class="col-lg-6">
-        <section class="mr-card p-3 mb-3">
-          <h2 class="h6">{{ t('lots.packages') }} ({{ lot.packages.length }})</h2>
-          <ul class="list-unstyled mb-0 small">
-            <li v-for="p in lot.packages" :key="p.id" class="py-1 d-flex align-items-center gap-2">
-              <span class="mr-number">{{ p.number }}</span>
-              <RouterLink :to="{ name: 'seller-package', params: { id: p.id } }">{{ p.name }}</RouterLink>
-              <span class="text-secondary">· {{ f.sourceLabel(p.source) }}</span>
-              <StatusBadge :status="p.status" class="ms-auto" />
-              <span v-if="p.soldThisLot" class="text-secondary">{{ t('lots.soldByPackage') }}</span>
-            </li>
-            <li v-if="!lot.packages.length" class="text-secondary">—</li>
-          </ul>
-        </section>
-      </div>
-    </div>
+    <!-- Mesmo arranjo da página do pacote: abas, com a aba aberta no endereço. -->
+    <ul class="nav nav-tabs mb-3">
+      <li v-for="tb in tabs" :key="tb.key" class="nav-item">
+        <button class="nav-link" :class="{ active: tab === tb.key }" @click="setTab(tb.key)">
+          {{ t(`seller.tabs.${tb.key}`) }} <span v-if="tb.count !== undefined" class="badge text-bg-light border">{{ tb.count }}</span>
+        </button>
+      </li>
+    </ul>
 
-    <h2 class="h6 mt-2">{{ t('seller.tabs.attachments') }}</h2>
-    <AttachmentsPanel :owner="{ lotId: lot.id }" />
+    <!-- Dados: só leitura. Os da planilha mudam só pela importação; a descrição do vendedor abre num modal. -->
+    <section v-if="tab === 'details'" class="mr-card p-3 d-flex flex-column-reverse flex-sm-row align-items-sm-start gap-2" style="max-width: 860px">
+      <div class="flex-grow-1">
+        <dl class="mr-details">
+          <dt>{{ t('lots.description') }}</dt>
+          <dd style="white-space: pre-line">{{ lot.description || '—' }}</dd>
+        </dl>
+        <h2 class="h6 text-secondary mt-3">{{ t('lots.fromSheet') }}</h2>
+        <dl class="mr-details mb-0">
+          <dt>{{ t('lots.lotNumber') }}</dt>
+          <dd class="mr-mono">{{ lot.lotNumber }}</dd>
+          <dt>{{ t('lots.title') }}</dt>
+          <dd>{{ lot.title }}</dd>
+          <dt>{{ t('lots.supplier') }}</dt>
+          <dd>{{ lot.masterSupplier || '—' }}</dd>
+          <dt>{{ t('lots.site') }}</dt>
+          <dd>{{ lot.siteName || '—' }}</dd>
+          <dt>{{ t('lots.linkedSystem') }}</dt>
+          <dd>{{ lot.linkedSystem || '—' }}</dd>
+          <dt>{{ t('lots.family') }}</dt>
+          <dd>{{ lot.commercialFamily || '—' }}</dd>
+          <dt>{{ t('lots.subfamily') }}</dt>
+          <dd>{{ lot.subfamily || '—' }}</dd>
+          <dt>{{ t('lots.sheetStatus') }}</dt>
+          <dd>{{ f.lotStatusLabel(lot.sheetStatus) }}</dd>
+          <dt>{{ t('lots.imported') }}</dt>
+          <dd>{{ lot.importedAt ? f.dateTime(lot.importedAt) : '—' }}</dd>
+        </dl>
+      </div>
+      <button class="btn btn-accent btn-sm align-self-end align-self-sm-start text-nowrap" @click="openEdit"><i class="bi bi-pencil"></i> {{ t('common.edit') }}</button>
+    </section>
+
+    <!-- Pacotes em que o lote está. -->
+    <section v-else-if="tab === 'packages'">
+      <DataTableCard :paginated="false" :empty="!lot.packages.length" :empty-text="t('lots.noPackages')" clickable>
+        <template #filters>
+          <span class="small text-secondary">{{ t('lots.packagesHint') }}</span>
+          <button class="btn btn-accent btn-sm ms-auto" :disabled="busy" @click="createPackage"><i class="bi bi-box-seam"></i> {{ t('lots.createPackage') }}</button>
+        </template>
+        <template #head>
+          <tr>
+            <th class="text-nowrap" style="width: 1%">{{ t('seller.fields.number') }}</th>
+            <th>{{ t('seller.fields.name') }}</th>
+            <th>{{ t('seller.level') }}</th>
+            <th>{{ t('catalog.status') }}</th>
+            <th></th>
+          </tr>
+        </template>
+        <tr v-for="p in lot.packages" :key="p.id" @click="openPackage(p)">
+          <td class="mr-number fw-normal text-nowrap">{{ p.number }}</td>
+          <td class="fw-medium">{{ p.name }}</td>
+          <td class="small text-nowrap">{{ f.sourceLabel(p.source) }}</td>
+          <td><StatusBadge :status="p.status" /></td>
+          <td class="small text-secondary">{{ p.soldThisLot ? t('lots.soldByPackage') : '' }}</td>
+        </tr>
+      </DataTableCard>
+    </section>
+
+    <section v-else-if="tab === 'attachments'">
+      <AttachmentsPanel :owner="{ lotId: lot.id }" @changed="load" />
+    </section>
+
+    <!-- Edição da descrição. Persistente: clique fora e Esc não fecham, para não perder o que foi digitado. -->
+    <ModalDialog v-model:show="editing" :title="t('lots.editDescription')" size="lg" persistent scrollable>
+      <label class="form-label small fw-medium" for="mr-lot-desc">{{ t('lots.description') }}<HelpTip :text="t('lots.descriptionHint')" :label="t('seller.fields.help', { field: t('lots.description') })" /></label>
+      <textarea id="mr-lot-desc" v-model="description" rows="8" class="form-control"></textarea>
+      <div v-if="editError" class="alert alert-danger py-2 small mt-3">{{ editError }}</div>
+      <template #footer>
+        <button class="btn btn-outline-secondary btn-sm" :disabled="busy" @click="editing = false">{{ t('common.cancel') }}</button>
+        <button class="btn btn-accent btn-sm" :disabled="busy" @click="saveDescription">{{ busy ? t('common.saving') : t('common.save') }}</button>
+      </template>
+    </ModalDialog>
   </template>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFormat } from '../../composables/useFormat.js'
 import { notify } from '../../composables/useDialog.js'
@@ -80,39 +111,63 @@ import { api } from '../../services/api.js'
 import HelpTip from '../../components/HelpTip.vue'
 import StatusBadge from '../../components/StatusBadge.vue'
 import LotStatusBadge from '../../components/LotStatusBadge.vue'
+import ModalDialog from '../../components/ModalDialog.vue'
+import DataTableCard from '../../components/table/DataTableCard.vue'
 import AttachmentsPanel from '../../components/seller/AttachmentsPanel.vue'
 
-// Detalhe do lote: dados da planilha (só leitura), descrição do vendedor, pacotes em que está e fotos e arquivos do
-// lote (acompanham o lote em todos os pacotes).
+// Página do lote, no mesmo arranjo da página do pacote: Dados (planilha e descrição do vendedor), Pacotes em que o
+// lote está e Fotos e arquivos do lote (acompanham o lote em todos os pacotes).
 const f = useFormat()
 const t = f.t
 const route = useRoute()
 const router = useRouter()
 
+const TAB_KEYS = ['details', 'packages', 'attachments']
 const lot = ref(null)
-const description = ref('')
 const error = ref('')
 const busy = ref(false)
+const editing = ref(false)
+const editError = ref('')
+const description = ref('')
+const tab = ref(TAB_KEYS.includes(route.query.tab) ? route.query.tab : 'details')
+
+const tabs = computed(() => [
+  { key: 'details' },
+  { key: 'packages', count: lot.value?.packages.length },
+  { key: 'attachments', count: lot.value?.attachments.length }
+])
+
+function setTab(key) {
+  tab.value = key
+  router.replace({ query: { ...route.query, tab: key } })
+}
 
 async function load() {
   error.value = ''
   try {
     lot.value = await api.lot(route.params.id)
-    description.value = lot.value.description || ''
   } catch (err) {
     error.value = f.errorMessage(err)
   }
 }
 
+// Cada abertura parte do que está gravado.
+function openEdit() {
+  description.value = lot.value.description || ''
+  editError.value = ''
+  editing.value = true
+}
+
 async function saveDescription() {
   busy.value = true
-  error.value = ''
+  editError.value = ''
   try {
-    lot.value = await api.updateLot(lot.value.id, { description: description.value })
-    description.value = lot.value.description || ''
+    await api.updateLot(lot.value.id, { description: description.value })
+    await load()
+    editing.value = false
     notify(t('seller.saved'))
   } catch (err) {
-    error.value = f.errorMessage(err)
+    editError.value = f.errorMessage(err)
   } finally {
     busy.value = false
   }
@@ -131,11 +186,22 @@ async function createPackage() {
   }
 }
 
+function openPackage(p) {
+  router.push({ name: 'seller-package', params: { id: p.id } })
+}
+
 // Volta para onde veio (lista filtrada ou pacote); aberto direto pelo link, vai para a lista de lotes.
 function back() {
   if (window.history.state?.back) router.back()
   else router.push({ name: 'seller-lots' })
 }
 
-watch(() => route.params.id, load, { immediate: true })
+watch(
+  () => route.params.id,
+  () => {
+    lot.value = null
+    load()
+  },
+  { immediate: true }
+)
 </script>

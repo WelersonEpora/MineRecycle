@@ -51,6 +51,8 @@ export const api = {
   lot: (id) => data(http.get(`/seller/lots/${id}`)),
   updateLot: (id, body) => data(http.patch(`/seller/lots/${id}`, body)),
   packageFromLot: (id) => data(http.post(`/seller/lots/${id}/package`)),
+  // Planilha de todos os lotes (download direto pelo link; o cookie do vendedor vai junto).
+  lotExportUrl: (lang) => `/api/v1/seller/lots/export?lang=${encodeURIComponent(lang)}`,
 
   // Importação de lotes (planilha da Horizonte, aba "Matriz de lotes")
   startLotImport: (file) => {

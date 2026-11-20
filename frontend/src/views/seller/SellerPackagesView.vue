@@ -53,11 +53,12 @@
     </template>
     <template #head>
       <tr>
-        <SortHeader v-model="sort" field="number" :label="t('seller.fields.number')" />
-        <th></th>
-        <SortHeader v-model="sort" field="name" :label="t('seller.fields.name')" />
+        <!-- Larguras: ID e Site encolhem até o conteúdo (width 1%); o nome fica com a maior parte. -->
+        <SortHeader v-model="sort" field="number" :label="t('seller.fields.number')" class="text-nowrap pe-0 mr-col-id" style="width: 1%" />
+        <th class="ps-2"></th>
+        <SortHeader v-model="sort" field="name" :label="t('seller.fields.name')" style="width: 45%" />
         <SortHeader v-model="sort" field="source" :label="t('seller.level')" />
-        <th>{{ t('seller.site') }}</th>
+        <th style="width: 1%">{{ t('seller.site') }}</th>
         <SortHeader v-model="sort" field="status" :label="t('catalog.status')" />
         <SortHeader v-model="sort" field="lotCount" :label="t('seller.lotCount')" first-order="desc" />
         <SortHeader v-model="sort" field="attachmentCount" :label="t('seller.attachmentCount')" first-order="desc" />
@@ -65,8 +66,8 @@
       </tr>
     </template>
     <tr v-for="p in pageItems" :key="p.id" @click="open(p)">
-      <td class="mr-number text-nowrap">{{ p.number }}</td>
-      <td style="width: 64px">
+      <td class="mr-number fw-normal text-nowrap pe-0">{{ p.number }}</td>
+      <td class="ps-2" style="width: 64px">
         <img v-if="p.coverUrl" :src="p.coverUrl" alt="" style="width: 56px; height: 42px; object-fit: cover" class="rounded" loading="lazy" />
       </td>
       <td>
@@ -75,7 +76,7 @@
         <div v-if="p.origin" class="small text-secondary" :title="p.origin.name">{{ p.origin.code }}</div>
       </td>
       <td class="small text-nowrap">{{ f.sourceLabel(p.source) }}</td>
-      <td class="small">{{ (p.sites || []).join(' · ') }}</td>
+      <td class="small" style="min-width: 9rem">{{ (p.sites || []).join(' · ') }}</td>
       <td><StatusBadge :status="p.status" /></td>
       <td class="text-nowrap">
         {{ p.lotCount }}
@@ -225,3 +226,10 @@ watch(filters, () => {
 }, { deep: true })
 onMounted(load)
 </script>
+
+<style scoped>
+/* Coluna ID: ícone de ordenação colado ao rótulo, para a coluna ficar estreita. */
+.mr-col-id :deep(.mr-th-sort) {
+  gap: 0.15rem;
+}
+</style>

@@ -164,4 +164,31 @@ test("lot import", { skip }, async (t) => {
     const detail = (await seller.get(`/api/v1/seller/lots/${pump.id}`)).data;
     assert.ok(detail.packages.some((p) => p.name === "Water System" && p.soldThisLot));
   });
+
+  await t.test("export: every lot not withdrawn, in the import format; importing it back changes nothing", async () => {
+    const res = await seller.get("/api/v1/seller/lots/export?lang=pt");
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-disposition"), /MineRecycle - Lotes - \d{4}-\d{2}-\d{2}\.xlsx/);
+    assert.equal(res.headers.get("cache-control"), "private, no-store");
+    const XLSX = require("xlsx");
+    const wb = XLSX.read(res.data, { type: "buffer" });
+    assert.deepEqual(wb.SheetNames, ["Matriz de lotes"]);
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets["Matriz de lotes"], { header: 1, defval: "" });
+    // L-6 está retirado: fica fora.
+    assert.deepEqual(rows.slice(1).map((r) => r[0]), ["L-2", "L-3", "L-4", "L-5", "L-10"]);
+    // L-2 foi vendido pelo pacote Water System: STATUS como a planilha disse, situação do sistema ao lado.
+    const l2 = rows.find((r) => r[0] === "L-2");
+    assert.equal(l2[7], "");
+    assert.equal(l2[8], "Vendido");
+    assert.match(l2[9], /Water System/);
+
+    const preview = (await upload(res.data, "export.xlsx")).data;
+    assert.equal(preview.canCommit, true);
+    for (const k of ["created", "updated", "restored", "withdrawn", "packagesCreated", "packagesUpdated", "packagesEmptied"]) {
+      assert.equal(preview.summary[k], 0, k);
+    }
+    await seller.del(`/api/v1/seller/lot-imports/${preview.importId}`);
+    assert.equal((await anon.get("/api/v1/seller/lots/export")).status, 401);
+  });
+
 });

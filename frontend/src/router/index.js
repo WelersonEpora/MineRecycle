@@ -13,10 +13,12 @@ const routes = [
     component: () => import('../views/seller/SellerLayout.vue'),
     meta: { seller: true },
     children: [
-      { path: '', name: 'seller-packages', component: () => import('../views/seller/SellerPackagesView.vue') },
-      { path: 'packages/:id', name: 'seller-package', component: () => import('../views/seller/PackageEditView.vue') },
+      // A área abre em Lotes: a ordem das abas segue o fluxo (lotes da planilha, depois os pacotes que os agrupam).
+      { path: '', redirect: { name: 'seller-lots' } },
       { path: 'lots', name: 'seller-lots', component: () => import('../views/seller/SellerLotsView.vue') },
       { path: 'lots/:id', name: 'seller-lot', component: () => import('../views/seller/LotView.vue') },
+      { path: 'packages', name: 'seller-packages', component: () => import('../views/seller/SellerPackagesView.vue') },
+      { path: 'packages/:id', name: 'seller-package', component: () => import('../views/seller/PackageEditView.vue') },
       { path: 'inquiries', name: 'seller-inquiries', component: () => import('../views/seller/InquiriesView.vue') },
       { path: 'links', name: 'seller-links', component: () => import('../views/seller/AccessLinksView.vue') },
       { path: 'settings', name: 'seller-settings', component: () => import('../views/seller/SettingsView.vue') },
@@ -44,7 +46,7 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.matched.some((r) => r.meta.admin) && session.state.user?.role !== 'admin') {
-    return { name: 'seller-packages' }
+    return { name: 'seller-lots' }
   }
   return true
 })

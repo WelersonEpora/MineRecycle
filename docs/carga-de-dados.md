@@ -49,9 +49,15 @@ usado. Sinônimos aceitos: `LOT_COLUMNS` em `backend/src/import/lot-sheet.js`.
 O commit refaz o plano sob um lock e só grava se o arquivo, a aba e o banco forem os mesmos da prévia
 (`IMPORT_STALE`), numa transação só.
 
-## Pendências
+## Exportar
 
-- **Arquivos órfãos:** a limpeza de 2026-11-19 apagou os registros de anexos, não os arquivos. `npm run files:orphans`
-  mostra os arquivos sem registro (com margem de 1 hora, e de 24 horas para prévias de importação); `-- --delete`
-  apaga. No servidor: `docker compose exec backend node scripts/files-orphans.js`.
-- **Exportação para planilha** (pacotes e lotes): ainda não refeita sobre lotes.
+Lotes → Exportar lotes gera uma planilha com todos os lotes não retirados, no mesmo formato (aba "Matriz de lotes", as
+8 colunas e, depois, colunas informativas que o importador ignora). STATUS sai como a planilha disse, não como o
+sistema: assim o arquivo pode ser importado de volta sem marcar como "vendido pela planilha" o que foi vendido por um
+pacote. A planilha do cliente continua sendo a fonte; a exportação serve para consultar e repassar o estado do sistema.
+
+## Arquivos órfãos
+
+A limpeza de 2026-11-19 apagou os registros de anexos, não os arquivos. `npm run files:orphans`
+mostra os arquivos sem registro (com margem de 1 hora, e de 24 horas para prévias de importação); `-- --delete`
+apaga. No servidor: `docker compose exec backend node scripts/files-orphans.js` (rodado em 2026-11-19).

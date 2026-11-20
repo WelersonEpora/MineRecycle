@@ -13,7 +13,10 @@
   >
     <template #filters>
       <LotFilters id="lots" v-model="filters" :facets="facets" with-withdrawn />
-      <button class="btn btn-accent btn-sm ms-auto" @click="importing = true"><i class="bi bi-upload"></i> {{ t('lots.importLots') }}</button>
+      <div class="d-flex gap-2 ms-auto">
+        <a class="btn btn-outline-secondary btn-sm" :href="api.lotExportUrl(locale)" :title="t('lots.exportHint')"><i class="bi bi-download"></i> {{ t('lots.exportLots') }}</a>
+        <button class="btn btn-accent btn-sm" @click="importing = true"><i class="bi bi-upload"></i> {{ t('lots.importLots') }}</button>
+      </div>
     </template>
   </LotsTable>
 
@@ -23,6 +26,7 @@
 <script setup>
 import { reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useFormat } from '../../composables/useFormat.js'
 import { lotFiltersFromQuery, lotFiltersToQuery } from '../../composables/lotFilters.js'
 import { PAGE_SIZES } from '../../utils/pagination.js'
@@ -37,6 +41,7 @@ const f = useFormat()
 const t = f.t
 const route = useRoute()
 const router = useRouter()
+const { locale } = useI18n()
 
 const filters = reactive(lotFiltersFromQuery(route.query))
 const page = ref(Math.max(1, Number.parseInt(route.query.page, 10) || 1))

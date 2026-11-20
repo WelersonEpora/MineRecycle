@@ -6,6 +6,7 @@ const { NotFoundError } = require("../shared/errors");
 const { optionalString, uuid, isUuid, pagination } = require("../shared/validate");
 const { LOT_STATUSES } = require("../domain/constants");
 const { lotDto, packageDto, attachmentDto } = require("./dto");
+const { buildLotWorkbook, lotExportFileName } = require("../export/lot-export");
 
 // Lotes na área do vendedor (2026-11-19): lista com filtros, detalhe e a descrição do vendedor. Os campos da
 // planilha só mudam pela importação.
@@ -131,4 +132,24 @@ async function update(id, body, userId) {
   return get(lot.id);
 }
 
-module.exports = { list, listIds, facets, get, update, lotOrder };
+// Planilha com todos os lotes não retirados, no formato da importação (export/lot-export.js). Sem filtro, de propósito:
+// lote fora do arquivo vira retirado se o arquivo for importado de volta.
+async function exportWorkbook(lang) {
+  const language = lang === "pt" ? "pt" : "en";
+  const lots = await Lot.findAll({
+    where: { withdrawnAt: null },
+    attributes: { include: [[sequelize.literal(`(SELECT count(*) FROM attachment a WHERE a.lot_id = "Lot"."id")::int`), "attachmentCount"]] },
+    include: [{ model: PackageLot, as: "packageLots", attributes: ["packageId"], include: [{ model: Package, as: "package", attributes: ["number", "name"] }] }]
+  });
+  const rows = lots.map((l) => ({
+    ...l.get({ plain: true }),
+    attachmentCount: l.get("attachmentCount"),
+    packages: l.packageLots
+      .map((pl) => pl.package)
+      .filter(Boolean)
+      .sort((a, b) => a.number - b.number)
+  }));
+  return { buffer: buildLotWorkbook(rows, { lang: language }), fileName: lotExportFileName(new Date(), language) };
+}
+
+module.exports = { list, listIds, facets, get, update, lotOrder, exportWorkbook };

@@ -166,10 +166,10 @@ export default {
     updated: 'Atualizado',
     noPackages: 'Nenhum pacote ainda.',
     viewPublic: 'Ver página',
-    tabs: { details: 'Dados', lots: 'Lotes', attachments: 'Fotos e arquivos', links: 'Links de acesso' },
+    tabs: { details: 'Dados', lots: 'Lotes', packages: 'Pacotes', attachments: 'Fotos e arquivos', links: 'Links de acesso' },
     fields: {
       number: 'ID',
-      numberHint: 'Identificação do pacote, usada no endereço da página pública. Preenchido sozinho; o comprador não o vê. Não muda depois de criado.',
+      numberHint: 'Identificação do pacote, usada no endereço da página pública e mostrada no catálogo (#12). Preenchido sozinho. Não muda depois de criado.',
       numberLockedHint: 'Identificação do pacote, usada no endereço da página pública. Não muda depois de criado.',
       name: 'Nome público (inglês)',
       nameHint: 'Aparece no catálogo e no link do comprador.',
@@ -245,7 +245,12 @@ export default {
     soldBySheet: 'Vendido pela planilha',
     soldByPackage: 'vendido por este pacote',
     createPackage: 'Criar pacote deste lote',
+    noPackages: 'Este lote não está em nenhum pacote.',
+    packagesHint: 'Pacotes em que este lote está. Arquivos do lote aparecem em todos eles.',
+    editDescription: 'Editar descrição do lote',
     importLots: 'Importar lotes',
+    exportLots: 'Exportar lotes',
+    exportHint: 'Planilha com todos os lotes (menos os retirados), no formato da importação. Os filtros da tela não se aplicam.',
     total: '{n} lote | {n} lotes',
     selected: '{n} selecionado | {n} selecionados',
     selectFiltered: 'Selecionar os {n} do filtro',
@@ -817,7 +822,8 @@ export default {
         b: 'Lote que saiu da planilha fica como retirado (some do lado público) e volta se reaparecer.',
         c: 'A planilha só marca um lote como vendido, nunca desfaz: se o sistema tem um lote vendido que a planilha não tem, a prévia avisa e ele continua vendido.',
         d: 'Os pacotes automáticos acompanham a planilha: ganham e perdem lotes. O que ficar sem lotes sai do catálogo e pode ser excluído. Lote novo num pacote automático já vendido entra vendido.',
-        e: 'Descrição do vendedor, fotos, arquivos e pacotes manuais nunca são apagados pela importação.'
+        e: 'Descrição do vendedor, fotos, arquivos e pacotes manuais nunca são apagados pela importação.',
+        f: 'Exportar lotes (tela Lotes) gera a planilha de todos os lotes neste mesmo formato. O STATUS sai como a planilha disse, não como o sistema; a situação no sistema e os pacotes vêm em colunas à parte, que a importação ignora.'
       }
     }
   },

@@ -71,6 +71,9 @@ sem necessidade concreta.
 | Pacotes automáticos e manuais (2026-11-19) | A importação cria um pacote **automático** por valor de AA, AB e AC (`source` = linked_system, family, subfamily; `source_value` único por nível, sem diferença de maiúsculas), como **rascunho**, com o valor como nome; os lotes dele seguem a planilha (o vendedor não mexe; ordem natural do nº). Automático que fica sem lotes não aparece no catálogo e só então pode ser excluído. O 4º nível (pacote de um lote só, com o nome do lote) é criado sob demanda ("Criar pacote deste lote"). O vendedor monta pacotes **manuais** com os lotes que quiser. Pacote e lote têm anexos próprios; o anexo do lote acompanha o lote em todos os pacotes, com o melhor acesso entre eles (`bestPackageAccess`). |
 | Situação do lote e venda (2026-11-19) | STATUS "Sold" = vendido; "Collected by court officer" = fora da venda (some do público, o vendedor vê); vazio/"Available" = disponível; outro valor impede a importação. A planilha **só promove** a vendido, nunca desfaz (`sold_by_sheet`). **Quem é vendido é o pacote**: marcar Vendido grava `lot_sale` para os lotes dele e os marca vendidos em todos os pacotes; se algum já estava vendido, pede confirmação (`PACKAGE_SALE_CONFIRM`). Desfazer libera só os lotes vendidos por aquele pacote. Pacote vendido sai do catálogo, não muda de lotes e não é excluído. Lote novo num automático já vendido entra vendido. Regras puras em `domain/lot-status.js` e `domain/package-sale.js`. |
 | Reimportação de lotes (2026-11-19) | Prévia e confirmação; nada gravado antes. O commit refaz o plano sob `pg_advisory_xact_lock` e só grava se a impressão digital (arquivo, aba e banco) for a mesma (`IMPORT_STALE`); uma transação. Lote que sai da planilha fica **retirado** (`withdrawn_at`, nunca apagado) e volta se reaparecer. A prévia avisa quando o sistema tem lote vendido que a planilha não tem. Regra pura em `import/lot-plan.js` e `domain/auto-packages.js`. |
+| Exportação de lotes (2026-11-19) | Só vendedores: "Exportar lotes" na tela Lotes. Uma aba, "Matriz de lotes", no **formato da importação** (as 8 colunas com os nomes da planilha do cliente, depois colunas informativas no idioma da tela: situação no sistema, pacotes, descrição do vendedor, nº de arquivos), para poder importar de volta. STATUS sai como a planilha disse (`sheet_status`), nunca a situação do sistema (senão o lote vendido por pacote ficaria vendido pela planilha). **Sempre todos os lotes não retirados, sem filtro** (lote fora do arquivo vira retirado na importação). Nome: "MineRecycle - Lotes - <data>.xlsx", data no fuso do Brasil. Regra pura em `export/lot-export.js`, com teste de ida e volta. |
+| Abas do vendedor (2026-11-19) | Ordem pelo fluxo: **Lotes** antes de **Pacotes** (depois Pedidos, Links...). A área do vendedor abre em Lotes (`/seller` → `/seller/lots`; a lista de pacotes fica em `/seller/packages`), por escolha do usuário. |
+| Página do lote (2026-11-19) | Mesmo arranjo da página do pacote: abas **Dados** (planilha e descrição do vendedor, só leitura), **Pacotes (n)** (onde o lote está, com "Criar pacote deste lote") e **Fotos e arquivos (n)**; aba aberta no endereço (`?tab=`). A descrição do vendedor é editada num modal persistente (Cancelar/Salvar), como os dados do pacote. |
 | Tabelas (2026-11-19) | Padrão "tabela-card" do FinMind (`components/table/DataTableCard.vue`): filtros dentro do cartão, paginação em cima e embaixo, itens por página, botão de atualizar, cabeçalhos ordenáveis (`SortHeader`) e linha clicável com seta. |
 
 Decisão nova do usuário: registre aqui, com a data.
@@ -82,6 +85,7 @@ Decisão nova do usuário: registre aqui, com a data.
     vendedor). Toda regra de visibilidade nova entra aqui, com teste em `access-policy.test.js`.
   - `src/import/`: leitura da planilha de lotes (`lot-sheet.js`: aba, cabeçalho e colunas por sinônimo) e o plano da
     importação (`lot-plan.js`). Também puras.
+  - `src/export/`: planilha da exportação de lotes (`lot-export.js`, regra pura).
   - O ESLint impede `src/domain`, `src/import` e `src/export` de importar models, services, storage ou config.
   - `src/storage/`: **único** ponto de gravação e leitura de arquivos (interface `put/get/open/remove/removePrefix`,
     driver local). Nunca use `fs` para arquivo de usuário fora daqui; trocar por S3 deve ser só um driver novo. As
@@ -167,6 +171,6 @@ cd frontend && npm run lint && npm test && npm run build
   rotas; banco local no Postgres do infra, com a planilha real importada (1.089 lotes, 85 pacotes automáticos).
   Depois, no mesmo dia: telas do vendedor (Lotes, pacotes, importação) e públicas, tabelas no padrão do FinMind,
   testes de integração sobre lotes (CI verde), Ajuda e decisões nesta página. Script dos arquivos órfãos
-  (`npm run files:orphans`). Pendente: exportação para planilha (pacotes e lotes) e rodar a limpeza dos órfãos no
-  servidor.
+  (`npm run files:orphans`). Limpeza rodada no servidor em
+  2026-11-19 (20 arquivos, 4,5 MB, todos dos pacotes antigos). Exportação de lotes para planilha.
 - Etapa 3 (publicação) concluída em 2026-11-16. Catálogo público desde 2026-11-16; dados reais entram pelas telas.

@@ -166,10 +166,10 @@ export default {
     updated: 'Updated',
     noPackages: 'No packages yet.',
     viewPublic: 'View page',
-    tabs: { details: 'Details', lots: 'Lots', attachments: 'Photos and files', links: 'Access links' },
+    tabs: { details: 'Details', lots: 'Lots', packages: 'Packages', attachments: 'Photos and files', links: 'Access links' },
     fields: {
       number: 'ID',
-      numberHint: 'Package identifier, used in the public page address. Filled in automatically; buyers do not see it. It cannot be changed after creation.',
+      numberHint: 'Package identifier, used in the public page address and shown in the catalog (#12). Filled in automatically. It cannot be changed after creation.',
       numberLockedHint: 'Package identifier, used in the public page address. It cannot be changed after creation.',
       name: 'Public name (English)',
       nameHint: 'Shown in the catalog and to buyers with a link.',
@@ -245,7 +245,12 @@ export default {
     soldBySheet: 'Sold by the spreadsheet',
     soldByPackage: 'sold by this package',
     createPackage: 'Create a package from this lot',
+    noPackages: 'This lot is not in any package.',
+    packagesHint: 'Packages that contain this lot. Lot files show in all of them.',
+    editDescription: 'Edit lot description',
     importLots: 'Import lots',
+    exportLots: 'Export lots',
+    exportHint: 'Spreadsheet with every lot (except withdrawn ones), in the import format. Screen filters do not apply.',
     total: '{n} lot | {n} lots',
     selected: '{n} selected | {n} selected',
     selectFiltered: 'Select the {n} filtered',
@@ -817,7 +822,8 @@ export default {
         b: 'A lot that left the spreadsheet stays as withdrawn (hidden from the public side) and comes back if it reappears.',
         c: 'The spreadsheet only marks a lot as sold, never undoes it: if the system has a sold lot the spreadsheet does not, the preview warns and it stays sold.',
         d: 'Automatic packages follow the spreadsheet: they gain and lose lots. One left with no lots leaves the catalog and can be deleted. A new lot in an automatic package that is already sold comes in sold.',
-        e: 'Seller descriptions, photos, files and manual packages are never deleted by the import.'
+        e: 'Seller descriptions, photos, files and manual packages are never deleted by the import.',
+        f: 'Export lots (Lots screen) produces a spreadsheet of every lot in this same format. STATUS comes out as the spreadsheet said, not as the system has it; the system status and the packages come in separate columns, which the import ignores.'
       }
     }
   },

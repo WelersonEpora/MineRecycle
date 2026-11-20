@@ -1,8 +1,8 @@
 <template>
   <div>
     <ul class="nav mr-subnav border-bottom mb-4">
-      <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-packages' }" active-class="" :class="{ 'router-link-active': inPackages }">{{ t('seller.packages') }}</RouterLink></li>
       <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-lots' }" active-class="" :class="{ 'router-link-active': inLots }">{{ t('lots.menu') }}</RouterLink></li>
+      <li class="nav-item"><RouterLink class="nav-link" :to="{ name: 'seller-packages' }" active-class="" :class="{ 'router-link-active': inPackages }">{{ t('seller.packages') }}</RouterLink></li>
       <li class="nav-item">
         <RouterLink class="nav-link" :to="{ name: 'seller-inquiries' }">
           {{ t('inquiries.menu') }}<span v-if="newInquiries" class="badge rounded-pill text-bg-danger ms-1" :title="t('inquiries.newBadge', newInquiries)">{{ newInquiries }}</span>

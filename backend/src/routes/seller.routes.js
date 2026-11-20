@@ -22,10 +22,18 @@ router.use(requireSeller);
 const userId = (req) => req.viewer.seller.id;
 
 // ---------- Lotes (decisão de 2026-11-19) ----------
-// "/lots/ids" e "/lots/facets" vêm antes de "/lots/:id" para não serem lidos como id.
+// "/lots/ids", "/lots/facets" e "/lots/export" vêm antes de "/lots/:id" para não serem lidos como id.
 router.get("/lots", async (req, res) => res.json(await lotService.list(req.query)));
 router.get("/lots/ids", async (req, res) => res.json(await lotService.listIds(req.query)));
 router.get("/lots/facets", async (_req, res) => res.json(await lotService.facets()));
+// Planilha de todos os lotes, no formato da importação. Nome do arquivo só com a data.
+router.get("/lots/export", async (req, res) => {
+  const { buffer, fileName } = await lotService.exportWorkbook(req.query.lang);
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`);
+  res.setHeader("Cache-Control", "private, no-store");
+  res.send(buffer);
+});
 router.get("/lots/:id", async (req, res) => res.json(await lotService.get(req.params.id)));
 router.patch("/lots/:id", async (req, res) => res.json(await lotService.update(req.params.id, req.body || {}, userId(req))));
 // Pacote de um lote só, com o nome do lote.
