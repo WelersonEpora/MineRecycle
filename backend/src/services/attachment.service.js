@@ -22,16 +22,32 @@ const MIME_BY_EXT = {
   ".tif": "image/tiff",
   ".tiff": "image/tiff",
   ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".xlsm": "application/vnd.ms-excel.sheet.macroEnabled.12",
+  ".xlsb": "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
   ".xls": "application/vnd.ms-excel",
+  ".ods": "application/vnd.oasis.opendocument.spreadsheet",
   ".csv": "text/csv",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".docm": "application/vnd.ms-word.document.macroEnabled.12",
   ".doc": "application/msword",
+  ".odt": "application/vnd.oasis.opendocument.text",
   ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".pptm": "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
+  ".ppt": "application/vnd.ms-powerpoint",
+  ".odp": "application/vnd.oasis.opendocument.presentation",
   ".dwg": "image/vnd.dwg",
   ".dxf": "image/vnd.dxf",
   ".zip": "application/zip",
+  ".rar": "application/vnd.rar",
+  ".7z": "application/x-7z-compressed",
+  ".msg": "application/vnd.ms-outlook",
+  ".eml": "message/rfc822",
+  // Foto de iPhone: aceita como documento (o sharp daqui não gera versão web de HEIC).
+  ".heic": "image/heic",
   ".txt": "text/plain"
 };
+// Lista fechada de propósito (2026-11-24): nada de .html, .svg, .js ou executáveis, que o navegador poderia rodar
+// a partir do domínio do site.
 const ALLOWED_EXTENSIONS = Object.keys(MIME_BY_EXT);
 
 function safeOriginalName(name) {
@@ -72,7 +88,11 @@ async function storeOne({ owner, kind, visibility, title, file, userId, sortOrde
   const originalName = safeOriginalName(file.originalname);
   const ext = path.extname(originalName).toLowerCase();
   if (!ALLOWED_EXTENSIONS.includes(ext)) {
-    throw new ValidationError("File type not allowed.", { field: "files", code: "file_type", allowed: ALLOWED_EXTENSIONS });
+    throw new ValidationError(
+      "File type not allowed.",
+      { field: "files", code: "file_type", allowed: ALLOWED_EXTENSIONS },
+      "ATTACHMENT_FILE_TYPE"
+    );
   }
 
   const id = randomUUID();

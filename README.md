@@ -133,5 +133,5 @@ build do frontend.
 ## Publicação
 
 Ainda não preparada: é a próxima etapa, e depende de aprovação. Vai seguir o padrão do FinMind (imagens arm64 no
-GHCR, deploy por SSH na `servidor02`, Postgres compartilhado, Nginx Proxy Manager em `minerecycle.weslab.com.br`,
+GHCR, deploy por SSH na `servidor02`, Postgres compartilhado, Nginx Proxy Manager em `minerecycle.afbridge.com.br` (antes `minerecycle.weslab.com.br`),
 porta `127.0.0.1:8085`), começando protegida por senha (`SITE_PASSWORD`).

@@ -30,6 +30,13 @@ test('api error messages are translated by code', () => {
   assert.equal(apiErrorMessage({}, t, te), 'T:errors.network')
 })
 
+test('api error details become translation parameters', () => {
+  const t = (k, p) => `${k}|${p.allowed}`
+  const te = () => true
+  const err = { response: { status: 400, data: { error: { code: 'ATTACHMENT_FILE_TYPE', details: { allowed: ['.pdf', '.xlsm'] } } } } }
+  assert.equal(apiErrorMessage(err, t, te), 'errors.ATTACHMENT_FILE_TYPE|.pdf, .xlsm')
+})
+
 test('used columns', () => {
   assert.deepEqual(usedColumns([{ a: 1, b: null }, { a: null, b: '' }], ['a', 'b']), ['a'])
 })

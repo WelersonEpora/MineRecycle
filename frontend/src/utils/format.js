@@ -49,7 +49,10 @@ export function endOfDayIso(dateInput) {
 export function apiErrorMessage(err, t, te) {
   if (!err?.response) return t('errors.network')
   const code = err.response.data?.error?.code
-  if (code && te(`errors.${code}`)) return t(`errors.${code}`)
+  // Os detalhes do erro viram parâmetros da tradução (lista vira texto: ".pdf, .xlsx").
+  const details = err.response.data?.error?.details || {}
+  const params = Object.fromEntries(Object.entries(details).map(([k, v]) => [k, Array.isArray(v) ? v.join(', ') : v]))
+  if (code && te(`errors.${code}`)) return t(`errors.${code}`, params)
   if (err.response.status === 401) return t('errors.UNAUTHORIZED')
   return err.response.data?.error?.message || t('errors.generic')
 }

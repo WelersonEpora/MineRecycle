@@ -44,7 +44,7 @@ sem necessidade concreta.
 | Tema | Decisão |
 |---|---|
 | Repositório | Público no GitHub (mantém gratuito o runner ARM do build, como no FinMind). Por isso, nada confidencial no código. |
-| Domínio | `minerecycle.weslab.com.br`, pelo Nginx Proxy Manager da `servidor02`, frontend em `127.0.0.1:8085` (8084 é a porta do ambiente local). |
+| Domínio | `minerecycle.afbridge.com.br` desde 2026-11-24 (antes `minerecycle.weslab.com.br`, que continua respondendo; links já enviados seguem valendo). Os links do comprador usam `PUBLIC_BASE_URL` do `.env` do servidor. Pelo Nginx Proxy Manager da `servidor02`, frontend em `127.0.0.1:8085` (8084 é a porta do ambiente local). |
 | Prévia | Basic Auth no nginx do frontend, por `SITE_PASSWORD` (vazio = aberto). Usada só no início; desligada em 2026-11-16 a pedido do usuário. |
 | Catálogo | Regra fixa desde 2026-11-17 (`PUBLIC_STATUSES`): ativos; em negociação só com a caixa "Mostrar pacotes em negociação" (a página do pacote em negociação é pública); vendidos, rascunhos e inativos nunca. A antiga escolha na tela Settings saiu. O link do comprador mostra todos os pacotes do link menos rascunho e inativo: vendidos aparecem (podem ser do comprador). |
 | Vendedores | Uma equipe só: todos editam todos os pacotes, cada um com login próprio. Papéis `seller` e `admin`. |
@@ -77,6 +77,7 @@ sem necessidade concreta.
 | Tabelas (2026-11-19) | Padrão "tabela-card" do FinMind (`components/table/DataTableCard.vue`): filtros dentro do cartão, paginação em cima e embaixo, itens por página, botão de atualizar, cabeçalhos ordenáveis (`SortHeader`) e linha clicável com seta. |
 | Origem escondida (2026-11-19) | A origem é do pacote, a planilha não a traz e ninguém a preenche; o Site já diz onde os lotes estão. Por enquanto, **escondida só na tela** (`SHOW_ORIGIN = false` em `frontend/src/utils/features.js`): some o card Origens de Configuração, o campo do pacote, o filtro e a sigla na lista do vendedor e os chips do catálogo. Banco, API e o que já estiver gravado ficam (voltar = `true`). Remover de vez só se o usuário pedir. |
 | Limpeza geral (2026-11-19) | Para recomeçar a carga do zero sem Portainer: seção "Limpeza geral" em Configuração, **só admin** (o usuário aceitou que qualquer admin possa fazer; serão poucos). Modal persistente com aviso grande, contagem do que será apagado, atalho para Exportar lotes, a frase digitada (`APAGAR TUDO` ou `DELETE ALL`, conforme o idioma) e a senha do admin. Apaga, numa transação (com a trava da importação), lotes, pacotes, anexos, pedidos, links e log de acesso, e a numeração recomeça; depois remove os arquivos (`packages/` e `lots/`). Ficam usuários, contato comercial e origens. Registra quem fez e quando (`setting` "data_reset"). Regra em `domain/data-reset.js`, serviço em `data-reset.service.js`. |
+| Tipos de anexo (2026-11-24) | Lista **fechada** (`MIME_BY_EXT` em `attachment.service.js`), nunca "qualquer tipo": `.html`, `.svg`, scripts e executáveis rodariam a partir do domínio do site. Depois de uma planilha `.xlsm` recusada, entraram `.xlsm`, `.xlsb`, `.docm`, `.ppt`, `.pptm`, `.ods`, `.odt`, `.odp`, `.rar`, `.7z`, `.msg`, `.eml` e `.heic` (só como documento). Tipo recusado devolve `ATTACHMENT_FILE_TYPE` e a tela lista os aceitos. Tipo novo: só acrescentar à lista. |
 
 Decisão nova do usuário: registre aqui, com a data.
 
@@ -155,14 +156,14 @@ cd frontend && npm run lint && npm test && npm run build
 
 - `.github/workflows/ci.yml`: lint, testes unitários, testes de integração (Postgres de serviço) e build do frontend,
   em todo push e PR.
-- **Publicado em 2026-11-16** em https://minerecycle.weslab.com.br. A senha da prévia foi desligada no mesmo dia (`SITE_PASSWORD` vazio no `.env` do servidor): o catálogo é público, e o NPM força HTTPS. Push na `main` publica sozinho (variável `DEPLOY_ENABLED=true`). Como está montado:
+- **Publicado em 2026-11-16** em https://minerecycle.weslab.com.br; desde 2026-11-24 o endereço oficial é https://minerecycle.afbridge.com.br. A senha da prévia foi desligada no mesmo dia (`SITE_PASSWORD` vazio no `.env` do servidor): o catálogo é público, e o NPM força HTTPS. Push na `main` publica sozinho (variável `DEPLOY_ENABLED=true`). Como está montado:
   - `deploy.yml` com build arm64 no runner `ubuntu-24.04-arm`, imagens `ghcr.io/<owner>/minerecycle-backend` e
     `minerecycle-frontend`, e SSH na `servidor02` rodando `scripts/deploy.sh` (pull, up, migrate, seed).
   - App em `/opt/apps/minerecycle/app`, projeto Compose `minerecycle`.
   - Database e usuário criados por `servidor02-infra/postgres/scripts/criar-app.sh minerecycle`, alcançados pela rede
     Docker externa `db`.
   - Volume `minerecycle_file_storage` para os arquivos.
-  - Proxy host no NPM: `minerecycle.weslab.com.br` → `127.0.0.1:8085`.
+  - Proxy host no NPM: `minerecycle.afbridge.com.br` (e o antigo `minerecycle.weslab.com.br`) → `127.0.0.1:8085`.
   - Uma linha nova no cron do usuário `deploy` para `scripts/backup-files.sh`.
 
 ## Status

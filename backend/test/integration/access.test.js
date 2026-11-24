@@ -44,6 +44,18 @@ test("access links and attachment visibility", { skip }, async (t) => {
   const draftPhoto = await uploadTo(draft.id, { kind: "photo" }, { name: "d.png", buffer: await png() });
   const negotiatingDoc = await uploadTo(negotiating.id, { kind: "datasheet" }, { name: "n.pdf", buffer: Buffer.from("%PDF-1.4\n%%EOF") });
 
+  await t.test("macro-enabled workbooks are accepted; unknown types get a stable code", async () => {
+    const own = await mk(14, "draft");
+    const xlsm = await uploadTo(own.id, { kind: "list", visibility: "internal" }, { name: "inventario.xlsm", buffer: Buffer.from("PK fictitious") });
+    assert.equal(xlsm.mimeType, "application/vnd.ms-excel.sheet.macroEnabled.12");
+    const res = await seller.post(`/api/v1/seller/packages/${own.id}/attachments`, {
+      form: h.fileForm({ kind: "list" }, [{ name: "script.exe", buffer: Buffer.from("MZ") }])
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.data.error.code, "ATTACHMENT_FILE_TYPE");
+    assert.ok(res.data.error.details.allowed.includes(".xlsm"));
+  });
+
   await t.test("photos get web and thumbnail versions; proposals are forced restricted", async () => {
     assert.equal(photo.visibility, "public");
     assert.ok(photo.webUrl && photo.thumbUrl);

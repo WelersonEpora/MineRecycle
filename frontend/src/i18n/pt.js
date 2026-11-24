@@ -896,6 +896,7 @@ export default {
     ORIGIN_INVALID: 'Escolha a origem do pacote.',
     EMAIL_TAKEN: 'Já existe um usuário com este e-mail.',
     PAYLOAD_TOO_LARGE: 'Arquivo grande demais.',
+    ATTACHMENT_FILE_TYPE: 'Tipo de arquivo não aceito. Tipos aceitos: {allowed}.',
     IMPORT_FILE_TYPE: 'Envie um arquivo Excel (.xlsx, .xlsm ou .xls).',
     IMPORT_UNREADABLE: 'Não foi possível ler a planilha.',
     IMPORT_NOT_FOUND: 'Esta importação expirou. Envie o arquivo de novo.',
