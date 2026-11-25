@@ -91,3 +91,18 @@ test("summary counts offered lots only", () => {
   assert.equal(saleSummary([lot("a", { status: "sold" })]).nothingAvailable, true);
   assert.equal(saleSummary([]).nothingAvailable, true);
 });
+
+test("manual adjustments: off-sale lots are skipped, sold ones warn, and undoing returns to the adjustment", () => {
+  const plan = planPackageSale("p1", [
+    lot("a", { status: "unavailable", manualStatus: "unavailable" }),
+    lot("b", { status: "sold", manualStatus: "sold" }),
+    lot("c", { status: "available", soldBySheet: true, sheetStatus: "sold", manualStatus: "available" })
+  ]);
+  assert.deepEqual(plan.skipped.map((s) => s.lotId), ["a"]);
+  assert.deepEqual(plan.alreadySold.map((s) => [s.lotId, s.manual, s.bySheet]), [["b", true, false]]);
+  assert.deepEqual(plan.changes.map((c) => [c.lotId, c.to]), [["c", "sold"]]);
+
+  const undo = planPackageUnsale("p1", [lot("c", { status: "sold", soldBySheet: true, sheetStatus: "sold", manualStatus: "available", salePackageIds: ["p1"] })]);
+  assert.deepEqual(undo.changes.map((c) => [c.lotId, c.to]), [["c", "available"]]);
+  assert.deepEqual(undo.stillSold, []);
+});

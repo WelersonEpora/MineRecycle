@@ -68,6 +68,11 @@ const Lot = sequelize.define(
     sheetStatus: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "available" },
     soldBySheet: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     status: { type: DataTypes.STRING(16), allowNull: false, defaultValue: "available" },
+    // Ajuste manual da situação (2026-11-24): vale até a planilha mudar o STATUS do lote.
+    manualStatus: { type: DataTypes.STRING(16) },
+    manualStatusNote: { type: DataTypes.TEXT },
+    manualStatusBy: { type: DataTypes.UUID },
+    manualStatusAt: { type: DataTypes.DATE },
     withdrawnAt: { type: DataTypes.DATE },
     importedAt: { type: DataTypes.DATE },
     updatedBy: { type: DataTypes.UUID }
@@ -204,6 +209,7 @@ PackageLot.belongsTo(Lot, { foreignKey: "lotId", as: "lot" });
 PackageLot.belongsTo(Package, { foreignKey: "packageId", as: "package" });
 Lot.hasMany(LotSale, { foreignKey: "lotId", as: "sales" });
 Package.hasMany(LotSale, { foreignKey: "packageId", as: "lotSales" });
+Lot.belongsTo(User, { foreignKey: "manualStatusBy", as: "manualStatusUser" });
 LotSale.belongsTo(Lot, { foreignKey: "lotId", as: "lot" });
 LotSale.belongsTo(Package, { foreignKey: "packageId", as: "package" });
 Package.hasMany(Attachment, { foreignKey: "packageId", as: "attachments" });

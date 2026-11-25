@@ -37,7 +37,9 @@ const LOTS = [
     subfamily: "Overhead",
     sheetStatus: "sold",
     soldBySheet: true,
-    status: "sold",
+    // Vendido pela planilha, mas ajustado à mão para disponível (2026-11-24).
+    status: "available",
+    manualStatus: "available",
     saleCount: 0,
     description: null,
     packages: [],
@@ -80,6 +82,7 @@ test("one sheet in the import format, natural lot order, extra columns after", (
     "Subfamília",
     "STATUS",
     "Situação no sistema",
+    "Ajuste manual",
     "Pacotes",
     "Descrição do vendedor",
     "Arquivos"
@@ -89,9 +92,13 @@ test("one sheet in the import format, natural lot order, extra columns after", (
   // Vendido por pacote: STATUS fica como a planilha disse; a situação do sistema vai na coluna extra.
   assert.equal(pump[7], "");
   assert.equal(pump[8], "Vendido");
-  assert.equal(pump[9], "#3 Water; #9 Pump set");
-  assert.equal(pump[10], "Checked on site");
+  assert.equal(pump[9], "");
+  assert.equal(pump[10], "#3 Water; #9 Pump set");
+  assert.equal(pump[11], "Checked on site");
+  // Ajuste manual: STATUS continua o da planilha; o ajuste aparece só na coluna informativa.
   assert.equal(rows[1][7], "Sold");
+  assert.equal(rows[1][8], "Disponível");
+  assert.equal(rows[1][9], "Disponível");
   assert.equal(rows[2][7], "Collected by court officer");
   assert.ok(!rows[0].some((h) => /price|preço|valor|value/i.test(h)));
 });

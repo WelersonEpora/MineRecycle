@@ -88,6 +88,7 @@ function report(importId, { result, sheetName, sheets, headerRow, state }) {
     withdrawn: cut(result.lots.withdraw.map((w) => ({ lotNumber: w.lotNumber }))),
     statusChanges: cut(result.statusChanges),
     disagreements: cut(result.disagreements),
+    manualCleared: cut(result.manualCleared),
     packages: {
       create: result.packages.create.map((c) => ({ source: c.source, sourceValue: c.sourceValue, lotCount: c.lotNumbers.length })),
       update: result.packages.update.map((u) => ({

@@ -4,11 +4,11 @@ const { lotStatus, isLotOffered } = require("./lot-status");
 
 // Venda de pacote (decisão de 2026-11-19). Regras puras: o serviço carrega os lotes do pacote e grava o plano.
 //
-// lot = { id, lotNumber, status, soldBySheet, sheetStatus, withdrawnAt, salePackageIds: [ids dos pacotes vendidos
-//         que já o contêm] }
+// lot = { id, lotNumber, status, soldBySheet, sheetStatus, manualStatus, withdrawnAt, salePackageIds: [ids dos
+//         pacotes vendidos que já o contêm] }
 
 function statusWith(lot, salePackageIds) {
-  return lotStatus({ soldBySheet: lot.soldBySheet, saleCount: salePackageIds.length, sheetStatus: lot.sheetStatus });
+  return lotStatus({ soldBySheet: lot.soldBySheet, saleCount: salePackageIds.length, sheetStatus: lot.sheetStatus, manualStatus: lot.manualStatus ?? null });
 }
 
 // Marcar o pacote como vendido: todos os lotes em oferta passam a vendidos por este pacote. Lote retirado da planilha
@@ -27,7 +27,7 @@ function planPackageSale(packageId, lots) {
     }
     if (current.includes(packageId)) continue;
     if (lot.status === "sold") {
-      alreadySold.push({ lotId: lot.id, lotNumber: lot.lotNumber, bySheet: Boolean(lot.soldBySheet), byPackageIds: current });
+      alreadySold.push({ lotId: lot.id, lotNumber: lot.lotNumber, bySheet: Boolean(lot.soldBySheet) && !lot.manualStatus, manual: lot.manualStatus === "sold", byPackageIds: current });
     }
     sales.push(lot.id);
     const to = statusWith(lot, [...current, packageId]);
@@ -48,7 +48,7 @@ function planPackageUnsale(packageId, lots) {
     removeSales.push(lot.id);
     const rest = current.filter((id) => id !== packageId);
     const to = statusWith(lot, rest);
-    if (to === "sold") stillSold.push({ lotId: lot.id, lotNumber: lot.lotNumber, bySheet: Boolean(lot.soldBySheet), byPackageIds: rest });
+    if (to === "sold") stillSold.push({ lotId: lot.id, lotNumber: lot.lotNumber, bySheet: Boolean(lot.soldBySheet) && !lot.manualStatus, manual: lot.manualStatus === "sold", byPackageIds: rest });
     if (to !== lot.status) changes.push({ lotId: lot.id, lotNumber: lot.lotNumber, from: lot.status, to });
   }
   return { removeSales, changes, stillSold };

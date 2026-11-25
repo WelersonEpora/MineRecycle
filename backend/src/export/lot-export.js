@@ -9,7 +9,8 @@ const { compareLotNumbers } = require("../domain/auto-packages");
 // do cliente, e depois colunas só informativas (o importador ignora o que não reconhece). Por isso o arquivo pode ser
 // editado e importado de volta. Cuidados para a volta não estragar dados:
 // - STATUS sai como a planilha disse (sheet_status), nunca a situação no sistema: um lote vendido por um pacote sairia
-//   "Sold" e, reimportado, ficaria vendido pela planilha, o que não tem volta.
+//   "Sold" e, reimportado, ficaria vendido pela planilha, o que não tem volta. O ajuste manual (2026-11-24) aparece só
+//   na coluna informativa "Ajuste manual", para a equipe levar à planilha.
 // - Sempre todos os lotes, sem filtro, e só os não retirados: lote fora do arquivo vira retirado na importação.
 // Nunca há coluna de preço ou valor (o modelo não tem).
 
@@ -34,6 +35,7 @@ const SHEET_STATUS_TEXT = { available: "", sold: "Sold", unavailable: "Collected
 const LABELS = {
   en: {
     systemStatus: "System status",
+    manualStatus: "Manual adjustment",
     packages: "Packages",
     sellerDescription: "Seller description",
     files: "Files",
@@ -41,6 +43,7 @@ const LABELS = {
   },
   pt: {
     systemStatus: "Situação no sistema",
+    manualStatus: "Ajuste manual",
     packages: "Pacotes",
     sellerDescription: "Descrição do vendedor",
     files: "Arquivos",
@@ -49,14 +52,15 @@ const LABELS = {
 };
 
 // lots = [{ lotNumber, siteName, title, masterSupplier, linkedSystem, commercialFamily, subfamily, sheetStatus, status,
-//           description, packages: [{ number, name }], attachmentCount }]
+//           manualStatus, description, packages: [{ number, name }], attachmentCount }]
 function buildLotWorkbook(lots, { lang = "en" } = {}) {
   const t = LABELS[lang] || LABELS.en;
-  const header = [...IMPORT_COLUMNS.map((c) => c.header), t.systemStatus, t.packages, t.sellerDescription, t.files];
+  const header = [...IMPORT_COLUMNS.map((c) => c.header), t.systemStatus, t.manualStatus, t.packages, t.sellerDescription, t.files];
   const sorted = [...lots].sort((a, b) => compareLotNumbers(a.lotNumber, b.lotNumber));
   const rows = sorted.map((l) => [
     ...IMPORT_COLUMNS.map((c) => c.value(l) ?? ""),
     t.status[l.status] ?? l.status,
+    l.manualStatus ? (t.status[l.manualStatus] ?? l.manualStatus) : "",
     (l.packages || []).map((p) => `#${p.number} ${p.name}`).join("; "),
     l.description ?? "",
     l.attachmentCount || 0
@@ -67,7 +71,7 @@ function buildLotWorkbook(lots, { lang = "en" } = {}) {
     const cell = sheet[XLSX.utils.encode_cell({ r, c: 0 })];
     if (cell) cell.t = "s";
   }
-  sheet["!cols"] = [14, 18, 60, 28, 32, 28, 28, 26, 16, 40, 40, 8].map((wch) => ({ wch }));
+  sheet["!cols"] = [14, 18, 60, 28, 32, 28, 28, 26, 16, 16, 40, 40, 8].map((wch) => ({ wch }));
   sheet["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: header.length - 1 } }) };
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, SHEET_NAME);

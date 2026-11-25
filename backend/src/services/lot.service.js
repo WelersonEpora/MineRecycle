@@ -1,8 +1,10 @@
 "use strict";
 
 const { Op } = require("sequelize");
-const { sequelize, Lot, Package, PackageLot, LotSale, Attachment } = require("../models");
-const { NotFoundError } = require("../shared/errors");
+const { sequelize, Lot, Package, PackageLot, LotSale, Attachment, User } = require("../models");
+const { NotFoundError, ValidationError, ConflictError } = require("../shared/errors");
+const { planManualStatus } = require("../domain/lot-status");
+const { LOCK_KEY } = require("./lot-import.service");
 const { optionalString, uuid, isUuid, pagination } = require("../shared/validate");
 const { LOT_STATUSES } = require("../domain/constants");
 const { lotDto, packageDto, attachmentDto } = require("./dto");
@@ -106,7 +108,7 @@ async function facets() {
 }
 
 async function get(id) {
-  const lot = await Lot.findByPk(uuid(id, "id"));
+  const lot = await Lot.findByPk(uuid(id, "id"), { include: [{ model: User, as: "manualStatusUser", attributes: ["name"] }] });
   if (!lot) throw new NotFoundError("Lot not found.");
   const packages = await Package.findAll({
     include: [{ model: PackageLot, as: "packageLots", where: { lotId: lot.id }, attributes: [] }],
@@ -116,7 +118,7 @@ async function get(id) {
   const soldBy = new Set(sales.map((s) => s.packageId));
   const attachments = await Attachment.findAll({ where: { lotId: lot.id }, order: [["sortOrder", "ASC"], ["createdAt", "ASC"]] });
   return {
-    ...lotDto(lot, { seller: true }),
+    ...lotDto(lot, { seller: true, extra: { manualStatusByName: lot.manualStatusUser?.name ?? null } }),
     packages: packages.map((p) => packageDto(p, { soldThisLot: soldBy.has(p.id) })),
     attachments: attachments.map((a) => attachmentDto(a, { full: true }))
   };
@@ -130,6 +132,46 @@ async function update(id, body, userId) {
     await lot.update({ description: optionalString(body.description, "description", { max: 20000 }), updatedBy: userId });
   }
   return get(lot.id);
+}
+
+// Ajuste manual da situação (2026-11-24). body = { status: "available" | "sold" | "unavailable" | null, note }.
+// null volta a seguir a planilha. Lote vendido por pacote ou retirado não aceita ajuste (regra em lot-status.js).
+// Usa a trava da importação: uma importação em andamento não grava por cima do ajuste (e o ajuste muda a impressão
+// digital, então uma prévia aberta fica velha).
+async function setStatus(id, body, userId) {
+  const lotId = uuid(id, "id");
+  const to = body.status === null || body.status === "" ? null : body.status;
+  const note = optionalString(body.note, "note", { max: 2000 });
+  await sequelize.transaction(async (transaction) => {
+    await sequelize.query(`SELECT pg_advisory_xact_lock(${LOCK_KEY})`, { transaction });
+    const lot = await Lot.findByPk(lotId, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!lot) throw new NotFoundError("Lot not found.");
+    const sales = await LotSale.findAll({
+      where: { lotId },
+      include: [{ model: Package, as: "package", attributes: ["number"] }],
+      transaction
+    });
+    const plan = planManualStatus({ ...lot.get({ plain: true }), saleCount: sales.length }, to);
+    if (plan.error === "LOT_STATUS_INVALID") throw new ValidationError("Invalid lot status.", { field: "status" }, plan.error);
+    if (plan.error === "LOT_WITHDRAWN") throw new ConflictError("This lot was withdrawn from the spreadsheet.", null, plan.error);
+    if (plan.error === "LOT_SOLD_BY_PACKAGE") {
+      const packages = sales.map((s) => s.package?.number).filter(Boolean).sort((a, b) => a - b);
+      throw new ConflictError("This lot was sold by a package. Undo the package sale first.", { packages }, plan.error);
+    }
+    const manual = plan.manualStatus !== null;
+    await lot.update(
+      {
+        status: plan.status,
+        manualStatus: plan.manualStatus,
+        manualStatusNote: manual ? note : null,
+        manualStatusBy: manual ? userId : null,
+        manualStatusAt: manual ? new Date() : null,
+        updatedBy: userId
+      },
+      { transaction }
+    );
+  });
+  return get(lotId);
 }
 
 // Planilha com todos os lotes não retirados, no formato da importação (export/lot-export.js). Sem filtro, de propósito:
@@ -152,4 +194,4 @@ async function exportWorkbook(lang) {
   return { buffer: buildLotWorkbook(rows, { lang: language }), fileName: lotExportFileName(new Date(), language) };
 }
 
-module.exports = { list, listIds, facets, get, update, lotOrder, exportWorkbook };
+module.exports = { list, listIds, facets, get, update, setStatus, lotOrder, exportWorkbook };

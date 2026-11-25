@@ -53,6 +53,7 @@ export const api = {
   lotFacets: () => data(http.get('/seller/lots/facets')),
   lot: (id) => data(http.get(`/seller/lots/${id}`)),
   updateLot: (id, body) => data(http.patch(`/seller/lots/${id}`, body)),
+  setLotStatus: (id, body) => data(http.put(`/seller/lots/${id}/status`, body)),
   packageFromLot: (id) => data(http.post(`/seller/lots/${id}/package`)),
   // Planilha de todos os lotes (download direto pelo link; o cookie do vendedor vai junto).
   lotExportUrl: (lang) => `/api/v1/seller/lots/export?lang=${encodeURIComponent(lang)}`,

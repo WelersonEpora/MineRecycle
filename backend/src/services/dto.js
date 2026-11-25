@@ -38,6 +38,9 @@ function lotDto(l, { seller = false, extra = {} } = {}) {
   if (seller) {
     out.sheetStatus = l.sheetStatus;
     out.soldBySheet = l.soldBySheet;
+    out.manualStatus = l.manualStatus ?? null;
+    out.manualStatusNote = l.manualStatusNote ?? null;
+    out.manualStatusAt = l.manualStatusAt ?? null;
     out.withdrawnAt = l.withdrawnAt;
     out.importedAt = l.importedAt;
     out.updatedAt = l.updatedAt;

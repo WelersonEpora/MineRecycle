@@ -43,6 +43,7 @@ async function saleLots(packageId, { transaction } = {}) {
     status: l.status,
     soldBySheet: l.soldBySheet,
     sheetStatus: l.sheetStatus,
+    manualStatus: l.manualStatus,
     withdrawnAt: l.withdrawnAt,
     salePackageIds: (l.sales || []).map((s) => s.packageId)
   }));

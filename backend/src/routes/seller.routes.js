@@ -38,6 +38,7 @@ router.get("/lots/export", async (req, res) => {
 router.get("/lots/:id", async (req, res) => res.json(await lotService.get(req.params.id)));
 router.patch("/lots/:id", async (req, res) => res.json(await lotService.update(req.params.id, req.body || {}, userId(req))));
 // Pacote de um lote só, com o nome do lote.
+router.put("/lots/:id/status", async (req, res) => res.json(await lotService.setStatus(req.params.id, req.body || {}, userId(req))));
 router.post("/lots/:id/package", async (req, res) => res.status(201).json(await packageService.createFromLot(req.params.id, userId(req))));
 router.get("/lots/:id/attachments", async (req, res) => res.json(await attachmentService.list({ lotId: req.params.id })));
 router.post("/lots/:id/attachments", upload.array("files", 30), async (req, res) =>

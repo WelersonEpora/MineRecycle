@@ -125,3 +125,24 @@ test("the fingerprint changes with the file or the database", () => {
   assert.notEqual(buildLotImportPlan({ sheet: sheet(rows), existingLots: [], autoPackages: [], fileHash: "b" }).fingerprint, base);
   assert.notEqual(buildLotImportPlan({ sheet: sheet(rows), existingLots: [existing("9")], autoPackages: [], fileHash: "a" }).fingerprint, base);
 });
+
+test("manual adjustment: kept while the sheet STATUS is unchanged, cleared and reported when it changes", () => {
+  const kept = plan([row("1", { status: "Sold" })], [existing("1", { sheetStatus: "sold", soldBySheet: true, status: "available", manualStatus: "available" })]);
+  assert.deepEqual(kept.errors, []);
+  assert.equal(kept.summary.updated, 0);
+  assert.deepEqual(kept.manualCleared, []);
+
+  const cleared = plan([row("1", { status: "" })], [existing("1", { sheetStatus: "sold", soldBySheet: true, status: "available", manualStatus: "available" })]);
+  assert.deepEqual(cleared.manualCleared, [{ lotNumber: "1", manualStatus: "available", sheetStatus: "available" }]);
+  const u = cleared.lots.update[0];
+  assert.equal(u.data.manualStatus, null);
+  assert.equal(u.data.manualStatusAt, null);
+  assert.equal(u.data.soldBySheet, false);
+  assert.equal(u.data.status, "available");
+  assert.deepEqual(cleared.statusChanges, []);
+});
+
+test("manual adjustment to sold is reported as a sheet disagreement", () => {
+  const p = plan([row("1")], [existing("1", { status: "sold", manualStatus: "sold" })]);
+  assert.deepEqual(p.disagreements, [{ lotNumber: "1", sheetStatus: "available" }]);
+});

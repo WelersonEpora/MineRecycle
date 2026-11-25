@@ -57,6 +57,15 @@
             <li v-for="d in report.disagreements.items" :key="d.lotNumber"><span class="mr-mono">{{ d.lotNumber }}</span></li>
           </ul>
         </details>
+        <details v-if="report.manualCleared?.total" class="mb-2" open>
+          <summary class="small fw-medium">{{ t('lotImport.manualCleared') }} ({{ report.manualCleared.total }})</summary>
+          <p class="small text-secondary mb-1">{{ t('lotImport.manualClearedHint') }}</p>
+          <ul class="small mb-0">
+            <li v-for="m in report.manualCleared.items" :key="m.lotNumber">
+              <span class="mr-mono">{{ m.lotNumber }}</span>: {{ f.lotStatusLabel(m.manualStatus) }} → {{ t('lots.followSheet') }} ({{ f.lotStatusLabel(m.sheetStatus) }})
+            </li>
+          </ul>
+        </details>
         <details v-if="report.packages.create.length" class="mb-2">
           <summary class="small fw-medium">{{ t('lotImport.packagesCreated') }} ({{ report.packages.create.length }})</summary>
           <ul class="small mb-0">

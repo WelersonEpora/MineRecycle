@@ -1,7 +1,7 @@
 "use strict";
 
 const { createHash } = require("node:crypto");
-const { parseSheetStatus, lotStatus } = require("../domain/lot-status");
+const { parseSheetStatus, lotStatus, reimportStatus } = require("../domain/lot-status");
 const { planAutoPackages, cleanGroupValue, compareLotNumbers } = require("../domain/auto-packages");
 
 // Plano da importação de lotes (decisão de 2026-11-19). Regra pura: recebe as linhas lidas (lot-sheet.js) e o estado
@@ -11,13 +11,15 @@ const { planAutoPackages, cleanGroupValue, compareLotNumbers } = require("../dom
 // - Chave: nº do lote. Lote novo é criado; existente é atualizado nos campos da planilha (a descrição do vendedor
 //   não muda); lote que sumiu da planilha é marcado como retirado (nunca apagado: pode ter fotos, pedidos ou estar em
 //   pacote manual); retirado que volta é restaurado.
-// - Situação: "Sold" marca o lote como vendido pela planilha, e isso a importação nunca desfaz.
+// - Situação: "Sold" marca o lote como vendido pela planilha, e isso a importação nunca desfaz. O ajuste manual da
+//   situação (2026-11-24) fica enquanto o STATUS do lote não mudar na planilha; mudou, a planilha volta a mandar
+//   (reimportStatus em domain/lot-status.js).
 // - Pacotes automáticos: recalculados a partir dos lotes resultantes (auto-packages.js).
 
 const LIMITS = { lotNumber: 40, siteName: 120, title: 5000, masterSupplier: 200, linkedSystem: 200, commercialFamily: 200, subfamily: 200 };
 const SHEET_FIELDS = ["siteName", "title", "masterSupplier", "linkedSystem", "commercialFamily", "subfamily"];
 // Campos comparados para dizer se o lote mudou.
-const COMPARED_FIELDS = [...SHEET_FIELDS, "sheetStatus", "status"];
+const COMPARED_FIELDS = [...SHEET_FIELDS, "sheetStatus", "status", "manualStatus"];
 
 function cleanText(value) {
   return cleanGroupValue(value);
@@ -42,7 +44,7 @@ function readRow({ rowNumber, values }) {
 }
 
 // sheet = readLotSheet(); existingLots = [{ id, lotNumber, ...SHEET_FIELDS, sheetStatus, soldBySheet, status,
-// withdrawnAt, saleCount }]; autoPackages = [{ id, source, sourceValue, lotNumbers }].
+// manualStatus, withdrawnAt, saleCount }]; autoPackages = [{ id, source, sourceValue, lotNumbers }].
 function buildLotImportPlan({ sheet, existingLots, autoPackages, fileHash = "" }) {
   const errors = [];
   if (sheet.headerRow === null) errors.push({ code: "LOT_SHEET_NO_HEADER" });
@@ -72,13 +74,18 @@ function buildLotImportPlan({ sheet, existingLots, autoPackages, fileHash = "" }
   const withdraw = [];
   const statusChanges = [];
   const disagreements = [];
+  const manualCleared = [];
   let unchanged = 0;
 
   for (const [lotNumber, sheetData] of incoming) {
     const current = existingByNumber.get(lotNumber);
-    const soldBySheet = Boolean(current?.soldBySheet) || sheetData.sheetStatus === "sold";
-    const status = lotStatus({ soldBySheet, saleCount: current?.saleCount ?? 0, sheetStatus: sheetData.sheetStatus });
-    const data = { ...sheetData, soldBySheet, status };
+    const { manualStatus, manualCleared: cleared, soldBySheet } = reimportStatus(current, sheetData.sheetStatus);
+    const status = lotStatus({ soldBySheet, saleCount: current?.saleCount ?? 0, sheetStatus: sheetData.sheetStatus, manualStatus });
+    const data = { ...sheetData, soldBySheet, status, manualStatus };
+    if (cleared) {
+      Object.assign(data, { manualStatusNote: null, manualStatusBy: null, manualStatusAt: null });
+      manualCleared.push({ lotNumber, manualStatus: current.manualStatus, sheetStatus: sheetData.sheetStatus });
+    }
     if (!current) {
       create.push({ lotNumber, row: firstRow.get(lotNumber), data });
       if (status !== "available") statusChanges.push({ lotNumber, from: null, to: status });
@@ -109,7 +116,7 @@ function buildLotImportPlan({ sheet, existingLots, autoPackages, fileHash = "" }
   const packages = planAutoPackages(resulting, autoPackages);
 
   const byNumber = (a, b) => compareLotNumbers(a.lotNumber, b.lotNumber);
-  for (const list of [create, update, restore, withdraw, statusChanges, disagreements]) list.sort(byNumber);
+  for (const list of [create, update, restore, withdraw, statusChanges, disagreements, manualCleared]) list.sort(byNumber);
 
   // Impressão digital: o arquivo e o estado do banco usados no plano. Mudou qualquer um, a prévia está velha.
   const fingerprint = createHash("sha256")
@@ -121,6 +128,7 @@ function buildLotImportPlan({ sheet, existingLots, autoPackages, fileHash = "" }
     lots: { create, update, restore, withdraw, unchanged },
     statusChanges,
     disagreements,
+    manualCleared,
     packages,
     summary: {
       rows: sheet.rows.length,
