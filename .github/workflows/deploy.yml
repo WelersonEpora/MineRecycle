@@ -11,7 +11,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Lint, testes (inclusive os de integração, com Postgres) e build primeiro: nada é publicado sem a CI verde.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: ci
     # Runner ARM nativo (gratuito em repositório público): a servidor02 é Ampere A1 (arm64). Mesmo padrão do FinMind.
     runs-on: ubuntu-24.04-arm
 

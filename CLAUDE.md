@@ -156,7 +156,8 @@ cd frontend && npm run lint && npm test && npm run build
 ## CI/CD e servidor
 
 - `.github/workflows/ci.yml`: lint, testes unitários, testes de integração (Postgres de serviço) e build do frontend,
-  em todo push e PR.
+  em todo push e PR. Na `main`, roda de dentro do `deploy.yml` (job `ci`, `workflow_call`), e o deploy tem `needs: ci`:
+  nada é publicado sem a CI verde (desde 2026-11-25, como no Personal-Assistant).
 - **Publicado em 2026-11-16** em https://minerecycle.weslab.com.br; desde 2026-11-24 o endereço oficial é https://minerecycle.afbridge.com.br. A senha da prévia foi desligada no mesmo dia (`SITE_PASSWORD` vazio no `.env` do servidor): o catálogo é público, e o NPM força HTTPS. Push na `main` publica sozinho (variável `DEPLOY_ENABLED=true`). Como está montado:
   - `deploy.yml` com build arm64 no runner `ubuntu-24.04-arm`, imagens `ghcr.io/<owner>/minerecycle-backend` e
     `minerecycle-frontend`, e SSH na `servidor02` rodando `scripts/deploy.sh` (pull, up, migrate, seed).

@@ -1,9 +1,12 @@
 name: CI
 
+# Na main, a CI roda de dentro do deploy.yml (workflow_call), que só publica se ela passar (como no Personal-Assistant).
+# Nas outras branches e nos PRs, roda sozinha.
 on:
   push:
-    branches: ["**"]
+    branches: ["**", "!main"]
   pull_request:
+  workflow_call:
 
 jobs:
   backend:

@@ -180,7 +180,9 @@ test("lot import", { skip }, async (t) => {
     const l2 = rows.find((r) => r[0] === "L-2");
     assert.equal(l2[7], "");
     assert.equal(l2[8], "Vendido");
-    assert.match(l2[9], /Water System/);
+    // Coluna "Ajuste manual" (2026-11-24): vazia, o lote não foi ajustado à mão.
+    assert.equal(l2[9], "");
+    assert.match(l2[10], /Water System/);
 
     const preview = (await upload(res.data, "export.xlsx")).data;
     assert.equal(preview.canCommit, true);
